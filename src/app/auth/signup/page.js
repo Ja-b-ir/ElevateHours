@@ -9,12 +9,12 @@ export default function SignupPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     setLoading(true)
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: form.email,
         password: form.password,
         options: {
@@ -22,9 +22,13 @@ export default function SignupPage() {
         }
       })
       if (error) throw error
-      router.push('/dashboard')
+      if (data?.user) {
+        router.push('/dashboard')
+      } else {
+        setError('Signup failed. Please try again.')
+      }
     } catch (err) {
-      setError(err.message)
+      setError(err.message || 'Something went wrong')
     } finally {
       setLoading(false)
     }
