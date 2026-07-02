@@ -1,10 +1,10 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
 
-export default function ProfilePage() {
+function ProfileContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const viewId = searchParams.get('id')
@@ -24,20 +24,15 @@ export default function ProfilePage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/auth/login'); return }
       setCurrentUser(user)
-
       const targetId = viewId || user.id
       const { data: prof } = await supabase.from('profiles').select('*').eq('id', targetId).single()
       setProfile(prof)
-      setEditForm({ bio: prof?.bio || '', tier_level: prof?.tier_level || 'Tier 1: Foundational' })
-
-      // Fetch skills offered
+      setEditForm({ bio: prof?.bio || '' })
       const { data: skillsData } = await supabase
         .from('profile_skills_offered')
         .select('skill:skills_catalog(id, skill_name, track, tier:tier_reference(tier_name))')
         .eq('profile_id', targetId)
       setSkills(skillsData?.map(s => s.skill) || [])
-
-      // Fetch endorsements
       const { data: endData } = await supabase
         .from('endorsements')
         .select('*, endorser:profiles!endorsements_endorser_id_fkey(full_name), skill:skills_catalog(skill_name)')
@@ -45,14 +40,11 @@ export default function ProfilePage() {
         .order('created_at', { ascending: false })
         .limit(10)
       setEndorsements(endData || [])
-
-      // Fetch badges
       const { data: badgeData } = await supabase
         .from('user_badges')
         .select('*, badge:badges(badge_name, description, badge_type)')
         .eq('profile_id', targetId)
       setBadges(badgeData || [])
-
       setLoading(false)
     }
     init()
@@ -86,17 +78,10 @@ export default function ProfilePage() {
     <div style={{ background: '#F8F9FA', minHeight: '100vh' }}>
       <Navbar />
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '2rem 1.5rem' }}>
-
-        {/* Profile Header */}
         <div style={{ background: 'white', borderRadius: 20, padding: '2rem', marginBottom: '1.5rem', border: '1px solid #e2e8f0', boxShadow: '0 2px 12px rgba(13,115,119,0.08)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-              <div style={{
-                width: 72, height: 72, borderRadius: '50%',
-                background: 'linear-gradient(135deg, #0D7377, #14A085)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'white', fontWeight: 900, fontSize: '1.75rem', flexShrink: 0
-              }}>
+              <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'linear-gradient(135deg, #0D7377, #14A085)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 900, fontSize: '1.75rem', flexShrink: 0 }}>
                 {profile.full_name?.[0]?.toUpperCase()}
               </div>
               <div>
@@ -118,7 +103,6 @@ export default function ProfilePage() {
             )}
           </div>
 
-          {/* Stats row */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
             {[
               { label: 'Completed', value: profile.completed_transactions || 0, icon: '✅' },
@@ -134,7 +118,6 @@ export default function ProfilePage() {
             ))}
           </div>
 
-          {/* Bio */}
           {editing ? (
             <div style={{ marginBottom: '1rem' }}>
               <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.4rem' }}>Bio</label>
@@ -148,7 +131,6 @@ export default function ProfilePage() {
             profile.bio && <p style={{ color: '#374151', lineHeight: 1.7, fontSize: '0.95rem' }}>{profile.bio}</p>
           )}
 
-          {/* Balance (own profile only) */}
           {isOwnProfile && (
             <div style={{ marginTop: '1.25rem', padding: '1.25rem', background: 'linear-gradient(135deg, #0D7377, #14A085)', borderRadius: 12, color: 'white' }}>
               <div style={{ fontWeight: 700, fontSize: '0.8rem', opacity: 0.8, marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Your Balance</div>
@@ -171,7 +153,6 @@ export default function ProfilePage() {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-          {/* Skills Offered */}
           <div style={{ background: 'white', borderRadius: 16, padding: '1.5rem', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(13,115,119,0.06)' }}>
             <h2 style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '1rem' }}>Skills Offered</h2>
             {skills.length === 0 ? (
@@ -180,34 +161,23 @@ export default function ProfilePage() {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                 {skills.map((s, i) => {
                   const tc = tierColor(s?.tier?.tier_name)
-                  return (
-                    <span key={i} style={{ background: tc.bg, color: tc.color, padding: '0.3rem 0.75rem', borderRadius: 8, fontSize: '0.8rem', fontWeight: 600 }}>
-                      {s?.skill_name}
-                    </span>
-                  )
+                  return <span key={i} style={{ background: tc.bg, color: tc.color, padding: '0.3rem 0.75rem', borderRadius: 8, fontSize: '0.8rem', fontWeight: 600 }}>{s?.skill_name}</span>
                 })}
               </div>
             )}
           </div>
-
-          {/* Badges */}
           <div style={{ background: 'white', borderRadius: 16, padding: '1.5rem', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(13,115,119,0.06)' }}>
             <h2 style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '1rem' }}>Badges</h2>
             {badges.length === 0 ? (
-              <p style={{ color: '#64748b', fontSize: '0.875rem' }}>No badges earned yet. Complete transactions to unlock badges.</p>
+              <p style={{ color: '#64748b', fontSize: '0.875rem' }}>No badges earned yet.</p>
             ) : (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                {badges.map((b, i) => (
-                  <span key={i} title={b.badge?.description} style={{ background: '#fef3c7', color: '#92400e', padding: '0.3rem 0.75rem', borderRadius: 8, fontSize: '0.8rem', fontWeight: 600 }}>
-                    🏅 {b.badge?.badge_name}
-                  </span>
-                ))}
+                {badges.map((b, i) => <span key={i} style={{ background: '#fef3c7', color: '#92400e', padding: '0.3rem 0.75rem', borderRadius: 8, fontSize: '0.8rem', fontWeight: 600 }}>🏅 {b.badge?.badge_name}</span>)}
               </div>
             )}
           </div>
         </div>
 
-        {/* Endorsements */}
         {endorsements.length > 0 && (
           <div style={{ background: 'white', borderRadius: 16, padding: '1.5rem', marginTop: '1.5rem', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(13,115,119,0.06)' }}>
             <h2 style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '1rem' }}>Endorsements</h2>
@@ -216,7 +186,7 @@ export default function ProfilePage() {
                 <div key={i} style={{ padding: '1rem 1.25rem', background: '#F8F9FA', borderRadius: 12, border: '1px solid #e2e8f0' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                     <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{e.endorser?.full_name}</span>
-                    <span style={{ color: '#F5A623', fontSize: '0.9rem' }}>{'⭐'.repeat(e.rating || 0)}</span>
+                    <span style={{ color: '#F5A623' }}>{'⭐'.repeat(e.rating || 0)}</span>
                   </div>
                   <p style={{ color: '#374151', fontSize: '0.875rem', lineHeight: 1.6 }}>{e.endorsement_text}</p>
                   {e.skill && <div style={{ color: '#64748b', fontSize: '0.75rem', marginTop: '0.5rem' }}>{e.skill.skill_name} · {e.date_given}</div>}
@@ -226,7 +196,14 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
-      <style>{`@media (max-width: 640px) { .profile-grid { grid-template-columns: 1fr !important; } }`}</style>
     </div>
+  )
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', padding: '4rem', color: '#64748b' }}>Loading...</div>}>
+      <ProfileContent />
+    </Suspense>
   )
 }
