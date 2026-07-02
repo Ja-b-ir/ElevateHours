@@ -140,7 +140,7 @@ export default function FundingRequests() {
             <form onSubmit={submitRequest}>
               <div style={{ marginBottom: '1rem' }}>
                 <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.4rem' }}>
-                  How many Sparks do you need? <span style={{ color: '#64748b', fontWeight: 400' }}>(Maximum 2,000 SPK)</span>
+                  How many Sparks do you need? <span style={{ color: '#64748b', fontWeight: 400 }}>(Maximum 2,000 SPK)</span>
                 </label>
                 <input type="number" required min="100" max="2000" value={form.amount_requested} onChange={e => setForm({ ...form, amount_requested: e.target.value })} placeholder="e.g. 500" style={{ width: '100%', padding: '0.7rem', border: '1.5px solid #e2e8f0', borderRadius: 8, fontSize: '0.95rem' }} />
               </div>
