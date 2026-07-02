@@ -14,11 +14,18 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email: form.email, password: form.password })
+      const { data, error } = await supabase.auth.signInWithPassword({ 
+        email: form.email, 
+        password: form.password 
+      })
       if (error) throw error
-      router.push('/dashboard')
+      if (data?.user) {
+        window.location.href = '/dashboard'
+      } else {
+        setError('Login failed. Please try again.')
+      }
     } catch (err) {
-      setError(err.message)
+      setError(err.message || 'Invalid email or password')
     } finally {
       setLoading(false)
     }
