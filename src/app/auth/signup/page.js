@@ -1,15 +1,13 @@
 'use client'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
 export default function SignupPage() {
-  const router = useRouter()
   const [form, setForm] = useState({ full_name: '', email: '', password: '', account_type: 'Personal' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     setLoading(true)
@@ -18,17 +16,26 @@ const handleSubmit = async (e) => {
         email: form.email,
         password: form.password,
         options: {
-          data: { full_name: form.full_name, account_type: form.account_type }
+          emailRedirectTo: undefined,
+          data: { 
+            full_name: form.full_name, 
+            account_type: form.account_type 
+          }
         }
       })
       if (error) throw error
       if (data?.user) {
-        router.push('/dashboard')
-      } else {
-        setError('Signup failed. Please try again.')
+        // Manually create profile
+        await supabase.from('profiles').upsert({
+          id: data.user.id,
+          email: form.email,
+          full_name: form.full_name,
+          account_type: form.account_type
+        })
+        window.location.href = '/dashboard'
       }
     } catch (err) {
-      setError(err.message || 'Something went wrong')
+      setError(err.message || JSON.stringify(err))
     } finally {
       setLoading(false)
     }
@@ -54,44 +61,36 @@ const handleSubmit = async (e) => {
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: '1rem' }}>
             <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.4rem' }}>Full Name</label>
-            <input
-              type="text" required placeholder="Your full name"
-              value={form.full_name}
+            <input type="text" required placeholder="Your full name" value={form.full_name}
               onChange={e => setForm({ ...form, full_name: e.target.value })}
-              style={{ width: '100%', padding: '0.7rem 1rem', border: '1.5px solid #e2e8f0', borderRadius: 8, fontSize: '0.95rem', outline: 'none' }}
-            />
+              style={{ width: '100%', padding: '0.7rem 1rem', border: '1.5px solid #e2e8f0', borderRadius: 8, fontSize: '0.95rem', outline: 'none' }} />
           </div>
           <div style={{ marginBottom: '1rem' }}>
             <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.4rem' }}>Email</label>
-            <input
-              type="email" required placeholder="your@email.com"
-              value={form.email}
+            <input type="email" required placeholder="your@email.com" value={form.email}
               onChange={e => setForm({ ...form, email: e.target.value })}
-              style={{ width: '100%', padding: '0.7rem 1rem', border: '1.5px solid #e2e8f0', borderRadius: 8, fontSize: '0.95rem', outline: 'none' }}
-            />
+              style={{ width: '100%', padding: '0.7rem 1rem', border: '1.5px solid #e2e8f0', borderRadius: 8, fontSize: '0.95rem', outline: 'none' }} />
           </div>
           <div style={{ marginBottom: '1rem' }}>
             <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.4rem' }}>Password</label>
-            <input
-              type="password" required placeholder="Minimum 6 characters"
-              value={form.password}
+            <input type="password" required placeholder="Minimum 6 characters" value={form.password}
               onChange={e => setForm({ ...form, password: e.target.value })}
-              style={{ width: '100%', padding: '0.7rem 1rem', border: '1.5px solid #e2e8f0', borderRadius: 8, fontSize: '0.95rem', outline: 'none' }}
-            />
+              style={{ width: '100%', padding: '0.7rem 1rem', border: '1.5px solid #e2e8f0', borderRadius: 8, fontSize: '0.95rem', outline: 'none' }} />
           </div>
           <div style={{ marginBottom: '1.5rem' }}>
             <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.4rem' }}>Account Type</label>
-            <select
-              value={form.account_type}
-              onChange={e => setForm({ ...form, account_type: e.target.value })}
-              style={{ width: '100%', padding: '0.7rem 1rem', border: '1.5px solid #e2e8f0', borderRadius: 8, fontSize: '0.95rem', outline: 'none', background: 'white' }}
-            >
+            <select value={form.account_type} onChange={e => setForm({ ...form, account_type: e.target.value })}
+              style={{ width: '100%', padding: '0.7rem 1rem', border: '1.5px solid #e2e8f0', borderRadius: 8, fontSize: '0.95rem', outline: 'none', background: 'white' }}>
               <option value="Personal">Personal (Student / Freelancer)</option>
               <option value="Organization">Organization (Startup / NGO)</option>
             </select>
           </div>
 
-          {error && <div style={{ color: '#ef4444', fontSize: '0.875rem', marginBottom: '1rem', background: '#fee2e2', padding: '0.75rem', borderRadius: 8 }}>{error}</div>}
+          {error && (
+            <div style={{ color: '#ef4444', fontSize: '0.875rem', marginBottom: '1rem', background: '#fee2e2', padding: '0.75rem', borderRadius: 8 }}>
+              {error}
+            </div>
+          )}
 
           <button type="submit" disabled={loading} style={{
             width: '100%', padding: '0.85rem', background: '#0D7377',
