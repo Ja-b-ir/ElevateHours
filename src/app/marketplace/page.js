@@ -11,9 +11,11 @@ export default function Marketplace() {
   const [transactions, setTransactions] = useState([])
   const [profiles, setProfiles] = useState([])
   const [tiers, setTiers] = useState([])
+  const [myApplications, setMyApplications] = useState(new Set())
   const [filterTier, setFilterTier] = useState('')
   const [loading, setLoading] = useState(true)
   const [applying, setApplying] = useState(null)
+  const [success, setSuccess] = useState('')
 
   const tabs = ['Find Work', 'Find Education', 'Find Help (Work)', 'Find Help (Education)']
 
@@ -24,6 +26,14 @@ export default function Marketplace() {
       setUser(user)
       const { data: tierData } = await supabase.from('tier_reference').select('*').order('multiplier')
       setTiers(tierData || [])
+
+      // Fetch user's existing applications
+      const { data: apps } = await supabase
+        .from('applications')
+        .select('transaction_id')
+        .eq('applicant_id', user.id)
+      setMyApplications(new Set(apps?.map(a => a.transaction_id) || []))
+
       setLoading(false)
     }
     init()
@@ -54,9 +64,7 @@ export default function Marketplace() {
         .select(`*, skills:profile_skills_offered(skill:skills_catalog(skill_name, track, tier:tier_reference(tier_name)))`)
         .eq('account_type', 'Personal')
         .neq('id', user.id)
-      const filtered = (data || []).filter(p =>
-        p.skills?.some(s => s.skill?.track === track)
-      )
+      const filtered = (data || []).filter(p => p.skills?.some(s => s.skill?.track === track))
       setProfiles(filtered)
     }
   }
@@ -64,11 +72,15 @@ export default function Marketplace() {
   const applyToTransaction = async (txnId) => {
     setApplying(txnId)
     try {
-      await supabase.from('transactions').update({
-        provider_id: user.id,
-        status: 'In Progress'
-      }).eq('id', txnId)
-      fetchData()
+      const { error } = await supabase.from('applications').insert({
+        transaction_id: txnId,
+        applicant_id: user.id,
+        status: 'Pending'
+      })
+      if (error) throw error
+      setMyApplications(prev => new Set([...prev, txnId]))
+      setSuccess('Application submitted! The requester will be notified.')
+      setTimeout(() => setSuccess(''), 3000)
     } catch (err) {
       console.error(err)
     }
@@ -93,6 +105,12 @@ export default function Marketplace() {
           <p style={{ color: '#64748b', marginTop: '0.25rem' }}>Find work, find talent, find knowledge — all powered by Sparks</p>
         </div>
 
+        {success && (
+          <div style={{ background: '#dcfce7', color: '#166534', padding: '0.75rem 1rem', borderRadius: 10, marginBottom: '1rem', fontWeight: 600, border: '1px solid #86efac' }}>
+            ✅ {success}
+          </div>
+        )}
+
         {/* Tabs */}
         <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '2px solid #e2e8f0', marginBottom: '1.5rem', overflowX: 'auto' }}>
           {tabs.map(tab => (
@@ -110,17 +128,11 @@ export default function Marketplace() {
         {/* Filter */}
         {(activeTab === 'Find Work' || activeTab === 'Find Education') && (
           <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-            <select
-              value={filterTier}
-              onChange={e => setFilterTier(e.target.value)}
-              style={{ padding: '0.6rem 1rem', border: '1.5px solid #e2e8f0', borderRadius: 8, background: 'white', fontSize: '0.9rem', minWidth: 180 }}
-            >
+            <select value={filterTier} onChange={e => setFilterTier(e.target.value)} style={{ padding: '0.6rem 1rem', border: '1.5px solid #e2e8f0', borderRadius: 8, background: 'white', fontSize: '0.9rem', minWidth: 180 }}>
               <option value="">All Tiers</option>
               {tiers.map(t => <option key={t.id} value={t.id}>{t.tier_name}</option>)}
             </select>
-            <span style={{ color: '#64748b', fontSize: '0.875rem' }}>
-              {transactions.length} opportunities found
-            </span>
+            <span style={{ color: '#64748b', fontSize: '0.875rem' }}>{transactions.length} opportunities found</span>
           </div>
         )}
 
@@ -135,56 +147,43 @@ export default function Marketplace() {
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
-                {transactions.map(txn => (
-                  <div key={txn.id} style={{
-                    background: 'white', borderRadius: 16, padding: '1.5rem',
-                    border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(13,115,119,0.06)'
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
-                      <h3 style={{ fontWeight: 700, fontSize: '1.05rem', flex: 1, marginRight: '0.5rem' }}>
-                        {txn.skill?.skill_name}
-                      </h3>
-                      <span style={{
-                        ...tierBadgeStyle(txn.tier?.tier_name),
-                        padding: '0.2rem 0.7rem', borderRadius: 999,
-                        fontSize: '0.75rem', fontWeight: 700, whiteSpace: 'nowrap'
-                      }}>
-                        {txn.tier?.tier_name?.split(':')[0]}
-                      </span>
+                {transactions.map(txn => {
+                  const hasApplied = myApplications.has(txn.id)
+                  return (
+                    <div key={txn.id} style={{ background: 'white', borderRadius: 16, padding: '1.5rem', border: `1.5px solid ${hasApplied ? '#0D7377' : '#e2e8f0'}`, boxShadow: '0 2px 8px rgba(13,115,119,0.06)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
+                        <h3 style={{ fontWeight: 700, fontSize: '1.05rem', flex: 1, marginRight: '0.5rem' }}>{txn.skill?.skill_name}</h3>
+                        <span style={{ ...tierBadgeStyle(txn.tier?.tier_name), padding: '0.2rem 0.7rem', borderRadius: 999, fontSize: '0.75rem', fontWeight: 700, whiteSpace: 'nowrap' }}>
+                          {txn.tier?.tier_name?.split(':')[0]}
+                        </span>
+                      </div>
+                      <p style={{ color: '#64748b', fontSize: '0.875rem', lineHeight: 1.6, marginBottom: '1rem' }}>
+                        {txn.description || 'No description provided.'}
+                      </p>
+                      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                        <span style={{ background: '#F8F9FA', padding: '0.3rem 0.75rem', borderRadius: 8, fontSize: '0.8rem', fontWeight: 600 }}>⏱ {txn.agreed_hours}h</span>
+                        <span style={{ background: '#fff7ed', color: '#c2410c', padding: '0.3rem 0.75rem', borderRadius: 8, fontSize: '0.8rem', fontWeight: 700 }}>⚡ {txn.total_sparks_transferred || 0} SPK</span>
+                        <span style={{ background: '#f0fdf4', color: '#166534', padding: '0.3rem 0.75rem', borderRadius: 8, fontSize: '0.8rem', fontWeight: 600 }}>{txn.track}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ color: '#64748b', fontSize: '0.8rem' }}>by {txn.receiver?.full_name}</span>
+                        {hasApplied ? (
+                          <span style={{ background: '#e8f4f4', color: '#0D7377', padding: '0.5rem 1rem', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem', border: '1.5px solid #0D7377' }}>
+                            ✓ Applied — Pending
+                          </span>
+                        ) : (
+                          <button onClick={() => applyToTransaction(txn.id)} disabled={applying === txn.id} style={{
+                            background: '#0D7377', color: 'white', padding: '0.5rem 1.25rem',
+                            borderRadius: 8, border: 'none', fontWeight: 600, fontSize: '0.875rem',
+                            cursor: 'pointer', opacity: applying === txn.id ? 0.7 : 1
+                          }}>
+                            {applying === txn.id ? 'Applying...' : 'Apply →'}
+                          </button>
+                        )}
+                      </div>
                     </div>
-                    <p style={{ color: '#64748b', fontSize: '0.875rem', lineHeight: 1.6, marginBottom: '1rem' }}>
-                      {txn.description || 'No description provided.'}
-                    </p>
-                    <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-                      <span style={{ background: '#F8F9FA', padding: '0.3rem 0.75rem', borderRadius: 8, fontSize: '0.8rem', fontWeight: 600 }}>
-                        ⏱ {txn.agreed_hours}h
-                      </span>
-                      <span style={{ background: '#fff7ed', color: '#c2410c', padding: '0.3rem 0.75rem', borderRadius: 8, fontSize: '0.8rem', fontWeight: 700 }}>
-                        ⚡ {txn.total_sparks_transferred || 0} SPK
-                      </span>
-                      <span style={{ background: '#f0fdf4', color: '#166534', padding: '0.3rem 0.75rem', borderRadius: 8, fontSize: '0.8rem', fontWeight: 600 }}>
-                        {txn.track}
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ color: '#64748b', fontSize: '0.8rem' }}>
-                        by {txn.receiver?.full_name}
-                      </span>
-                      <button
-                        onClick={() => applyToTransaction(txn.id)}
-                        disabled={applying === txn.id}
-                        style={{
-                          background: '#0D7377', color: 'white',
-                          padding: '0.5rem 1.25rem', borderRadius: 8,
-                          border: 'none', fontWeight: 600, fontSize: '0.875rem',
-                          cursor: 'pointer', opacity: applying === txn.id ? 0.7 : 1
-                        }}
-                      >
-                        {applying === txn.id ? 'Applying...' : 'Apply →'}
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </>
@@ -202,24 +201,14 @@ export default function Marketplace() {
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
                 {profiles.map(p => (
-                  <div key={p.id} style={{
-                    background: 'white', borderRadius: 16, padding: '1.5rem',
-                    border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(13,115,119,0.06)'
-                  }}>
+                  <div key={p.id} style={{ background: 'white', borderRadius: 16, padding: '1.5rem', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(13,115,119,0.06)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                      <div style={{
-                        width: 48, height: 48, borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #0D7377, #14A085)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: 'white', fontWeight: 800, fontSize: '1.1rem', flexShrink: 0
-                      }}>
+                      <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'linear-gradient(135deg, #0D7377, #14A085)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: '1.1rem', flexShrink: 0 }}>
                         {p.full_name?.[0]?.toUpperCase()}
                       </div>
                       <div>
                         <div style={{ fontWeight: 700 }}>{p.full_name}</div>
-                        <div style={{ color: '#64748b', fontSize: '0.8rem' }}>
-                          {p.tier_level || 'Tier 1: Foundational'}
-                        </div>
+                        <div style={{ color: '#64748b', fontSize: '0.8rem' }}>{p.tier_level || 'Tier 1: Foundational'}</div>
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
@@ -234,24 +223,13 @@ export default function Marketplace() {
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '1rem' }}>
                       {p.skills?.slice(0, 4).map((s, i) => (
-                        <span key={i} style={{
-                          background: '#F8F9FA', color: '#374151',
-                          padding: '0.2rem 0.6rem', borderRadius: 6, fontSize: '0.75rem', fontWeight: 500
-                        }}>
+                        <span key={i} style={{ background: '#F8F9FA', color: '#374151', padding: '0.2rem 0.6rem', borderRadius: 6, fontSize: '0.75rem', fontWeight: 500 }}>
                           {s.skill?.skill_name}
                         </span>
                       ))}
-                      {p.skills?.length > 4 && (
-                        <span style={{ color: '#64748b', fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}>
-                          +{p.skills.length - 4} more
-                        </span>
-                      )}
+                      {p.skills?.length > 4 && <span style={{ color: '#64748b', fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}>+{p.skills.length - 4} more</span>}
                     </div>
-                    <a href={`/profile?id=${p.id}`} style={{
-                      display: 'block', textAlign: 'center', background: '#F8F9FA',
-                      color: '#0D7377', padding: '0.6rem', borderRadius: 8,
-                      fontWeight: 600, fontSize: '0.875rem', border: '1.5px solid #e2e8f0'
-                    }}>
+                    <a href={`/profile?id=${p.id}`} style={{ display: 'block', textAlign: 'center', background: '#F8F9FA', color: '#0D7377', padding: '0.6rem', borderRadius: 8, fontWeight: 600, fontSize: '0.875rem', border: '1.5px solid #e2e8f0', textDecoration: 'none' }}>
                       View Profile →
                     </a>
                   </div>
