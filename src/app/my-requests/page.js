@@ -102,6 +102,18 @@ export default function MyRequests() {
     await fetchRequests(user.id)
   }
 
+  const reopenRequest = async (transactionId) => {
+    await supabase.from('transactions').update({ status: 'Open', provider_id: null }).eq('id', transactionId)
+    await fetchRequests(user.id)
+  }
+
+  const deleteRequest = async (transactionId) => {
+    if (!confirm('Are you sure you want to delete this request? This cannot be undone.')) return
+    await supabase.from('applications').delete().eq('transaction_id', transactionId)
+    await supabase.from('transactions').delete().eq('id', transactionId)
+    await fetchRequests(user.id)
+  }
+
   const STATUS_COLORS = {
     'Open': { bg: '#dcfce7', color: '#166534' },
     'In Progress': { bg: '#dbeafe', color: '#1e40af' },
