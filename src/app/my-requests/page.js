@@ -175,16 +175,30 @@ export default function MyRequests() {
                             {isExpanded ? 'Hide' : `View ${req.applications.length} Applicant${req.applications.length !== 1 ? 's' : ''}`}
                           </button>
                         )}
-                        {req.status === 'Open' && (
-                          <button onClick={() => cancelRequest(req.id)} style={{
-                            background: '#fee2e2', color: '#991b1b', padding: '0.5rem 1rem',
-                            borderRadius: 8, border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: '0.875rem'
-                          }}>
-                            Cancel Request
-                          </button>
-                        )}
-                      </div>
-                    </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+  {req.status === 'Open' && (
+    <button onClick={() => cancelRequest(req.id)} style={{
+      background: '#fee2e2', color: '#991b1b', padding: '0.5rem 1rem',
+      borderRadius: 8, border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: '0.875rem'
+    }}>
+      Cancel Request
+    </button>
+  )}
+  {req.status === 'Cancelled' && (
+    <button onClick={() => reopenRequest(req.id)} style={{
+      background: '#dcfce7', color: '#166534', padding: '0.5rem 1rem',
+      borderRadius: 8, border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: '0.875rem'
+    }}>
+      🔄 Reopen Request
+    </button>
+  )}
+  <button onClick={() => deleteRequest(req.id)} style={{
+    background: '#f1f5f9', color: '#64748b', padding: '0.5rem 1rem',
+    borderRadius: 8, border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: '0.875rem'
+  }}>
+    🗑 Delete
+  </button>
+</div>
 
                     {/* Accepted applicant banner */}
                     {acceptedApp && (
