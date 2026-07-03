@@ -315,37 +315,52 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer style={{ background: '#0B132B', color: 'white', padding: '3rem 2rem' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
-            <div>
-              <div style={{ fontWeight: 800, fontSize: '1.3rem', marginBottom: '0.5rem' }}>
-                Elevate<span style={{ color: '#F5A623' }}>Hours</span>
-              </div>
-              <p style={{ opacity: 0.6, fontSize: '0.9rem', lineHeight: 1.6 }}>
-                Turn Your Skills Into Impact
-              </p>
-            </div>
-            <div>
-              <div style={{ fontWeight: 700, marginBottom: '1rem', opacity: 0.5, fontSize: '0.8rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Platform</div>
-              {['About', 'How It Works', 'Marketplace', 'Contact'].map(link => (
-                <div key={link} style={{ marginBottom: '0.5rem' }}>
-                  <a href="#" style={{ opacity: 0.7, fontSize: '0.9rem', transition: 'opacity 0.2s' }}>{link}</a>
-                </div>
-              ))}
-            </div>
-            <div>
-              <div style={{ fontWeight: 700, marginBottom: '0.75rem', opacity: 0.5, fontSize: '0.8rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>The Spark Economy</div>
-              <p style={{ opacity: 0.6, fontSize: '0.85rem', lineHeight: 1.7 }}>
-                Powered by community, verified by platform, built for impact.
-              </p>
-            </div>
-          </div>
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.5rem', opacity: 0.5, fontSize: '0.85rem' }}>
-            © 2025 ElevateHours. All rights reserved.
-          </div>
+<footer style={{ background: '#0B132B', color: 'white', padding: '3rem 2rem' }}>
+  <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
+      <div>
+        <div style={{ fontWeight: 800, fontSize: '1.3rem', marginBottom: '0.5rem' }}>
+          Elevate<span style={{ color: '#F5A623' }}>Hours</span>
         </div>
-      </footer>
+        <p style={{ opacity: 0.6, fontSize: '0.9rem', lineHeight: 1.6 }}>
+          Turn Your Skills Into Impact
+        </p>
+        <div style={{ marginTop: '1rem', opacity: 0.5, fontSize: '0.8rem' }}>
+          Built by <a href="https://www.facebook.com/codescriptors/" target="_blank" rel="noopener noreferrer" style={{ color: '#F5A623', fontWeight: 600 }}>CodeScriptors IT Solutions</a>
+        </div>
+      </div>
+      <div>
+        <div style={{ fontWeight: 700, marginBottom: '1rem', opacity: 0.5, fontSize: '0.8rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Platform</div>
+        {['About', 'How It Works', 'Marketplace', 'Contact'].map(link => (
+          <div key={link} style={{ marginBottom: '0.5rem' }}>
+            <a href="#" style={{ opacity: 0.7, fontSize: '0.9rem' }}>{link}</a>
+          </div>
+        ))}
+      </div>
+      <div>
+        <div style={{ fontWeight: 700, marginBottom: '1rem', opacity: 0.5, fontSize: '0.8rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Company</div>
+        <div style={{ marginBottom: '0.5rem' }}>
+          <a href="/founder" style={{ opacity: 0.7, fontSize: '0.9rem' }}>Meet the Founder</a>
+        </div>
+        <div style={{ marginBottom: '0.5rem' }}>
+          <a href="https://www.facebook.com/codescriptors/" target="_blank" rel="noopener noreferrer" style={{ opacity: 0.7, fontSize: '0.9rem' }}>CodeScriptors IT Solutions</a>
+        </div>
+        <div style={{ marginBottom: '0.5rem' }}>
+          <a href="https://www.linkedin.com/in/md-jabir-hossen/" target="_blank" rel="noopener noreferrer" style={{ opacity: 0.7, fontSize: '0.9rem' }}>LinkedIn</a>
+        </div>
+      </div>
+      <div>
+        <div style={{ fontWeight: 700, marginBottom: '0.75rem', opacity: 0.5, fontSize: '0.8rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>The Spark Economy</div>
+        <p style={{ opacity: 0.6, fontSize: '0.85rem', lineHeight: 1.7 }}>
+          Powered by community, verified by platform, built for impact.
+        </p>
+      </div>
     </div>
-  )
-}
+    <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+      <div style={{ opacity: 0.5, fontSize: '0.85rem' }}>© 2025 ElevateHours. All rights reserved.</div>
+      <div style={{ opacity: 0.5, fontSize: '0.85rem' }}>
+        A <a href="https://www.facebook.com/codescriptors/" target="_blank" rel="noopener noreferrer" style={{ color: '#F5A623', fontWeight: 600 }}>CodeScriptors IT Solutions</a> product
+      </div>
+    </div>
+  </div>
+</footer>
