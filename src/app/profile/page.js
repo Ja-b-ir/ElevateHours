@@ -120,13 +120,30 @@ function ProfileContent() {
 
           {editing ? (
             <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.4rem' }}>Bio</label>
-              <textarea rows={3} value={editForm.bio} onChange={e => setEditForm({ ...editForm, bio: e.target.value })} placeholder="Tell the community about yourself..." style={{ width: '100%', padding: '0.7rem', border: '1.5px solid #e2e8f0', borderRadius: 8, fontSize: '0.95rem', resize: 'vertical' }} />
-              <button onClick={saveProfile} disabled={saving} style={{ marginTop: '0.75rem', background: '#0D7377', color: 'white', padding: '0.65rem 1.25rem', borderRadius: 8, border: 'none', fontWeight: 700, cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>
-                {saving ? 'Saving...' : 'Save Changes'}
-              </button>
-              {success && <span style={{ marginLeft: '0.75rem', color: '#14A085', fontWeight: 600, fontSize: '0.875rem' }}>{success}</span>}
-            </div>
+  <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.4rem' }}>Full Name</label>
+  <input
+    type="text"
+    value={editForm.full_name || profile.full_name}
+    onChange={e => setEditForm({ ...editForm, full_name: e.target.value })}
+    style={{ width: '100%', padding: '0.7rem', border: '1.5px solid #e2e8f0', borderRadius: 8, fontSize: '0.95rem' }}
+  />
+</div>
+<div style={{ marginBottom: '1rem' }}>
+  <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.4rem' }}>Tier Level</label>
+  <select
+    value={editForm.tier_level || profile.tier_level}
+    onChange={e => setEditForm({ ...editForm, tier_level: e.target.value })}
+    style={{ width: '100%', padding: '0.7rem', border: '1.5px solid #e2e8f0', borderRadius: 8, fontSize: '0.95rem', background: 'white' }}
+  >
+    <option value="Tier 1: Foundational">Tier 1: Foundational</option>
+    <option value="Tier 2: Specialized">Tier 2: Specialized</option>
+    <option value="Tier 3: Strategic">Tier 3: Strategic</option>
+  </select>
+</div>
+<div style={{ marginBottom: '1rem' }}>
+  <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.4rem' }}>Bio</label>
+  <textarea rows={3} value={editForm.bio || ''} onChange={e => setEditForm({ ...editForm, bio: e.target.value })} placeholder="Tell the community about yourself..." style={{ width: '100%', padding: '0.7rem', border: '1.5px solid #e2e8f0', borderRadius: 8, fontSize: '0.95rem', resize: 'vertical' }} />
+</div>
           ) : (
             profile.bio && <p style={{ color: '#374151', lineHeight: 1.7, fontSize: '0.95rem' }}>{profile.bio}</p>
           )}
