@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 
 export default function SignupPage() {
-  const [form, setForm] = useState({ full_name: '', email: '', password: '', account_type: 'Personal' })
+  const [form, setForm] = useState({ full_name: '', email: '', password: '', account_type: 'Personal', whatsapp_number: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
