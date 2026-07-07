@@ -2,44 +2,58 @@
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import {
+  LayoutDashboard, Store, PlusCircle, ClipboardList, ArrowLeftRight,
+  Heart, Zap, User, Award, Bell, Sun, Moon, Menu, X, LogOut, ChevronDown
+} from 'lucide-react'
 
 export default function Navbar() {
   const router = useRouter()
   const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
   const [user, setUser] = useState(null)
+  const [profile, setProfile] = useState(null)
   const [unreadCount, setUnreadCount] = useState(0)
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [theme, setTheme] = useState('light')
+
+  useEffect(() => {
+    const stored = localStorage.getItem('eh-theme')
+    const preferred = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    const initial = stored || preferred
+    setTheme(initial)
+    document.documentElement.setAttribute('data-theme', initial)
+  }, [])
+
+  const toggleTheme = () => {
+    const next = theme === 'light' ? 'dark' : 'light'
+    setTheme(next)
+    document.documentElement.setAttribute('data-theme', next)
+    localStorage.setItem('eh-theme', next)
+  }
 
   useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
-      if (user) fetchUnreadCount(user.id)
+      if (user) {
+        const { data: prof } = await supabase.from('profiles').select('full_name, account_type').eq('id', user.id).single()
+        setProfile(prof)
+        fetchUnread(user.id)
+      }
     }
     init()
   }, [])
 
-  const fetchUnreadCount = async (uid) => {
-    const { count } = await supabase
-      .from('notifications')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', uid)
-      .eq('is_read', false)
+  const fetchUnread = async (uid) => {
+    const { count } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', uid).eq('is_read', false)
     setUnreadCount(count || 0)
   }
 
   useEffect(() => {
     if (!user) return
-    const channel = supabase
-      .channel('notifications')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'notifications',
-        filter: `user_id=eq.${user.id}`
-      }, () => fetchUnreadCount(user.id))
-      .subscribe()
-    return () => supabase.removeChannel(channel)
+    const ch = supabase.channel('notif-count').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, () => fetchUnread(user.id)).subscribe()
+    return () => supabase.removeChannel(ch)
   }, [user])
 
   const handleLogout = async () => {
@@ -48,109 +62,171 @@ export default function Navbar() {
   }
 
   const links = [
-    { href: '/dashboard', label: 'Dashboard' },
-    { href: '/marketplace', label: 'Marketplace' },
-    { href: '/post-request', label: 'Post Request' },
-    { href: '/my-requests', label: 'My Requests' },
-    { href: '/transactions', label: 'Transactions' },
-    { href: '/funding-requests', label: 'Funding' },
-    { href: '/buy-sparks', label: 'Buy Sparks' },
-    { href: '/profile', label: 'Profile' },
-    { href: '/badges', label: 'Badges' },
+    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/marketplace', label: 'Marketplace', icon: Store },
+    { href: '/post-request', label: 'Post Request', icon: PlusCircle },
+    { href: '/my-requests', label: 'My Requests', icon: ClipboardList },
+    { href: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
+    { href: '/funding-requests', label: 'Funding', icon: Heart },
+    { href: '/buy-sparks', label: 'Buy Sparks', icon: Zap },
   ]
 
+  const isActive = (href) => pathname === href
+
   return (
-    <nav style={{
-      background: '#0D7377', color: 'white',
-      position: 'sticky', top: 0, zIndex: 100,
-      boxShadow: '0 2px 12px rgba(0,0,0,0.15)'
-    }}>
-      <div style={{
-        maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem',
-        display: 'flex', alignItems: 'center',
-        justifyContent: 'space-between', height: 64
+    <>
+      <nav style={{
+        background: 'var(--surface)',
+        borderBottom: '1px solid var(--border)',
+        position: 'sticky', top: 0, zIndex: 100,
       }}>
-        <a href="/dashboard" style={{ fontWeight: 800, fontSize: '1.3rem', color: 'white', letterSpacing: '-0.02em', textDecoration: 'none' }}>
-          Elevate<span style={{ color: '#F5A623' }}>Hours</span>
-        </a>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 1.5rem', display: 'flex', alignItems: 'center', height: 60, gap: '0.25rem' }}>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }} className="desktop-nav">
-          {links.map(link => (
-            <a key={link.href} href={link.href} style={{
-              padding: '0.4rem 0.65rem', borderRadius: 6, fontSize: '0.8rem', fontWeight: 600,
-              color: pathname === link.href ? '#F5A623' : 'rgba(255,255,255,0.85)',
-              background: pathname === link.href ? 'rgba(245,166,35,0.15)' : 'transparent',
-              transition: 'all 0.2s', textDecoration: 'none'
+          <a href="/dashboard" style={{ fontWeight: 900, fontSize: '1.2rem', letterSpacing: '-0.03em', color: 'var(--text)', marginRight: '1.5rem', flexShrink: 0, textDecoration: 'none' }}>
+            Elevate<span style={{ color: 'var(--brand)' }}>Hours</span>
+          </a>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.125rem', flex: 1, overflow: 'hidden' }} className="desktop-nav">
+            {links.map(function({ href, label, icon: Icon }) {
+              return (
+                <a key={href} href={href} style={{
+                  display: 'flex', alignItems: 'center', gap: '0.375rem',
+                  padding: '0.45rem 0.75rem', borderRadius: 'var(--radius-sm)',
+                  fontSize: '0.825rem', fontWeight: 600,
+                  color: isActive(href) ? 'var(--brand)' : 'var(--text-2)',
+                  background: isActive(href) ? 'var(--brand-light)' : 'transparent',
+                  whiteSpace: 'nowrap', textDecoration: 'none'
+                }}>
+                  <Icon size={14} />
+                  {label}
+                </a>
+              )
+            })}
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: 'auto', flexShrink: 0 }}>
+
+            <button onClick={toggleTheme} style={{
+              width: 36, height: 36, borderRadius: 'var(--radius-sm)',
+              background: 'var(--surface-3)', border: '1px solid var(--border)',
+              color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer'
             }}>
-              {link.label}
-            </a>
-          ))}
+              {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+            </button>
 
-          {/* Bell icon */}
-          <a href="/notifications" style={{
-            position: 'relative', padding: '0.4rem 0.65rem',
-            borderRadius: 6, color: 'rgba(255,255,255,0.85)',
-            textDecoration: 'none', fontSize: '1.1rem'
-          }}>
-            🔔
-            {unreadCount > 0 && (
-              <span style={{
-                position: 'absolute', top: 2, right: 2,
-                background: '#ef4444', color: 'white',
-                borderRadius: '50%', width: 16, height: 16,
-                fontSize: '0.65rem', fontWeight: 800,
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
+            <a href="/notifications" style={{ position: 'relative', width: 36, height: 36, borderRadius: 'var(--radius-sm)', background: 'var(--surface-3)', border: '1px solid var(--border)', color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', fontSize: '1rem' }}>
+              🔔
+              {unreadCount > 0 && (
+                <span style={{ position: 'absolute', top: -4, right: -4, background: '#ef4444', color: '#fff', borderRadius: '50%', width: 16, height: 16, fontSize: '0.6rem', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--surface)' }}>
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </a>
+
+            <div style={{ position: 'relative' }} className="desktop-nav">
+              <button onClick={function() { setDropdownOpen(!dropdownOpen) }} style={{
+                display: 'flex', alignItems: 'center', gap: '0.5rem',
+                padding: '0.35rem 0.75rem 0.35rem 0.5rem',
+                borderRadius: 'var(--radius-sm)',
+                background: 'var(--surface-3)', border: '1px solid var(--border)',
+                color: 'var(--text)', cursor: 'pointer', fontSize: '0.825rem', fontWeight: 600
               }}>
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            )}
-          </a>
+                <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'linear-gradient(135deg, var(--brand), var(--brand-mid))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.7rem', fontWeight: 800 }}>
+                  {profile?.full_name?.[0]?.toUpperCase() || 'U'}
+                </div>
+                <span style={{ maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {profile?.full_name?.split(' ')[0] || 'Account'}
+                </span>
+                <ChevronDown size={12} style={{ color: 'var(--text-3)' }} />
+              </button>
 
-          <button onClick={handleLogout} style={{
-            marginLeft: '0.5rem', background: 'rgba(255,255,255,0.15)',
-            color: 'white', padding: '0.4rem 0.9rem', borderRadius: 6,
-            fontSize: '0.8rem', fontWeight: 600,
-            border: '1px solid rgba(255,255,255,0.25)', cursor: 'pointer'
-          }}>
-            Logout
-          </button>
+              {dropdownOpen && (
+                <div style={{
+                  position: 'absolute', right: 0, top: 'calc(100% + 8px)',
+                  background: 'var(--surface)', border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius)', boxShadow: 'var(--shadow-lg)',
+                  minWidth: 180, zIndex: 200, overflow: 'hidden'
+                }}>
+                  <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border)' }}>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text)' }}>{profile?.full_name}</div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-3)', marginTop: '0.1rem' }}>{profile?.account_type}</div>
+                  </div>
+                  {[
+                    { href: '/profile', label: 'My Profile', icon: User },
+                    { href: '/badges', label: 'Badges', icon: Award },
+                    { href: '/notifications', label: 'Notifications', icon: Bell },
+                  ].map(function({ href, label, icon: Icon }) {
+                    return (
+                      <a key={href} href={href} onClick={function() { setDropdownOpen(false) }} style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.65rem 1rem', color: 'var(--text-2)', fontSize: '0.85rem', fontWeight: 500, textDecoration: 'none' }}
+                        onMouseEnter={function(e) { e.currentTarget.style.background = 'var(--surface-3)' }}
+                        onMouseLeave={function(e) { e.currentTarget.style.background = 'transparent' }}
+                      >
+                        <Icon size={14} />
+                        {label}
+                      </a>
+                    )
+                  })}
+                  <div style={{ borderTop: '1px solid var(--border)' }}>
+                    <button onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.65rem 1rem', color: '#ef4444', fontSize: '0.85rem', fontWeight: 500, width: '100%', background: 'none', border: 'none', cursor: 'pointer' }}
+                      onMouseEnter={function(e) { e.currentTarget.style.background = 'var(--red-light)' }}
+                      onMouseLeave={function(e) { e.currentTarget.style.background = 'transparent' }}
+                    >
+                      <LogOut size={14} />
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <button onClick={function() { setMenuOpen(!menuOpen) }} className="mobile-menu-btn" style={{ display: 'none', width: 36, height: 36, borderRadius: 'var(--radius-sm)', background: 'var(--surface-3)', border: '1px solid var(--border)', color: 'var(--text)', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              {menuOpen ? <X size={16} /> : <Menu size={16} />}
+            </button>
+          </div>
         </div>
 
-        <button onClick={() => setMenuOpen(!menuOpen)} style={{
-          display: 'none', background: 'none', border: 'none',
-          color: 'white', fontSize: '1.5rem', cursor: 'pointer'
-        }} className="mobile-menu-btn">
-          {menuOpen ? '✕' : '☰'}
-        </button>
-      </div>
+        {menuOpen && (
+          <div style={{ borderTop: '1px solid var(--border)', background: 'var(--surface)', padding: '0.75rem 1rem 1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginBottom: '0.75rem' }}>
+              {links.map(function({ href, label, icon: Icon }) {
+                return (
+                  <a key={href} href={href} onClick={function() { setMenuOpen(false) }} style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.625rem 0.75rem', borderRadius: 'var(--radius-sm)', color: isActive(href) ? 'var(--brand)' : 'var(--text-2)', background: isActive(href) ? 'var(--brand-light)' : 'transparent', fontSize: '0.875rem', fontWeight: 600, textDecoration: 'none' }}>
+                    <Icon size={15} />
+                    {label}
+                  </a>
+                )
+              })}
+              <a href="/profile" onClick={function() { setMenuOpen(false) }} style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.625rem 0.75rem', borderRadius: 'var(--radius-sm)', color: 'var(--text-2)', fontSize: '0.875rem', fontWeight: 600, textDecoration: 'none' }}>
+                <User size={15} /> My Profile
+              </a>
+              <a href="/badges" onClick={function() { setMenuOpen(false) }} style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.625rem 0.75rem', borderRadius: 'var(--radius-sm)', color: 'var(--text-2)', fontSize: '0.875rem', fontWeight: 600, textDecoration: 'none' }}>
+                <Award size={15} /> Badges
+              </a>
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
+              <button onClick={toggleTheme} style={{ flex: 1, padding: '0.6rem', borderRadius: 'var(--radius-sm)', background: 'var(--surface-3)', border: '1px solid var(--border)', color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}>
+                {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+                {theme === 'dark' ? 'Light' : 'Dark'}
+              </button>
+              <button onClick={handleLogout} style={{ flex: 1, padding: '0.6rem', borderRadius: 'var(--radius-sm)', background: 'var(--red-light)', color: 'var(--red)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}>
+                <LogOut size={14} /> Sign Out
+              </button>
+            </div>
+          </div>
+        )}
+      </nav>
 
-      {menuOpen && (
-        <div style={{ background: '#0a5c60', padding: '1rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          {links.map(link => (
-            <a key={link.href} href={link.href} style={{
-              color: pathname === link.href ? '#F5A623' : 'rgba(255,255,255,0.9)',
-              fontWeight: 600, fontSize: '0.95rem', padding: '0.5rem 0', textDecoration: 'none'
-            }} onClick={() => setMenuOpen(false)}>
-              {link.label}
-            </a>
-          ))}
-          <a href="/notifications" style={{ color: 'rgba(255,255,255,0.9)', fontWeight: 600, fontSize: '0.95rem', padding: '0.5rem 0', textDecoration: 'none' }}>
-            🔔 Notifications {unreadCount > 0 && `(${unreadCount})`}
-          </a>
-          <button onClick={handleLogout} style={{
-            background: 'rgba(255,255,255,0.15)', color: 'white',
-            padding: '0.5rem', borderRadius: 6, marginTop: '0.5rem',
-            border: '1px solid rgba(255,255,255,0.25)', cursor: 'pointer', fontWeight: 600
-          }}>Logout</button>
-        </div>
+      {dropdownOpen && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 199 }} onClick={function() { setDropdownOpen(false) }} />
       )}
 
       <style>{`
         @media (max-width: 900px) {
           .desktop-nav { display: none !important; }
-          .mobile-menu-btn { display: block !important; }
+          .mobile-menu-btn { display: flex !important; }
         }
       `}</style>
-    </nav>
+    </>
   )
 }
