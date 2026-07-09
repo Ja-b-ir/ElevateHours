@@ -97,35 +97,35 @@ export default function MyRequests() {
   }
 
   const STATUS_COLORS = {
-    'Open': { bg: '#dcfce7', color: '#166534' },
-    'In Progress': { bg: '#dbeafe', color: '#1e40af' },
-    'Pending Confirmation': { bg: '#fef3c7', color: '#92400e' },
-    'Confirmed': { bg: '#dcfce7', color: '#166534' },
-    'Cancelled': { bg: '#f1f5f9', color: '#64748b' },
+    'Open': { bg: 'var(--green-light)', color: 'var(--green)' },
+    'In Progress': { bg: 'var(--blue-light)', color: 'var(--blue)' },
+    'Pending Confirmation': { bg: 'var(--amber-light)', color: 'var(--amber-dark)' },
+    'Confirmed': { bg: 'var(--green-light)', color: 'var(--green)' },
+    'Cancelled': { bg: 'var(--surface-3)', color: 'var(--text-2)' },
   }
 
   if (loading) return (
     <div>
       <Navbar />
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem', color: '#64748b' }}>Loading...</div>
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem', color: 'var(--text-2)' }}>Loading...</div>
     </div>
   )
 
   return (
-    <div style={{ background: '#F8F9FA', minHeight: '100vh' }}>
+    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <Navbar />
       <div style={{ maxWidth: 1000, margin: '0 auto', padding: '2rem 1.5rem' }}>
         <div style={{ marginBottom: '1.5rem' }}>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: 800, letterSpacing: '-0.02em' }}>My Requests</h1>
-          <p style={{ color: '#64748b', marginTop: '0.25rem' }}>Manage your posted requests and review applicants</p>
+          <h1 style={{ fontSize: '1.8rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text)' }}>My Requests</h1>
+          <p style={{ color: 'var(--text-2)', marginTop: '0.25rem' }}>Manage your posted requests and review applicants</p>
         </div>
 
         {requests.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '4rem', background: 'white', borderRadius: 16, border: '1px solid #e2e8f0' }}>
+          <div style={{ textAlign: 'center', padding: '4rem', background: 'var(--surface)', borderRadius: 16, border: '1px solid var(--border)' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📋</div>
-            <h3 style={{ fontWeight: 700, marginBottom: '0.5rem' }}>No requests posted yet</h3>
-            <p style={{ color: '#64748b', marginBottom: '1rem' }}>Post a request to find skilled individuals for your needs.</p>
-            <a href="/post-request" style={{ background: '#0D7377', color: 'white', padding: '0.65rem 1.5rem', borderRadius: 8, fontWeight: 600, textDecoration: 'none', fontSize: '0.875rem' }}>
+            <h3 style={{ fontWeight: 700, marginBottom: '0.5rem', color: 'var(--text)' }}>No requests posted yet</h3>
+            <p style={{ color: 'var(--text-2)', marginBottom: '1rem' }}>Post a request to find skilled individuals for your needs.</p>
+            <a href="/post-request" style={{ background: 'var(--brand)', color: 'white', padding: '0.65rem 1.5rem', borderRadius: 8, fontWeight: 600, textDecoration: 'none', fontSize: '0.875rem' }}>
               Post a Request
             </a>
           </div>
@@ -134,31 +134,31 @@ export default function MyRequests() {
             {requests.map(req => {
               const pendingApps = req.applications ? req.applications.filter(function(a) { return a.status === 'Pending' }) : []
               const acceptedApp = req.applications ? req.applications.find(function(a) { return a.status === 'Accepted' }) : null
-              const statusStyle = STATUS_COLORS[req.status] || { bg: '#f1f5f9', color: '#64748b' }
+              const statusStyle = STATUS_COLORS[req.status] || { bg: 'var(--surface-3)', color: 'var(--text-2)' }
               const isExpanded = activeRequest === req.id
 
               return (
-                <div key={req.id} style={{ background: 'white', borderRadius: 16, border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(13,115,119,0.06)', overflow: 'hidden' }}>
+                <div key={req.id} style={{ background: 'var(--surface)', borderRadius: 16, border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)', overflow: 'hidden' }}>
                   <div style={{ padding: '1.5rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem' }}>
                       <div style={{ flex: 1 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-                          <h3 style={{ fontWeight: 700, fontSize: '1.05rem' }}>{req.skill ? req.skill.skill_name : 'Unknown Skill'}</h3>
+                          <h3 style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--text)' }}>{req.skill ? req.skill.skill_name : 'Unknown Skill'}</h3>
                           <span style={{ background: statusStyle.bg, color: statusStyle.color, padding: '0.2rem 0.7rem', borderRadius: 999, fontSize: '0.75rem', fontWeight: 700 }}>
                             {req.status}
                           </span>
-                          <span style={{ background: req.track === 'Work' ? '#ede9fe' : '#dbeafe', color: req.track === 'Work' ? '#5b21b6' : '#1e40af', padding: '0.2rem 0.7rem', borderRadius: 999, fontSize: '0.75rem', fontWeight: 700 }}>
+                          <span style={{ background: req.track === 'Work' ? 'var(--purple-light)' : 'var(--blue-light)', color: req.track === 'Work' ? 'var(--purple)' : 'var(--blue)', padding: '0.2rem 0.7rem', borderRadius: 999, fontSize: '0.75rem', fontWeight: 700 }}>
                             {req.track}
                           </span>
                         </div>
-                        <p style={{ color: '#64748b', fontSize: '0.875rem', marginBottom: '0.5rem', lineHeight: 1.5 }}>
+                        <p style={{ color: 'var(--text-2)', fontSize: '0.875rem', marginBottom: '0.5rem', lineHeight: 1.5 }}>
                           {req.description}
                         </p>
-                        <div style={{ display: 'flex', gap: '1.25rem', fontSize: '0.85rem', color: '#64748b', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', gap: '1.25rem', fontSize: '0.85rem', color: 'var(--text-2)', flexWrap: 'wrap' }}>
                           <span>⏱ {req.agreed_hours}h</span>
-                          <span>⚡ <strong style={{ color: '#F5A623' }}>{req.total_sparks_transferred} SPK</strong></span>
+                          <span>⚡ <strong style={{ color: 'var(--amber)' }}>{req.total_sparks_transferred} SPK</strong></span>
                           <span>📅 {req.date}</span>
-                          <span>👥 <strong>{req.applications ? req.applications.length : 0}</strong> applicants</span>
+                          <span>👥 <strong style={{ color: 'var(--text)' }}>{req.applications ? req.applications.length : 0}</strong> applicants</span>
                         </div>
                       </div>
 
@@ -166,7 +166,7 @@ export default function MyRequests() {
                         {req.applications && req.applications.length > 0 && (
                           <button
                             onClick={function() { setActiveRequest(isExpanded ? null : req.id) }}
-                            style={{ background: '#e8f4f4', color: '#0D7377', padding: '0.5rem 1rem', borderRadius: 8, border: '1.5px solid #0D7377', fontWeight: 600, cursor: 'pointer', fontSize: '0.875rem' }}
+                            style={{ background: 'var(--brand-light)', color: 'var(--brand)', padding: '0.5rem 1rem', borderRadius: 8, border: '1.5px solid var(--brand)', fontWeight: 600, cursor: 'pointer', fontSize: '0.875rem' }}
                           >
                             {isExpanded ? 'Hide' : 'View Applicants (' + req.applications.length + ')'}
                           </button>
@@ -174,7 +174,7 @@ export default function MyRequests() {
                         {req.status === 'Open' && (
                           <button
                             onClick={function() { cancelRequest(req.id) }}
-                            style={{ background: '#fee2e2', color: '#991b1b', padding: '0.5rem 1rem', borderRadius: 8, border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: '0.875rem' }}
+                            style={{ background: 'var(--red-light)', color: 'var(--red)', padding: '0.5rem 1rem', borderRadius: 8, border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: '0.875rem' }}
                           >
                             Cancel
                           </button>
@@ -182,14 +182,14 @@ export default function MyRequests() {
                         {req.status === 'Cancelled' && (
                           <button
                             onClick={function() { reopenRequest(req.id) }}
-                            style={{ background: '#dcfce7', color: '#166534', padding: '0.5rem 1rem', borderRadius: 8, border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: '0.875rem' }}
+                            style={{ background: 'var(--green-light)', color: 'var(--green)', padding: '0.5rem 1rem', borderRadius: 8, border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: '0.875rem' }}
                           >
                             Reopen
                           </button>
                         )}
                         <button
                           onClick={function() { deleteRequest(req.id) }}
-                          style={{ background: '#f1f5f9', color: '#64748b', padding: '0.5rem 1rem', borderRadius: 8, border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: '0.875rem' }}
+                          style={{ background: 'var(--surface-3)', color: 'var(--text-2)', padding: '0.5rem 1rem', borderRadius: 8, border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: '0.875rem' }}
                         >
                           Delete
                         </button>
@@ -197,21 +197,21 @@ export default function MyRequests() {
                     </div>
 
                     {acceptedApp && (
-                      <div style={{ marginTop: '1rem', background: '#dcfce7', borderRadius: 10, padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <div style={{ marginTop: '1rem', background: 'var(--green-light)', borderRadius: 10, padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <span style={{ fontSize: '1.25rem' }}>✅</span>
                         <div>
-                          <div style={{ fontWeight: 700, color: '#166534', fontSize: '0.875rem' }}>
+                          <div style={{ fontWeight: 700, color: 'var(--green)', fontSize: '0.875rem' }}>
                             {acceptedApp.applicant ? acceptedApp.applicant.full_name : 'Someone'} accepted
                           </div>
-                          <div style={{ color: '#166534', fontSize: '0.8rem', opacity: 0.8 }}>Work is in progress</div>
+                          <div style={{ color: 'var(--green)', fontSize: '0.8rem', opacity: 0.8 }}>Work is in progress</div>
                         </div>
                       </div>
                     )}
 
                     {pendingApps.length > 0 && !acceptedApp && (
-                      <div style={{ marginTop: '1rem', background: '#fef3c7', borderRadius: 10, padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <div style={{ marginTop: '1rem', background: 'var(--amber-light)', borderRadius: 10, padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <span style={{ fontSize: '1.25rem' }}>⏳</span>
-                        <div style={{ fontWeight: 600, color: '#92400e', fontSize: '0.875rem' }}>
+                        <div style={{ fontWeight: 600, color: 'var(--amber-dark)', fontSize: '0.875rem' }}>
                           {pendingApps.length} pending application{pendingApps.length !== 1 ? 's' : ''} waiting for your review
                         </div>
                       </div>
@@ -219,21 +219,21 @@ export default function MyRequests() {
                   </div>
 
                   {isExpanded && req.applications && req.applications.length > 0 && (
-                    <div style={{ borderTop: '1px solid #e2e8f0', padding: '1.25rem', background: '#fafafa' }}>
-                      <h4 style={{ fontWeight: 700, fontSize: '0.9rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>
+                    <div style={{ borderTop: '1px solid var(--border)', padding: '1.25rem', background: 'var(--surface-2)' }}>
+                      <h4 style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>
                         Applicants
                       </h4>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                         {req.applications.map(function(app) {
                           return (
-                            <div key={app.id} style={{ background: 'white', borderRadius: 12, padding: '1.25rem', border: '1.5px solid ' + (app.status === 'Accepted' ? '#14A085' : app.status === 'Rejected' ? '#fca5a5' : '#e2e8f0'), display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                            <div key={app.id} style={{ background: 'var(--surface)', borderRadius: 12, padding: '1.25rem', border: '1.5px solid ' + (app.status === 'Accepted' ? 'var(--brand-mid)' : app.status === 'Rejected' ? 'var(--red)' : 'var(--border)'), display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg, #0D7377, #14A085)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: '1rem', flexShrink: 0 }}>
+                                <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg, var(--brand), var(--brand-mid))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: '1rem', flexShrink: 0 }}>
                                   {app.applicant && app.applicant.full_name ? app.applicant.full_name[0].toUpperCase() : '?'}
                                 </div>
                                 <div>
-                                  <div style={{ fontWeight: 700 }}>{app.applicant ? app.applicant.full_name : 'Unknown'}</div>
-                                  <div style={{ color: '#64748b', fontSize: '0.8rem' }}>
+                                  <div style={{ fontWeight: 700, color: 'var(--text)' }}>{app.applicant ? app.applicant.full_name : 'Unknown'}</div>
+                                  <div style={{ color: 'var(--text-2)', fontSize: '0.8rem' }}>
                                     {app.applicant ? app.applicant.tier_level : ''} · {app.applicant ? app.applicant.completed_transactions || 0 : 0} completed · Impact: {app.applicant ? app.applicant.impact_score || 0 : 0}
                                   </div>
                                 </div>
@@ -245,24 +245,24 @@ export default function MyRequests() {
                                     <button
                                       onClick={function() { handleAccept(app.id, req.id, app.applicant.id) }}
                                       disabled={updating === app.id}
-                                      style={{ background: '#14A085', color: 'white', padding: '0.5rem 1rem', borderRadius: 8, border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem', opacity: updating === app.id ? 0.7 : 1 }}
+                                      style={{ background: 'var(--brand-mid)', color: 'white', padding: '0.5rem 1rem', borderRadius: 8, border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem', opacity: updating === app.id ? 0.7 : 1 }}
                                     >
                                       Accept
                                     </button>
                                     <button
                                       onClick={function() { handleReject(app.id, app.applicant.id, req.id) }}
                                       disabled={updating === app.id}
-                                      style={{ background: '#fee2e2', color: '#991b1b', padding: '0.5rem 1rem', borderRadius: 8, border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem', opacity: updating === app.id ? 0.7 : 1 }}
+                                      style={{ background: 'var(--red-light)', color: 'var(--red)', padding: '0.5rem 1rem', borderRadius: 8, border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem', opacity: updating === app.id ? 0.7 : 1 }}
                                     >
                                       Reject
                                     </button>
                                   </div>
                                 )}
                                 {app.status === 'Accepted' && (
-                                  <span style={{ background: '#dcfce7', color: '#166534', padding: '0.35rem 0.9rem', borderRadius: 999, fontSize: '0.8rem', fontWeight: 700 }}>Accepted</span>
+                                  <span style={{ background: 'var(--green-light)', color: 'var(--green)', padding: '0.35rem 0.9rem', borderRadius: 999, fontSize: '0.8rem', fontWeight: 700 }}>Accepted</span>
                                 )}
                                 {app.status === 'Rejected' && (
-                                  <span style={{ background: '#fee2e2', color: '#991b1b', padding: '0.35rem 0.9rem', borderRadius: 999, fontSize: '0.8rem', fontWeight: 700 }}>Rejected</span>
+                                  <span style={{ background: 'var(--red-light)', color: 'var(--red)', padding: '0.35rem 0.9rem', borderRadius: 999, fontSize: '0.8rem', fontWeight: 700 }}>Rejected</span>
                                 )}
                               </div>
                             </div>
