@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { useTheme } from '@/context/ThemeContext'
 import {
   LayoutDashboard, Store, PlusCircle, ClipboardList, ArrowLeftRight,
   Heart, Zap, User, Award, Bell, Sun, Moon, Menu, X, LogOut, ChevronDown
@@ -11,12 +10,27 @@ import {
 export default function Navbar() {
   const router = useRouter()
   const pathname = usePathname()
-  const { theme, toggleTheme } = useTheme()
   const [menuOpen, setMenuOpen] = useState(false)
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [unreadCount, setUnreadCount] = useState(0)
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [theme, setTheme] = useState('light')
+
+  useEffect(() => {
+    const stored = localStorage.getItem('eh-theme')
+    const preferred = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    const initial = stored || preferred
+    setTheme(initial)
+    document.documentElement.setAttribute('data-theme', initial)
+  }, [])
+
+  const toggleTheme = () => {
+    const next = theme === 'light' ? 'dark' : 'light'
+    setTheme(next)
+    document.documentElement.setAttribute('data-theme', next)
+    localStorage.setItem('eh-theme', next)
+  }
 
   useEffect(() => {
     const init = async () => {
@@ -44,7 +58,7 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    router.push('/')
+    window.location.href = '/'
   }
 
   const links = [
@@ -59,22 +73,25 @@ export default function Navbar() {
 
   const isActive = (href) => pathname === href
 
+  const dropdownLinks = [
+    { href: '/profile', label: 'My Profile', icon: User },
+    { href: '/badges', label: 'Badges', icon: Award },
+    { href: '/notifications', label: 'Notifications', icon: Bell },
+  ]
+
   return (
     <>
       <nav style={{
         background: 'var(--surface)',
         borderBottom: '1px solid var(--border)',
         position: 'sticky', top: 0, zIndex: 100,
-        backdropFilter: 'blur(12px)',
       }}>
         <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 1.5rem', display: 'flex', alignItems: 'center', height: 60, gap: '0.25rem' }}>
 
-          {/* Logo */}
-          <a href="/dashboard" style={{ fontWeight: 900, fontSize: '1.2rem', letterSpacing: '-0.03em', color: 'var(--text)', marginRight: '1.5rem', flexShrink: 0 }}>
+          <a href="/dashboard" style={{ fontWeight: 900, fontSize: '1.2rem', letterSpacing: '-0.03em', color: 'var(--text)', marginRight: '1.5rem', flexShrink: 0, textDecoration: 'none' }}>
             Elevate<span style={{ color: 'var(--brand)' }}>Hours</span>
           </a>
 
-          {/* Desktop nav links */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.125rem', flex: 1, overflow: 'hidden' }} className="desktop-nav">
             {links.map(({ href, label, icon: Icon }) => (
               <a key={href} href={href} style={{
@@ -83,8 +100,7 @@ export default function Navbar() {
                 fontSize: '0.825rem', fontWeight: 600,
                 color: isActive(href) ? 'var(--brand)' : 'var(--text-2)',
                 background: isActive(href) ? 'var(--brand-light)' : 'transparent',
-                transition: 'all var(--transition)',
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap', textDecoration: 'none'
               }}>
                 <Icon size={14} />
                 {label}
@@ -92,30 +108,37 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Right side */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: 'auto', flexShrink: 0 }}>
 
-            {/* Theme toggle */}
             <button onClick={toggleTheme} style={{
               width: 36, height: 36, borderRadius: 'var(--radius-sm)',
               background: 'var(--surface-3)', border: '1px solid var(--border)',
               color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', transition: 'all var(--transition)'
+              cursor: 'pointer'
             }}>
               {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
             </button>
 
-            {/* Notifications bell */}
-            <a href="/notifications" style={{ position: 'relative', width: 36, height: 36, borderRadius: 'var(--radius-sm)', background: 'var(--surface-3)', border: '1px solid var(--border)', color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <a href="/notifications" style={{
+              position: 'relative', width: 36, height: 36, borderRadius: 'var(--radius-sm)',
+              background: 'var(--surface-3)', border: '1px solid var(--border)',
+              color: 'var(--text-2)', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', textDecoration: 'none', fontSize: '1rem'
+            }}>
               🔔
               {unreadCount > 0 && (
-                <span style={{ position: 'absolute', top: -4, right: -4, background: 'var(--red)', color: '#fff', borderRadius: '50%', width: 16, height: 16, fontSize: '0.6rem', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--surface)' }}>
+                <span style={{
+                  position: 'absolute', top: -4, right: -4,
+                  background: '#ef4444', color: '#fff', borderRadius: '50%',
+                  width: 16, height: 16, fontSize: '0.6rem', fontWeight: 800,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  border: '2px solid var(--surface)'
+                }}>
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
             </a>
 
-            {/* Profile dropdown */}
             <div style={{ position: 'relative' }} className="desktop-nav">
               <button onClick={() => setDropdownOpen(!dropdownOpen)} style={{
                 display: 'flex', alignItems: 'center', gap: '0.5rem',
@@ -124,7 +147,12 @@ export default function Navbar() {
                 background: 'var(--surface-3)', border: '1px solid var(--border)',
                 color: 'var(--text)', cursor: 'pointer', fontSize: '0.825rem', fontWeight: 600
               }}>
-                <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'linear-gradient(135deg, var(--brand), var(--brand-mid))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.7rem', fontWeight: 800 }}>
+                <div style={{
+                  width: 26, height: 26, borderRadius: '50%',
+                  background: 'linear-gradient(135deg, var(--brand), var(--brand-mid))',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: 'white', fontSize: '0.7rem', fontWeight: 800
+                }}>
                   {profile?.full_name?.[0]?.toUpperCase() || 'U'}
                 </div>
                 <span style={{ maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -144,21 +172,33 @@ export default function Navbar() {
                     <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text)' }}>{profile?.full_name}</div>
                     <div style={{ fontSize: '0.72rem', color: 'var(--text-3)', marginTop: '0.1rem' }}>{profile?.account_type}</div>
                   </div>
-                  {[
-                    { href: '/profile', label: 'My Profile', icon: User },
-                    { href: '/badges', label: 'Badges', icon: Award },
-                    { href: '/notifications', label: 'Notifications', icon: Bell },
-                  ].map(({ href, label, icon: Icon }) => (
-                    <a key={href} href={href} onClick={() => setDropdownOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.65rem 1rem', color: 'var(--text-2)', fontSize: '0.85rem', fontWeight: 500, transition: 'all var(--transition)' }}
+                  {dropdownLinks.map(({ href, label, icon: Icon }) => (
+                    <button
+                      key={href}
+                      onClick={() => { setDropdownOpen(false); window.location.href = href; }}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '0.625rem',
+                        padding: '0.65rem 1rem', color: 'var(--text-2)',
+                        fontSize: '0.85rem', fontWeight: 500, width: '100%',
+                        background: 'none', border: 'none', cursor: 'pointer',
+                        textAlign: 'left'
+                      }}
                       onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-3)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                     >
                       <Icon size={14} />
                       {label}
-                    </a>
+                    </button>
                   ))}
                   <div style={{ borderTop: '1px solid var(--border)' }}>
-                    <button onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.65rem 1rem', color: 'var(--red)', fontSize: '0.85rem', fontWeight: 500, width: '100%', background: 'none', border: 'none', cursor: 'pointer', transition: 'all var(--transition)' }}
+                    <button
+                      onClick={handleLogout}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '0.625rem',
+                        padding: '0.65rem 1rem', color: '#ef4444',
+                        fontSize: '0.85rem', fontWeight: 500, width: '100%',
+                        background: 'none', border: 'none', cursor: 'pointer'
+                      }}
                       onMouseEnter={e => e.currentTarget.style.background = 'var(--red-light)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                     >
@@ -170,36 +210,61 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Mobile menu button */}
-            <button onClick={() => setMenuOpen(!menuOpen)} className="mobile-menu-btn" style={{ display: 'none', width: 36, height: 36, borderRadius: 'var(--radius-sm)', background: 'var(--surface-3)', border: '1px solid var(--border)', color: 'var(--text)', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="mobile-menu-btn"
+              style={{
+                display: 'none', width: 36, height: 36, borderRadius: 'var(--radius-sm)',
+                background: 'var(--surface-3)', border: '1px solid var(--border)',
+                color: 'var(--text)', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
+              }}
+            >
               {menuOpen ? <X size={16} /> : <Menu size={16} />}
             </button>
           </div>
         </div>
 
-        {/* Mobile menu */}
         {menuOpen && (
           <div style={{ borderTop: '1px solid var(--border)', background: 'var(--surface)', padding: '0.75rem 1rem 1rem' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginBottom: '0.75rem' }}>
               {links.map(({ href, label, icon: Icon }) => (
-                <a key={href} href={href} onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.625rem 0.75rem', borderRadius: 'var(--radius-sm)', color: isActive(href) ? 'var(--brand)' : 'var(--text-2)', background: isActive(href) ? 'var(--brand-light)' : 'transparent', fontSize: '0.875rem', fontWeight: 600 }}>
+                <a key={href} href={href} onClick={() => setMenuOpen(false)} style={{
+                  display: 'flex', alignItems: 'center', gap: '0.625rem',
+                  padding: '0.625rem 0.75rem', borderRadius: 'var(--radius-sm)',
+                  color: isActive(href) ? 'var(--brand)' : 'var(--text-2)',
+                  background: isActive(href) ? 'var(--brand-light)' : 'transparent',
+                  fontSize: '0.875rem', fontWeight: 600, textDecoration: 'none'
+                }}>
                   <Icon size={15} />
                   {label}
                 </a>
               ))}
-              <a href="/profile" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.625rem 0.75rem', borderRadius: 'var(--radius-sm)', color: 'var(--text-2)', fontSize: '0.875rem', fontWeight: 600 }}>
-                <User size={15} /> My Profile
-              </a>
-              <a href="/badges" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.625rem 0.75rem', borderRadius: 'var(--radius-sm)', color: 'var(--text-2)', fontSize: '0.875rem', fontWeight: 600 }}>
-                <Award size={15} /> Badges
-              </a>
+              {dropdownLinks.map(({ href, label, icon: Icon }) => (
+                <a key={href} href={href} onClick={() => setMenuOpen(false)} style={{
+                  display: 'flex', alignItems: 'center', gap: '0.625rem',
+                  padding: '0.625rem 0.75rem', borderRadius: 'var(--radius-sm)',
+                  color: 'var(--text-2)', fontSize: '0.875rem', fontWeight: 600, textDecoration: 'none'
+                }}>
+                  <Icon size={15} /> {label}
+                </a>
+              ))}
             </div>
             <div style={{ display: 'flex', gap: '0.5rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
-              <button onClick={toggleTheme} style={{ flex: 1, padding: '0.6rem', borderRadius: 'var(--radius-sm)', background: 'var(--surface-3)', border: '1px solid var(--border)', color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}>
+              <button onClick={toggleTheme} style={{
+                flex: 1, padding: '0.6rem', borderRadius: 'var(--radius-sm)',
+                background: 'var(--surface-3)', border: '1px solid var(--border)',
+                color: 'var(--text-2)', display: 'flex', alignItems: 'center',
+                justifyContent: 'center', gap: '0.5rem', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer'
+              }}>
                 {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
-                {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                {theme === 'dark' ? 'Light' : 'Dark'}
               </button>
-              <button onClick={handleLogout} style={{ flex: 1, padding: '0.6rem', borderRadius: 'var(--radius-sm)', background: 'var(--red-light)', color: 'var(--red)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}>
+              <button onClick={handleLogout} style={{
+                flex: 1, padding: '0.6rem', borderRadius: 'var(--radius-sm)',
+                background: 'var(--red-light)', color: 'var(--red)',
+                border: 'none', display: 'flex', alignItems: 'center',
+                justifyContent: 'center', gap: '0.5rem', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer'
+              }}>
                 <LogOut size={14} /> Sign Out
               </button>
             </div>
@@ -207,7 +272,6 @@ export default function Navbar() {
         )}
       </nav>
 
-      {/* Overlay for dropdown */}
       {dropdownOpen && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 199 }} onClick={() => setDropdownOpen(false)} />
       )}
