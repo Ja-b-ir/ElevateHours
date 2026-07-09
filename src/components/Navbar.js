@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import {
@@ -16,6 +16,7 @@ export default function Navbar() {
   const [unreadCount, setUnreadCount] = useState(0)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [theme, setTheme] = useState('light')
+  const dropdownRef = useRef(null)
 
   useEffect(() => {
     const stored = localStorage.getItem('eh-theme')
@@ -55,6 +56,17 @@ export default function Navbar() {
     const ch = supabase.channel('notif-count').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, () => fetchUnread(user.id)).subscribe()
     return () => supabase.removeChannel(ch)
   }, [user])
+
+  // Click-outside handler for dropdown (replaces the old fixed overlay div)
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false)
+      }
+    }
+    if (dropdownOpen) document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [dropdownOpen])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -139,7 +151,7 @@ export default function Navbar() {
               )}
             </a>
 
-            <div style={{ position: 'relative' }} className="desktop-nav">
+            <div style={{ position: 'relative' }} className="desktop-nav" ref={dropdownRef}>
               <button onClick={() => setDropdownOpen(!dropdownOpen)} style={{
                 display: 'flex', alignItems: 'center', gap: '0.5rem',
                 padding: '0.35rem 0.75rem 0.35rem 0.5rem',
@@ -271,10 +283,6 @@ export default function Navbar() {
           </div>
         )}
       </nav>
-
-      {dropdownOpen && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 199 }} onClick={() => setDropdownOpen(false)} />
-      )}
 
       <style>{`
         @media (max-width: 900px) {
