@@ -1,15 +1,10 @@
 'use client'
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { User, Mail, Lock, Phone, ChevronRight } from 'lucide-react'
 
 export default function SignupPage() {
-  const [form, setForm] = useState({
-    full_name: '',
-    email: '',
-    password: '',
-    account_type: 'Personal',
-    whatsapp_number: ''
-  })
+  const [form, setForm] = useState({ full_name: '', email: '', password: '', account_type: 'Personal', whatsapp_number: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -19,134 +14,107 @@ export default function SignupPage() {
     setLoading(true)
     try {
       const { data, error } = await supabase.auth.signUp({
-        email: form.email,
-        password: form.password,
-        options: {
-          emailRedirectTo: undefined,
-          data: {
-            full_name: form.full_name,
-            account_type: form.account_type
-          }
-        }
+        email: form.email, password: form.password,
+        options: { emailRedirectTo: undefined, data: { full_name: form.full_name, account_type: form.account_type } }
       })
       if (error) throw error
       if (data?.user) {
-        await supabase.from('profiles').upsert({
-          id: data.user.id,
-          email: form.email,
-          full_name: form.full_name,
-          account_type: form.account_type,
-          whatsapp_number: form.whatsapp_number,
-          sparks_purchased_total: 250
-        })
+        await supabase.from('profiles').upsert({ id: data.user.id, email: form.email, full_name: form.full_name, account_type: form.account_type, whatsapp_number: form.whatsapp_number, sparks_purchased_total: 250 })
         window.location.href = '/dashboard'
-      } else {
-        setError('Signup failed. Please try again.')
-      }
-    } catch (err) {
-      setError(err.message || JSON.stringify(err))
-    } finally {
-      setLoading(false)
-    }
+      } else { setError('Signup failed. Please try again.') }
+    } catch (err) { setError(err.message || JSON.stringify(err)) }
+    finally { setLoading(false) }
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0D7377 0%, #14A085 100%)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem'
-    }}>
-      <div style={{
-        background: 'white', borderRadius: 20, padding: '2.5rem',
-        width: '100%', maxWidth: 480, boxShadow: '0 20px 60px rgba(0,0,0,0.2)'
-      }}>
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div style={{ fontWeight: 800, fontSize: '1.6rem', marginBottom: '0.5rem' }}>
-            Elevate<span style={{ color: '#F5A623' }}>Hours</span>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', fontFamily: 'Inter, sans-serif' }}>
+
+      {/* Left panel */}
+      <div style={{ flex: 1, background: 'linear-gradient(145deg, var(--brand) 0%, var(--brand-mid) 60%, var(--brand-mid) 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '3rem', color: 'white' }} className="auth-left">
+        <div style={{ maxWidth: 400 }}>
+          <div style={{ fontWeight: 900, fontSize: '1.75rem', letterSpacing: '-0.03em', marginBottom: '2.5rem' }}>
+            Elevate<span style={{ color: 'var(--amber)' }}>Hours</span>
           </div>
-          <h1 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '0.3rem' }}>Join the Community</h1>
-          <p style={{ color: '#64748b', fontSize: '0.9rem' }}>Create your account and start earning Sparks</p>
+          <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', fontWeight: 800, marginBottom: '1rem', lineHeight: 1.25, letterSpacing: '-0.02em' }}>
+            Start turning your skills into real opportunity.
+          </h2>
+          <p style={{ opacity: 0.8, lineHeight: 1.7, fontSize: '0.95rem', marginBottom: '2rem' }}>
+            Join a community where your time is currency. Earn Sparks, build your verified portfolio, and connect with organizations that need your skills.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {['250 SPK welcome bonus on signup', 'Verified certificates for every job', 'Work and Education in one platform'].map((item, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.875rem', fontWeight: 500 }}>
+                <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <ChevronRight size={12} />
+                </div>
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Right panel */}
+      <div style={{ width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '2.5rem', background: 'var(--surface)', overflowY: 'auto' }}>
+        <div style={{ marginBottom: '2rem' }}>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.4rem' }}>Create your account</h1>
+          <p style={{ color: 'var(--text-2)', fontSize: '0.875rem' }}>Already have one? <a href="/auth/login" style={{ color: 'var(--brand)', fontWeight: 600 }}>Sign in</a></p>
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.4rem' }}>Full Name</label>
-            <input
-              type="text" required placeholder="Your full name"
-              value={form.full_name}
-              onChange={e => setForm({ ...form, full_name: e.target.value })}
-              style={{ width: '100%', padding: '0.7rem 1rem', border: '1.5px solid #e2e8f0', borderRadius: 8, fontSize: '0.95rem', outline: 'none' }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.4rem' }}>Email</label>
-            <input
-              type="email" required placeholder="your@email.com"
-              value={form.email}
-              onChange={e => setForm({ ...form, email: e.target.value })}
-              style={{ width: '100%', padding: '0.7rem 1rem', border: '1.5px solid #e2e8f0', borderRadius: 8, fontSize: '0.95rem', outline: 'none' }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.4rem' }}>Password</label>
-            <input
-              type="password" required placeholder="Minimum 6 characters"
-              value={form.password}
-              onChange={e => setForm({ ...form, password: e.target.value })}
-              style={{ width: '100%', padding: '0.7rem 1rem', border: '1.5px solid #e2e8f0', borderRadius: 8, fontSize: '0.95rem', outline: 'none' }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.4rem' }}>Account Type</label>
-            <select
-              value={form.account_type}
-              onChange={e => setForm({ ...form, account_type: e.target.value })}
-              style={{ width: '100%', padding: '0.7rem 1rem', border: '1.5px solid #e2e8f0', borderRadius: 8, fontSize: '0.95rem', outline: 'none', background: 'white' }}
-            >
-              <option value="Personal">Personal (Student / Freelancer)</option>
-              <option value="Organization">Organization (Startup / NGO)</option>
-            </select>
-          </div>
-
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.4rem' }}>
-              WhatsApp Number
-              <span style={{ color: '#64748b', fontWeight: 400, marginLeft: '0.5rem', fontSize: '0.8rem' }}>
-                (hidden from public — for direct contact only)
-              </span>
-            </label>
-            <input
-              type="tel" required placeholder="+880 1XXX XXXXXX"
-              value={form.whatsapp_number}
-              onChange={e => setForm({ ...form, whatsapp_number: e.target.value })}
-              style={{ width: '100%', padding: '0.7rem 1rem', border: '1.5px solid #e2e8f0', borderRadius: 8, fontSize: '0.95rem', outline: 'none' }}
-            />
-          </div>
-
-          {error && (
-            <div style={{ color: '#ef4444', fontSize: '0.875rem', marginBottom: '1rem', background: '#fee2e2', padding: '0.75rem', borderRadius: 8 }}>
-              {error}
+          {[
+            { label: 'Full Name', key: 'full_name', type: 'text', placeholder: 'Your full name', icon: User },
+            { label: 'Email Address', key: 'email', type: 'email', placeholder: 'you@example.com', icon: Mail },
+            { label: 'Password', key: 'password', type: 'password', placeholder: 'Minimum 6 characters', icon: Lock },
+            { label: 'WhatsApp Number', key: 'whatsapp_number', type: 'tel', placeholder: '+880 1XXX XXXXXX', icon: Phone, note: 'Hidden from public — used for direct contact only' },
+          ].map(({ label, key, type, placeholder, icon: Icon, note }) => (
+            <div key={key} className="form-group">
+              <label className="form-label">{label}</label>
+              <div style={{ position: 'relative' }}>
+                <div style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)', pointerEvents: 'none' }}>
+                  <Icon size={15} />
+                </div>
+                <input type={type} required placeholder={placeholder} value={form[key]} onChange={e => setForm({ ...form, [key]: e.target.value })} className="form-input" style={{ paddingLeft: '2.5rem' }} />
+              </div>
+              {note && <p style={{ fontSize: '0.72rem', color: 'var(--text-3)', marginTop: '0.35rem' }}>{note}</p>}
             </div>
-          )}
+          ))}
 
-          <button type="submit" disabled={loading} style={{
-            width: '100%', padding: '0.85rem', background: '#0D7377',
-            color: 'white', border: 'none', borderRadius: 10, fontWeight: 700,
-            fontSize: '1rem', cursor: loading ? 'not-allowed' : 'pointer',
-            opacity: loading ? 0.7 : 1
-          }}>
-            {loading ? 'Creating Account...' : 'Create Account'}
+          <div className="form-group">
+            <label className="form-label">Account Type</label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+              {[
+                { value: 'Personal', label: 'Personal', sub: 'Student / Freelancer' },
+                { value: 'Organization', label: 'Organization', sub: 'Startup / NGO' }
+              ].map(opt => (
+                <button key={opt.value} type="button" onClick={() => setForm({ ...form, account_type: opt.value })} style={{
+                  padding: '0.875rem', borderRadius: 'var(--radius)', border: `2px solid ${form.account_type === opt.value ? 'var(--brand)' : 'var(--border)'}`,
+                  background: form.account_type === opt.value ? 'var(--brand-light)' : 'var(--surface-2)',
+                  cursor: 'pointer', textAlign: 'left', transition: 'all var(--transition)'
+                }}>
+                  <div style={{ fontWeight: 700, fontSize: '0.875rem', color: form.account_type === opt.value ? 'var(--brand)' : 'var(--text)', marginBottom: '0.2rem' }}>{opt.label}</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-3)' }}>{opt.sub}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {error && <div className="alert alert-error" style={{ marginBottom: '1rem' }}>{error}</div>}
+
+          <button type="submit" disabled={loading} className="btn btn-primary" style={{ width: '100%', padding: '0.875rem', fontSize: '0.9rem', borderRadius: 'var(--radius)' }}>
+            {loading ? 'Creating account...' : 'Create Account'}
+            {!loading && <ChevronRight size={15} />}
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', marginTop: '1.5rem', color: '#64748b', fontSize: '0.9rem' }}>
-          Already have an account?{' '}
-          <a href="/auth/login" style={{ color: '#0D7377', fontWeight: 600 }}>Log in here</a>
+        <p style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.75rem', color: 'var(--text-3)', lineHeight: 1.6 }}>
+          By creating an account you agree to our Terms of Service and Privacy Policy.
         </p>
       </div>
+
+      <style>{`
+        @media (max-width: 768px) { .auth-left { display: none !important; } }
+      `}</style>
     </div>
   )
 }
