@@ -2,33 +2,34 @@
 
 export default function FounderPage() {
   return (
-    <div style={{ fontFamily: 'Inter, -apple-system, sans-serif', color: '#0B132B' }}>
+    <div style={{ fontFamily: 'Inter, -apple-system, sans-serif', color: 'var(--text)', background: 'var(--bg)' }}>
 
       {/* Nav */}
       <nav style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        padding: '1.2rem 2rem', background: 'white',
-        boxShadow: '0 1px 8px rgba(0,0,0,0.08)', position: 'sticky', top: 0, zIndex: 100
+        padding: '1.2rem 2rem', background: 'var(--surface)',
+        boxShadow: 'var(--shadow-sm)', position: 'sticky', top: 0, zIndex: 100,
+        borderBottom: '1px solid var(--border)'
       }}>
-        <a href="/" style={{ fontWeight: 800, fontSize: '1.4rem', letterSpacing: '-0.02em', textDecoration: 'none', color: '#0B132B' }}>
-          Elevate<span style={{ color: '#F5A623' }}>Hours</span>
+        <a href="/" style={{ fontWeight: 800, fontSize: '1.4rem', letterSpacing: '-0.02em', textDecoration: 'none', color: 'var(--text)' }}>
+          Elevate<span style={{ color: 'var(--amber)' }}>Hours</span>
         </a>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <a href="/" style={{ color: '#64748b', fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none' }}>Home</a>
-          <a href="/auth/login" style={{ color: '#0D7377', fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none' }}>Login</a>
-          <a href="/auth/signup" style={{ background: '#0D7377', color: 'white', padding: '0.5rem 1.2rem', borderRadius: 8, fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none' }}>Get Started</a>
+          <a href="/" style={{ color: 'var(--text-2)', fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none' }}>Home</a>
+          <a href="/auth/login" style={{ color: 'var(--brand)', fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none' }}>Login</a>
+          <a href="/auth/signup" style={{ background: 'var(--brand)', color: 'white', padding: '0.5rem 1.2rem', borderRadius: 8, fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none' }}>Get Started</a>
         </div>
       </nav>
 
       {/* Hero Banner */}
       <section style={{
-        background: 'linear-gradient(135deg, #0D7377 0%, #14A085 100%)',
+        background: 'linear-gradient(135deg, var(--brand) 0%, var(--brand-mid) 100%)',
         padding: '4rem 2rem', textAlign: 'center', color: 'white'
       }}>
         <div style={{ maxWidth: 700, margin: '0 auto' }}>
           <div style={{
             display: 'inline-block', background: 'rgba(245,166,35,0.2)',
-            color: '#F5A623', padding: '0.3rem 1rem', borderRadius: 999,
+            color: 'var(--amber)', padding: '0.3rem 1rem', borderRadius: 999,
             fontSize: '0.8rem', fontWeight: 700, marginBottom: '1rem',
             letterSpacing: '0.08em', textTransform: 'uppercase'
           }}>
@@ -44,7 +45,7 @@ export default function FounderPage() {
       </section>
 
       {/* Founder Profile */}
-      <section style={{ padding: '5rem 2rem', background: 'white' }}>
+      <section style={{ padding: '5rem 2rem', background: 'var(--surface)' }}>
         <div style={{ maxWidth: 1000, margin: '0 auto' }}>
           <div style={{
             display: 'grid',
@@ -57,7 +58,7 @@ export default function FounderPage() {
             <div style={{ position: 'sticky', top: '5rem' }}>
               <div style={{
                 borderRadius: 20, overflow: 'hidden',
-                boxShadow: '0 20px 60px rgba(13,115,119,0.2)',
+                boxShadow: 'var(--shadow-lg)',
                 marginBottom: '1.5rem'
               }}>
                 <img
@@ -71,15 +72,15 @@ export default function FounderPage() {
                 />
                 <div style={{
                   display: 'none', width: '100%', height: 340,
-                  background: 'linear-gradient(135deg, #0D7377, #14A085)',
+                  background: 'linear-gradient(135deg, var(--brand), var(--brand-mid))',
                   alignItems: 'center', justifyContent: 'center',
                   color: 'white', fontSize: '5rem', fontWeight: 900
                 }}>J</div>
               </div>
 
-              <div style={{ background: '#F8F9FA', borderRadius: 16, padding: '1.5rem', border: '1px solid #e2e8f0' }}>
-                <h2 style={{ fontWeight: 800, fontSize: '1.25rem', marginBottom: '0.2rem' }}>Md. Jabir Hossen</h2>
-                <div style={{ color: '#0D7377', fontWeight: 700, fontSize: '0.9rem', marginBottom: '1.25rem' }}>
+              <div style={{ background: 'var(--surface-2)', borderRadius: 16, padding: '1.5rem', border: '1px solid var(--border)' }}>
+                <h2 style={{ fontWeight: 800, fontSize: '1.25rem', marginBottom: '0.2rem', color: 'var(--text)' }}>Md. Jabir Hossen</h2>
+                <div style={{ color: 'var(--brand)', fontWeight: 700, fontSize: '0.9rem', marginBottom: '1.25rem' }}>
                   Founder & CEO, ElevateHours
                 </div>
 
@@ -100,10 +101,10 @@ export default function FounderPage() {
                   </a>
                 </div>
 
-                <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid #e2e8f0' }}>
-                  <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Organization</div>
-                  <div style={{ fontWeight: 700, color: '#0B132B' }}>CodeScriptors IT Solutions</div>
-                  <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.2rem' }}>Dhaka, Bangladesh</div>
+                <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border)' }}>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-2)', fontWeight: 600, marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Organization</div>
+                  <div style={{ fontWeight: 700, color: 'var(--text)' }}>CodeScriptors IT Solutions</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-2)', marginTop: '0.2rem' }}>Dhaka, Bangladesh</div>
                 </div>
               </div>
             </div>
@@ -112,17 +113,17 @@ export default function FounderPage() {
             <div>
               <div style={{ marginBottom: '3rem' }}>
                 <div style={{
-                  display: 'inline-block', background: '#e8f4f4', color: '#0D7377',
+                  display: 'inline-block', background: 'var(--brand-light)', color: 'var(--brand)',
                   padding: '0.3rem 0.9rem', borderRadius: 999,
                   fontSize: '0.8rem', fontWeight: 700, marginBottom: '1rem',
                   letterSpacing: '0.05em', textTransform: 'uppercase'
                 }}>
                   About
                 </div>
-                <h2 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '1.25rem', letterSpacing: '-0.02em' }}>
+                <h2 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '1.25rem', letterSpacing: '-0.02em', color: 'var(--text)' }}>
                   Building the Future of Skill Exchange
                 </h2>
-                <div style={{ color: '#374151', lineHeight: 1.85, fontSize: '1rem' }}>
+                <div style={{ color: 'var(--text-2)', lineHeight: 1.85, fontSize: '1rem' }}>
                   <p style={{ marginBottom: '1rem' }}>
                     Md. Jabir Hossen is a final-year Bachelor's student of Computer Science and Engineering at a private university in Dhaka, Bangladesh. As the Founder & CEO of <strong>CodeScriptors IT Solutions</strong>, he has dedicated his academic and professional journey to building technology that solves real problems for real people.
                   </p>
@@ -138,19 +139,19 @@ export default function FounderPage() {
               {/* Vision */}
               <div style={{ marginBottom: '3rem' }}>
                 <div style={{
-                  display: 'inline-block', background: '#fef3c7', color: '#92400e',
+                  display: 'inline-block', background: 'var(--amber-light)', color: 'var(--amber-dark)',
                   padding: '0.3rem 0.9rem', borderRadius: 999,
                   fontSize: '0.8rem', fontWeight: 700, marginBottom: '1rem',
                   letterSpacing: '0.05em', textTransform: 'uppercase'
                 }}>
                   Founder's Vision
                 </div>
-                <h2 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '1.25rem', letterSpacing: '-0.02em' }}>
+                <h2 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '1.25rem', letterSpacing: '-0.02em', color: 'var(--text)' }}>
                   A Platform Where Every Hour Counts
                 </h2>
 
                 <div style={{
-                  background: 'linear-gradient(135deg, #0D7377, #14A085)',
+                  background: 'linear-gradient(135deg, var(--brand), var(--brand-mid))',
                   borderRadius: 16, padding: '2rem', color: 'white', marginBottom: '1.5rem'
                 }}>
                   <div style={{ fontSize: '2rem', marginBottom: '0.75rem', opacity: 0.7 }}>❝</div>
@@ -162,7 +163,7 @@ export default function FounderPage() {
                   </div>
                 </div>
 
-                <div style={{ color: '#374151', lineHeight: 1.85, fontSize: '1rem' }}>
+                <div style={{ color: 'var(--text-2)', lineHeight: 1.85, fontSize: '1rem' }}>
                   <p style={{ marginBottom: '1rem' }}>
                     Jabir envisions ElevateHours as more than a marketplace — it is a <strong>dignified skill-validation ecosystem</strong> where students can earn real experience, receive verified certificates and endorsements, and build portfolios that speak louder than degrees alone.
                   </p>
@@ -178,37 +179,37 @@ export default function FounderPage() {
               {/* SDG Alignment */}
               <div style={{ marginBottom: '3rem' }}>
                 <div style={{
-                  display: 'inline-block', background: '#dcfce7', color: '#166534',
+                  display: 'inline-block', background: 'var(--green-light)', color: 'var(--green)',
                   padding: '0.3rem 0.9rem', borderRadius: 999,
                   fontSize: '0.8rem', fontWeight: 700, marginBottom: '1rem',
                   letterSpacing: '0.05em', textTransform: 'uppercase'
                 }}>
                   SDG Alignment
                 </div>
-                <h2 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '1.25rem', letterSpacing: '-0.02em' }}>
+                <h2 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '1.25rem', letterSpacing: '-0.02em', color: 'var(--text)' }}>
                   Built for Global Impact
                 </h2>
-                <p style={{ color: '#374151', lineHeight: 1.85, marginBottom: '1.5rem' }}>
+                <p style={{ color: 'var(--text-2)', lineHeight: 1.85, marginBottom: '1.5rem' }}>
                   ElevateHours is designed with the United Nations Sustainable Development Goals at its core. Every feature, every policy, and every decision is guided by a commitment to meaningful, measurable social impact.
                 </p>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
                   {[
-                    { sdg: 'SDG 1', title: 'No Poverty', desc: 'Creating income pathways for students and talent through skill-based micro-jobs without cash barriers.', color: '#e63946' },
-                    { sdg: 'SDG 4', title: 'Quality Education', desc: 'Connecting learners with educators and mentors across all skill tiers, making knowledge accessible.', color: '#e63946' },
-                    { sdg: 'SDG 8', title: 'Decent Work & Growth', desc: 'Building verified portfolios, experience letters, and skill credentials that open real employment doors.', color: '#F5A623' },
-                    { sdg: 'SDG 10', title: 'Reduced Inequalities', desc: 'Leveling the playing field by removing financial barriers between talent and opportunity.', color: '#14A085' },
-                    { sdg: 'SDG 17', title: 'Partnerships for Goals', desc: 'Actively building collaborations with organizations, NGOs, and institutions to expand community value.', color: '#0D7377' },
+                    { sdg: 'SDG 1', title: 'No Poverty', desc: 'Creating income pathways for students and talent through skill-based micro-jobs without cash barriers.', color: 'var(--red)' },
+                    { sdg: 'SDG 4', title: 'Quality Education', desc: 'Connecting learners with educators and mentors across all skill tiers, making knowledge accessible.', color: 'var(--red)' },
+                    { sdg: 'SDG 8', title: 'Decent Work & Growth', desc: 'Building verified portfolios, experience letters, and skill credentials that open real employment doors.', color: 'var(--amber)' },
+                    { sdg: 'SDG 10', title: 'Reduced Inequalities', desc: 'Leveling the playing field by removing financial barriers between talent and opportunity.', color: 'var(--brand-mid)' },
+                    { sdg: 'SDG 17', title: 'Partnerships for Goals', desc: 'Actively building collaborations with organizations, NGOs, and institutions to expand community value.', color: 'var(--brand)' },
                   ].map((item, i) => (
                     <div key={i} style={{
-                      background: '#F8F9FA', borderRadius: 14, padding: '1.25rem',
-                      border: '1px solid #e2e8f0',
+                      background: 'var(--surface-2)', borderRadius: 14, padding: '1.25rem',
+                      border: '1px solid var(--border)',
                       borderTop: `4px solid ${item.color}`
                     }}>
                       <div style={{ fontWeight: 800, fontSize: '0.8rem', color: item.color, marginBottom: '0.3rem', letterSpacing: '0.05em' }}>
                         {item.sdg}
                       </div>
-                      <div style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.5rem' }}>{item.title}</div>
-                      <p style={{ color: '#64748b', fontSize: '0.82rem', lineHeight: 1.6 }}>{item.desc}</p>
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.5rem', color: 'var(--text)' }}>{item.title}</div>
+                      <p style={{ color: 'var(--text-2)', fontSize: '0.82rem', lineHeight: 1.6 }}>{item.desc}</p>
                     </div>
                   ))}
                 </div>
@@ -216,20 +217,20 @@ export default function FounderPage() {
 
               {/* CTA */}
               <div style={{
-                background: '#F8F9FA', borderRadius: 16, padding: '2rem',
-                border: '1px solid #e2e8f0', textAlign: 'center'
+                background: 'var(--surface-2)', borderRadius: 16, padding: '2rem',
+                border: '1px solid var(--border)', textAlign: 'center'
               }}>
-                <h3 style={{ fontWeight: 800, fontSize: '1.2rem', marginBottom: '0.5rem' }}>
+                <h3 style={{ fontWeight: 800, fontSize: '1.2rem', marginBottom: '0.5rem', color: 'var(--text)' }}>
                   Join the Movement
                 </h3>
-                <p style={{ color: '#64748b', fontSize: '0.95rem', marginBottom: '1.5rem', lineHeight: 1.6 }}>
+                <p style={{ color: 'var(--text-2)', fontSize: '0.95rem', marginBottom: '1.5rem', lineHeight: 1.6 }}>
                   Be part of a community that believes your time, your skills, and your potential are worth more than money can measure.
                 </p>
                 <a href="/auth/signup" style={{
-                  display: 'inline-block', background: '#0D7377', color: 'white',
+                  display: 'inline-block', background: 'var(--brand)', color: 'white',
                   padding: '0.85rem 2rem', borderRadius: 10, fontWeight: 700,
                   fontSize: '1rem', textDecoration: 'none',
-                  boxShadow: '0 4px 16px rgba(13,115,119,0.25)'
+                  boxShadow: 'var(--shadow-brand)'
                 }}>
                   Start Earning Sparks →
                 </a>
@@ -243,10 +244,10 @@ export default function FounderPage() {
       <footer style={{ background: '#0B132B', color: 'white', padding: '2rem' }}>
         <div style={{ maxWidth: 1000, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <div style={{ fontWeight: 800, fontSize: '1.2rem' }}>
-            Elevate<span style={{ color: '#F5A623' }}>Hours</span>
+            Elevate<span style={{ color: 'var(--amber)' }}>Hours</span>
           </div>
           <div style={{ opacity: 0.5, fontSize: '0.85rem' }}>
-            Built by <a href="https://www.facebook.com/codescriptors/" target="_blank" rel="noopener noreferrer" style={{ color: '#F5A623', fontWeight: 600 }}>CodeScriptors IT Solutions</a>
+            Built by <a href="https://www.facebook.com/codescriptors/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--amber)', fontWeight: 600 }}>CodeScriptors IT Solutions</a>
           </div>
         </div>
       </footer>
