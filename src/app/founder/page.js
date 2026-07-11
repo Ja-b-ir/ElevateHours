@@ -16,6 +16,7 @@ export default function FounderPage() {
         </a>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <a href="/" style={{ color: 'var(--text-2)', fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none' }}>Home</a>
+          <a href="/team" style={{ color: 'var(--text-2)', fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none' }}>Our Team</a>
           <a href="/auth/login" style={{ color: 'var(--brand)', fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none' }}>Login</a>
           <a href="/auth/signup" style={{ background: 'var(--brand)', color: 'white', padding: '0.5rem 1.2rem', borderRadius: 8, fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none' }}>Get Started</a>
         </div>
@@ -43,6 +44,27 @@ export default function FounderPage() {
           </p>
         </div>
       </section>
+
+      {/* Quick facts strip */}
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 2rem', transform: 'translateY(-1.5rem)' }}>
+        <div style={{
+          background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16,
+          boxShadow: 'var(--shadow-lg)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          overflow: 'hidden'
+        }}>
+          {[
+            { label: 'Role', value: 'Founder & CEO' },
+            { label: 'Organization', value: 'CodeScriptors IT Solutions' },
+            { label: 'Based In', value: 'Dhaka, Bangladesh' },
+            { label: 'Focus', value: 'Skill-Based Impact' },
+          ].map((f, i) => (
+            <div key={i} style={{ padding: '1.25rem 1.5rem', borderRight: i < 3 ? '1px solid var(--border)' : 'none' }}>
+              <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.3rem' }}>{f.label}</div>
+              <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)' }}>{f.value}</div>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* Founder Profile */}
       <section style={{ padding: '5rem 2rem', background: 'var(--surface)' }}>
