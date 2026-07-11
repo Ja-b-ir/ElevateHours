@@ -3,6 +3,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
+import { Mail, MessageCircle, CheckCircle2, BarChart3, Star, Zap, Award, AlertTriangle } from 'lucide-react'
 
 function ProfileContent() {
   const router = useRouter()
@@ -146,14 +147,14 @@ function ProfileContent() {
           {/* Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
             {[
-              { label: 'Completed', value: profile.completed_transactions || 0, icon: '✅' },
-              { label: 'Impact Score', value: profile.impact_score || 0, icon: '📊' },
-              { label: 'Trust Score', value: profile.organization_trust_score || 0, icon: '⭐' },
-              { label: 'Sparks Earned', value: (profile.sparks_earned || 0).toLocaleString(), icon: '⚡' },
+              { label: 'Completed', value: profile.completed_transactions || 0, icon: <CheckCircle2 size={18} /> },
+              { label: 'Impact Score', value: profile.impact_score || 0, icon: <BarChart3 size={18} /> },
+              { label: 'Trust Score', value: profile.organization_trust_score || 0, icon: <Star size={18} /> },
+              { label: 'Sparks Earned', value: (profile.sparks_earned || 0).toLocaleString(), icon: <Zap size={18} /> },
             ].map(function(stat, i) {
               return (
                 <div key={i} style={{ textAlign: 'center', padding: '0.75rem', background: 'var(--surface-2)', borderRadius: 10 }}>
-                  <div style={{ fontSize: '1.25rem', marginBottom: '0.25rem' }}>{stat.icon}</div>
+                  <div style={{ color: 'var(--brand)', marginBottom: '0.4rem', display: 'flex', justifyContent: 'center' }}>{stat.icon}</div>
                   <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--brand)' }}>{stat.value}</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-2)', fontWeight: 500 }}>{stat.label}</div>
                 </div>
@@ -161,15 +162,27 @@ function ProfileContent() {
             })}
           </div>
 
-          {/* Contact buttons for other users */}
+          {/* Contact icons for other users */}
           {!isOwnProfile && (
-            <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
-              <a href={'mailto:' + profile.email} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--brand-light)', color: 'var(--brand)', padding: '0.6rem 1.25rem', borderRadius: 8, fontWeight: 600, fontSize: '0.875rem', border: '1.5px solid var(--brand)', textDecoration: 'none' }}>
-                ✉️ Send Email
+            <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem' }}>
+              <a
+                href={'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(profile.email || '')}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={'Email ' + profile.full_name}
+                style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--brand-light)', color: 'var(--brand)', border: '1.5px solid var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <Mail size={18} />
               </a>
               {profile.whatsapp_number && (
-                <a href={'https://wa.me/' + profile.whatsapp_number.replace(/[^0-9]/g, '')} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--green-light)', color: 'var(--green)', padding: '0.6rem 1.25rem', borderRadius: 8, fontWeight: 600, fontSize: '0.875rem', border: '1.5px solid var(--brand-mid)', textDecoration: 'none' }}>
-                  💬 WhatsApp
+                <a
+                  href={'https://wa.me/' + profile.whatsapp_number.replace(/[^0-9]/g, '')}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={'WhatsApp ' + profile.full_name}
+                  style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--green-light)', color: 'var(--green)', border: '1.5px solid var(--green)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <MessageCircle size={18} />
                 </a>
               )}
             </div>
@@ -301,8 +314,8 @@ function ProfileContent() {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                 {badges.map(function(b, i) {
                   return (
-                    <span key={i} title={b.badge?.description} style={{ background: 'var(--amber-light)', color: 'var(--amber-dark)', padding: '0.3rem 0.75rem', borderRadius: 8, fontSize: '0.8rem', fontWeight: 600 }}>
-                      🏅 {b.badge?.badge_name}
+                    <span key={i} title={b.badge?.description} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'var(--amber-light)', color: 'var(--amber-dark)', padding: '0.3rem 0.75rem', borderRadius: 8, fontSize: '0.8rem', fontWeight: 600 }}>
+                      <Award size={13} /> {b.badge?.badge_name}
                     </span>
                   )
                 })}
@@ -320,8 +333,10 @@ function ProfileContent() {
                 return (
                   <div key={i} style={{ padding: '1rem 1.25rem', background: 'var(--surface-2)', borderRadius: 12, border: '1px solid var(--border)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)' }}>{e.endorser?.full_name}</span>
-                      <span style={{ color: 'var(--amber)' }}>{'⭐'.repeat(e.rating || 0)}</span>
+                      <a href={'/profile?id=' + e.endorser_id} style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)' }}>{e.endorser?.full_name}</a>
+                      <span style={{ display: 'flex', gap: '0.1rem', color: 'var(--amber)' }}>
+                        {Array.from({ length: e.rating || 0 }).map(function(_, si) { return <Star key={si} size={13} fill="var(--amber)" /> })}
+                      </span>
                     </div>
                     <p style={{ color: 'var(--text-2)', fontSize: '0.875rem', lineHeight: 1.6 }}>{e.endorsement_text}</p>
                     {e.skill && <div style={{ color: 'var(--text-3)', fontSize: '0.75rem', marginTop: '0.5rem' }}>{e.skill.skill_name} · {e.date_given}</div>}
@@ -353,7 +368,7 @@ function ProfileContent() {
       {showDeleteModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
           <div style={{ background: 'var(--surface)', borderRadius: 20, padding: '2rem', maxWidth: 440, width: '100%' }}>
-            <div style={{ fontSize: '2.5rem', textAlign: 'center', marginBottom: '1rem' }}>⚠️</div>
+            <div style={{ display: 'flex', justifyContent: 'center', color: 'var(--red)', marginBottom: '1rem' }}><AlertTriangle size={40} /></div>
             <h2 style={{ fontWeight: 800, fontSize: '1.25rem', marginBottom: '0.5rem', color: 'var(--red)', textAlign: 'center' }}>Delete Account Permanently</h2>
             <p style={{ color: 'var(--text-2)', fontSize: '0.875rem', lineHeight: 1.6, marginBottom: '1.5rem', textAlign: 'center' }}>
               This will permanently delete your profile, all your transactions, Sparks, badges, and endorsements. This cannot be undone.
