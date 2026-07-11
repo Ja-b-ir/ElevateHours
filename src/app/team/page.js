@@ -231,7 +231,7 @@ export default function TeamPage() {
                   {Object.entries(selected.socials).map(([key, url]) => {
                     if (!url) return null
                     const cfg = SOCIAL_ICONS[key]
-                    if (!cfg) return null
+                    if (!cfg || !cfg.icon) return null
                     const Icon = cfg.icon
                     const href = key === 'email' ? `mailto:${url}` : url
                     return (
@@ -246,7 +246,7 @@ export default function TeamPage() {
                           borderRadius: 10, fontWeight: 600, fontSize: '0.875rem', textDecoration: 'none'
                         }}
                       >
-                        <Icon size={16} /> {key.charAt(0).toUpperCase() + key.slice(1)}
+                        {Icon ? <Icon size={16} /> : null} {key.charAt(0).toUpperCase() + key.slice(1)}
                       </a>
                     )
                   })}
