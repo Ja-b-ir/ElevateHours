@@ -3,11 +3,16 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
+import {
+  TrendingUp, Users, Clock, Zap, ArrowRight, Briefcase,
+  GraduationCap, Plus, BarChart3, Award, Target, ChevronRight
+} from 'lucide-react'
 
 export default function Dashboard() {
   const router = useRouter()
   const [profile, setProfile] = useState(null)
   const [transactions, setTransactions] = useState([])
+  const [recentActivity, setRecentActivity] = useState([])
   const [activeTab, setActiveTab] = useState('Work')
   const [loading, setLoading] = useState(true)
 
@@ -22,183 +27,383 @@ export default function Dashboard() {
 
       const { data: txns } = await supabase
         .from('transactions')
-        .select(`*, skill:skills_catalog(skill_name, track), tier:tier_reference(tier_name), receiver:profiles!transactions_receiver_id_fkey(full_name), provider:profiles!transactions_provider_id_fkey(full_name)`)
-        .or(`provider_id.eq.${user.id},receiver_id.eq.${user.id}`)
+        .select('*, skill:skills_catalog(skill_name, track), tier:tier_reference(tier_name), receiver:profiles!transactions_receiver_id_fkey(full_name)')
         .eq('status', 'Open')
+        .is('provider_id', null)
+        .neq('receiver_id', user.id)
         .order('created_at', { ascending: false })
         .limit(6)
       setTransactions(txns || [])
+
+      const { data: activity } = await supabase
+        .from('transactions')
+        .select('*, skill:skills_catalog(skill_name, track), tier:tier_reference(tier_name), receiver:profiles!transactions_receiver_id_fkey(full_name), provider:profiles!transactions_provider_id_fkey(full_name)')
+        .or(`provider_id.eq.${user.id},receiver_id.eq.${user.id}`)
+        .order('created_at', { ascending: false })
+        .limit(5)
+      setRecentActivity(activity || [])
+
       setLoading(false)
     }
     init()
   }, [])
 
   if (loading) return (
-    <div>
+    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <Navbar />
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', color: 'var(--text-2)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '0.75rem', color: 'var(--text-3)' }}>
+        <div style={{ width: 20, height: 20, border: '2px solid var(--border)', borderTopColor: 'var(--brand)', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
         Loading your dashboard...
       </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 
-  const permanentBalance = (profile?.sparks_earned || 0) - (profile?.sparks_spent || 0) + (profile?.sparks_purchased_total || 0)
-  const totalUsable = permanentBalance + (profile?.active_gifts_received || 0)
+  const permanent = (profile?.sparks_earned || 0) - (profile?.sparks_spent || 0) + (profile?.sparks_purchased_total || 0)
+  const total = permanent + (profile?.active_gifts_received || 0)
   const filtered = transactions.filter(t => t.skill?.track === activeTab)
 
-  const quickActions = [
-    { label: '🔍 Browse Marketplace', href: '/marketplace' },
-    { label: '📋 Post a Request', href: '/post-request' },
-    { label: '📊 My Transactions', href: '/transactions' },
-    { label: '👤 My Profile', href: '/profile' },
-    { label: '⚡ Buy Sparks', href: '/buy-sparks' },
-    { label: '🤝 Funding Requests', href: '/funding-requests' },
-  ]
+  const statusColor = (status) => {
+    const map = {
+      'Open': 'var(--green)',
+      'In Progress': 'var(--blue)',
+      'Pending Confirmation': 'var(--amber)',
+      'Confirmed': 'var(--green)',
+      'Disputed': 'var(--red)',
+      'Cancelled': 'var(--text-3)',
+    }
+    return map[status] || 'var(--text-3)'
+  }
+
+  const statusBg = (status) => {
+    const map = {
+      'Open': 'var(--green-light)',
+      'In Progress': 'var(--blue-light)',
+      'Pending Confirmation': 'var(--amber-light)',
+      'Confirmed': 'var(--green-light)',
+      'Disputed': 'var(--red-light)',
+      'Cancelled': 'var(--surface-3)',
+    }
+    return map[status] || 'var(--surface-3)'
+  }
+
+  const tierColor = (tierName) => {
+    if (!tierName) return { bg: 'var(--surface-3)', color: 'var(--text-3)' }
+    if (tierName.includes('1')) return { bg: 'var(--green-light)', color: 'var(--green)' }
+    if (tierName.includes('2')) return { bg: 'var(--brand-light)', color: 'var(--brand)' }
+    return { bg: 'var(--amber-light)', color: 'var(--amber-dark)' }
+  }
 
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <Navbar />
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '2rem 1.5rem' }}>
 
-        {/* Welcome */}
-        <div style={{ marginBottom: '2rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <h1 style={{ fontSize: '1.8rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text)' }}>
-              Welcome back, {profile?.full_name?.split(' ')[0]} 👋
-            </h1>
-            <span style={{
-              background: profile?.account_type === 'Personal' ? 'var(--brand-light)' : 'var(--amber-light)',
-              color: profile?.account_type === 'Personal' ? 'var(--brand)' : 'var(--amber-dark)',
-              padding: '0.2rem 0.75rem', borderRadius: 999, fontSize: '0.8rem', fontWeight: 700
-            }}>
-              {profile?.account_type}
-            </span>
+      {/* Page header */}
+      <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '1.75rem 1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.3rem', flexWrap: 'wrap' }}>
+                <h1 style={{ fontSize: 'clamp(1.4rem, 3vw, 1.75rem)', fontWeight: 900, letterSpacing: '-0.03em', color: 'var(--text)' }}>
+                  Welcome back, {profile?.full_name?.split(' ')[0]}
+                </h1>
+                <span style={{
+                  background: profile?.account_type === 'Personal' ? 'var(--brand-light)' : 'var(--amber-light)',
+                  color: profile?.account_type === 'Personal' ? 'var(--brand)' : 'var(--amber-dark)',
+                  padding: '0.2rem 0.75rem', borderRadius: '999px',
+                  fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase'
+                }}>
+                  {profile?.account_type}
+                </span>
+              </div>
+              <p style={{ color: 'var(--text-3)', fontSize: '0.875rem' }}>
+                {profile?.tier_level || 'Tier 1: Foundational'} &nbsp;·&nbsp; Impact Score: {profile?.impact_score || 0} &nbsp;·&nbsp; {profile?.completed_transactions || 0} completed
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '0.625rem' }}>
+              <a href="/post-request" style={{
+                display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+                padding: '0.6rem 1.125rem', borderRadius: 'var(--radius-sm)',
+                background: 'var(--brand)', color: 'white',
+                fontSize: '0.825rem', fontWeight: 600, textDecoration: 'none',
+                boxShadow: '0 4px 12px rgba(13,115,119,0.25)'
+              }}>
+                <Plus size={14} /> Post Request
+              </a>
+              <a href="/marketplace" style={{
+                display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+                padding: '0.6rem 1.125rem', borderRadius: 'var(--radius-sm)',
+                background: 'var(--surface-3)', color: 'var(--text)',
+                border: '1px solid var(--border)', fontSize: '0.825rem', fontWeight: 600, textDecoration: 'none'
+              }}>
+                Browse <ChevronRight size={14} />
+              </a>
+            </div>
           </div>
-          <p style={{ color: 'var(--text-2)', marginTop: '0.25rem' }}>
-            Tier Level: <strong>{profile?.tier_level || 'Tier 1: Foundational'}</strong> · Impact Score: <strong>{profile?.impact_score || 0}</strong>
-          </p>
         </div>
+      </div>
+
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '2rem 1.5rem' }}>
 
         {/* Balance Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
-          {[
-            { label: 'Permanent Balance', value: permanentBalance, color: 'var(--brand)', icon: '💎', desc: 'Earned + Purchased' },
-            { label: 'Gifted Balance', value: profile?.active_gifts_received || 0, color: 'var(--green)', icon: '🎁', desc: 'Expires in 30 days' },
-            { label: 'Total Usable Balance', value: totalUsable, color: 'var(--amber)', icon: '⚡', desc: 'Available to spend' },
-          ].map((card, i) => (
-            <div key={i} style={{
-              background: 'var(--surface)', borderRadius: 16, padding: '1.5rem',
-              boxShadow: 'var(--shadow-sm)',
-              border: '1px solid var(--border)'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
-                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  {card.label}
-                </span>
-                <span style={{ fontSize: '1.25rem' }}>{card.icon}</span>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+
+          {/* Total Balance — featured card */}
+          <div style={{
+            background: 'linear-gradient(135deg, var(--brand) 0%, var(--brand-mid) 100%)',
+            borderRadius: 'var(--radius-lg)', padding: '1.5rem',
+            color: 'white', position: 'relative', overflow: 'hidden',
+            gridColumn: 'span 1'
+          }}>
+            <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
+            <div style={{ position: 'absolute', bottom: -30, right: 20, width: 140, height: 140, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
+            <div style={{ position: 'relative' }}>
+              <div style={{ fontSize: '0.7rem', fontWeight: 700, opacity: 0.7, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <Zap size={11} /> Total Usable Balance
               </div>
-              <div style={{ fontSize: '2rem', fontWeight: 900, color: card.color, lineHeight: 1 }}>
-                {card.value.toLocaleString()}
+              <div style={{ fontSize: 'clamp(2rem, 4vw, 2.75rem)', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: '0.4rem' }}>
+                {total.toLocaleString()}
               </div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-2)', marginTop: '0.4rem' }}>
-                SPK · {card.desc}
+              <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>SPK &nbsp;·&nbsp; ≈ ${(total * 0.10).toFixed(2)} USD</div>
+            </div>
+          </div>
+
+          {/* Permanent Balance */}
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'var(--brand)', borderRadius: '16px 16px 0 0' }} />
+            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
+              Permanent Balance
+            </div>
+            <div style={{ fontSize: '1.75rem', fontWeight: 900, letterSpacing: '-0.03em', color: 'var(--text)', lineHeight: 1, marginBottom: '0.3rem' }}>
+              {permanent.toLocaleString()}
+            </div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>SPK · Earned + Purchased</div>
+            <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem' }}>
+              <div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-3)', marginBottom: '0.15rem' }}>Earned</div>
+                <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--green)' }}>{(profile?.sparks_earned || 0).toLocaleString()}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-3)', marginBottom: '0.15rem' }}>Spent</div>
+                <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--red)' }}>{(profile?.sparks_spent || 0).toLocaleString()}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-3)', marginBottom: '0.15rem' }}>Bought</div>
+                <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--blue)' }}>{(profile?.sparks_purchased_total || 0).toLocaleString()}</div>
               </div>
             </div>
-          ))}
-        </div>
-
-        {/* Quick Actions */}
-        <div style={{
-          background: 'var(--surface)', borderRadius: 16, padding: '1.5rem',
-          marginBottom: '2rem', border: '1px solid var(--border)',
-          boxShadow: 'var(--shadow-sm)'
-        }}>
-          <h2 style={{ fontWeight: 700, marginBottom: '1rem', color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }}>
-            Quick Actions
-          </h2>
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            {quickActions.map(action => (
-              <a key={action.href} href={action.href} style={{
-                background: 'var(--surface-3)', color: 'var(--text)',
-                padding: '0.6rem 1.1rem', borderRadius: 8,
-                fontWeight: 600, fontSize: '0.875rem',
-                border: '1.5px solid var(--border)',
-                transition: 'all 0.2s',
-                textDecoration: 'none'
-              }}>
-                {action.label}
-              </a>
-            ))}
-          </div>
-        </div>
-
-        {/* Recent Open Transactions */}
-        <div style={{
-          background: 'var(--surface)', borderRadius: 16, padding: '1.5rem',
-          border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-            <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text)' }}>Open Opportunities</h2>
-            <a href="/marketplace" style={{ color: 'var(--brand)', fontWeight: 600, fontSize: '0.875rem' }}>
-              View all →
-            </a>
           </div>
 
-          {/* Tabs */}
-          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem', borderBottom: '2px solid var(--border)' }}>
-            {['Work', 'Education'].map(tab => (
-              <button key={tab} onClick={() => setActiveTab(tab)} style={{
-                padding: '0.5rem 1rem', background: 'none', border: 'none',
-                borderBottom: `3px solid ${activeTab === tab ? 'var(--brand)' : 'transparent'}`,
-                marginBottom: -2, color: activeTab === tab ? 'var(--brand)' : 'var(--text-2)',
-                fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem'
-              }}>
-                {tab}
-              </button>
-            ))}
-          </div>
-
-          {filtered.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-2)' }}>
-              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🔍</div>
-              <p>No open {activeTab} opportunities right now.</p>
-              <a href="/marketplace" style={{ color: 'var(--brand)', fontWeight: 600, fontSize: '0.875rem' }}>
-                Browse the marketplace →
-              </a>
+          {/* Gifted Balance */}
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'var(--green)', borderRadius: '16px 16px 0 0' }} />
+            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
+              Gifted Balance
             </div>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
-              {filtered.map(txn => (
-                <div key={txn.id} style={{
-                  border: '1.5px solid var(--border)', borderRadius: 12,
-                  padding: '1.25rem', background: 'var(--surface-2)'
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                    <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text)' }}>{txn.skill?.skill_name}</span>
-                    <span style={{
-                      background: 'var(--amber-light)', color: 'var(--amber-dark)',
-                      padding: '0.15rem 0.6rem', borderRadius: 999, fontSize: '0.75rem', fontWeight: 700
-                    }}>
-                      {txn.tier?.tier_name?.split(':')[0]}
-                    </span>
+            <div style={{ fontSize: '1.75rem', fontWeight: 900, letterSpacing: '-0.03em', color: 'var(--text)', lineHeight: 1, marginBottom: '0.3rem' }}>
+              {(profile?.active_gifts_received || 0).toLocaleString()}
+            </div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>SPK · Expires in 30 days</div>
+            <div style={{ marginTop: '1rem', padding: '0.6rem 0.875rem', background: 'var(--green-light)', borderRadius: 'var(--radius-sm)', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+              <TrendingUp size={11} style={{ color: 'var(--green)' }} />
+              <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--green)' }}>Community supported</span>
+            </div>
+          </div>
+
+          {/* Stats card */}
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'var(--amber)', borderRadius: '16px 16px 0 0' }} />
+            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.875rem' }}>
+              Your Stats
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {[
+                { label: 'Completed Jobs', value: profile?.completed_transactions || 0, icon: <BarChart3 size={13} />, color: 'var(--brand)' },
+                { label: 'Impact Score', value: profile?.impact_score || 0, icon: <Target size={13} />, color: 'var(--amber)' },
+                { label: 'Trust Score', value: profile?.organization_trust_score || 0, icon: <Award size={13} />, color: 'var(--green)' },
+              ].map((stat, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-2)', fontSize: '0.8rem' }}>
+                    <span style={{ color: stat.color }}>{stat.icon}</span>
+                    {stat.label}
                   </div>
-                  <p style={{ color: 'var(--text-2)', fontSize: '0.85rem', marginBottom: '0.75rem', lineHeight: 1.5 }}>
-                    {txn.description?.slice(0, 80)}{txn.description?.length > 80 ? '...' : ''}
-                  </p>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ color: 'var(--amber)', fontWeight: 700, fontSize: '0.9rem' }}>
-                      {txn.total_sparks_transferred || 0} SPK
-                    </span>
-                    <span style={{ color: 'var(--text-2)', fontSize: '0.8rem' }}>
-                      {txn.agreed_hours}h
-                    </span>
-                  </div>
+                  <span style={{ fontWeight: 800, fontSize: '0.9rem', color: stat.color }}>{stat.value}</span>
                 </div>
               ))}
             </div>
-          )}
+          </div>
+        </div>
+
+        {/* Main content grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '1.5rem', alignItems: 'start' }}>
+
+          {/* Left — Opportunities */}
+          <div>
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+              <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '0.15rem' }}>Open Opportunities</h2>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--text-3)' }}>Latest requests from the community</p>
+                </div>
+                <a href="/marketplace" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: 'var(--brand)', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none' }}>
+                  View all <ArrowRight size={13} />
+                </a>
+              </div>
+
+              {/* Tabs */}
+              <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', padding: '0 1.5rem' }}>
+                {['Work', 'Education'].map(tab => (
+                  <button key={tab} onClick={() => setActiveTab(tab)} style={{
+                    display: 'flex', alignItems: 'center', gap: '0.4rem',
+                    padding: '0.75rem 0', marginRight: '1.5rem',
+                    background: 'none', border: 'none',
+                    borderBottom: `2px solid ${activeTab === tab ? 'var(--brand)' : 'transparent'}`,
+                    color: activeTab === tab ? 'var(--brand)' : 'var(--text-3)',
+                    fontWeight: 600, cursor: 'pointer', fontSize: '0.825rem',
+                    fontFamily: 'inherit', transition: 'all 0.15s'
+                  }}>
+                    {tab === 'Work' ? <Briefcase size={13} /> : <GraduationCap size={13} />}
+                    {tab}
+                  </button>
+                ))}
+              </div>
+
+              {/* Cards */}
+              <div style={{ padding: '1.25rem 1.5rem' }}>
+                {filtered.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-3)' }}>
+                    <Users size={36} style={{ margin: '0 auto 0.875rem', opacity: 0.3 }} />
+                    <p style={{ fontWeight: 600, marginBottom: '0.25rem', color: 'var(--text-2)' }}>No open {activeTab} opportunities</p>
+                    <p style={{ fontSize: '0.8rem' }}>Check the marketplace or post a request.</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    {filtered.map(txn => {
+                      const tc = tierColor(txn.tier?.tier_name)
+                      return (
+                        <div key={txn.id} style={{
+                          padding: '1.125rem', background: 'var(--surface-2)',
+                          borderRadius: 'var(--radius)', border: '1px solid var(--border)',
+                          display: 'flex', justifyContent: 'space-between',
+                          alignItems: 'flex-start', gap: '1rem',
+                          transition: 'border-color 0.15s, box-shadow 0.15s',
+                          cursor: 'default'
+                        }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--brand)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(13,115,119,0.08)' }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none' }}
+                        >
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.375rem', flexWrap: 'wrap' }}>
+                              <span style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--text)' }}>
+                                {txn.skill?.skill_name}
+                              </span>
+                              <span style={{ background: tc.bg, color: tc.color, padding: '0.15rem 0.55rem', borderRadius: '999px', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.03em' }}>
+                                {txn.tier?.tier_name?.split(':')[0]}
+                              </span>
+                            </div>
+                            <p style={{ fontSize: '0.78rem', color: 'var(--text-3)', lineHeight: 1.5, marginBottom: '0.625rem' }}>
+                              {txn.description?.slice(0, 90)}{txn.description?.length > 90 ? '...' : ''}
+                            </p>
+                            <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', color: 'var(--text-3)' }}>
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                <Clock size={11} /> {txn.agreed_hours}h
+                              </span>
+                              <span>by {txn.receiver?.full_name}</span>
+                            </div>
+                          </div>
+                          <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                            <div style={{ fontWeight: 900, fontSize: '1rem', color: 'var(--amber)', letterSpacing: '-0.02em' }}>
+                              ⚡ {txn.total_sparks_transferred || 0}
+                            </div>
+                            <div style={{ fontSize: '0.68rem', color: 'var(--text-3)', marginTop: '0.1rem' }}>SPK</div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right column */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+
+            {/* Quick actions */}
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+              <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--border)' }}>
+                <h3 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text)' }}>Quick Actions</h3>
+              </div>
+              <div style={{ padding: '0.75rem' }}>
+                {[
+                  { label: 'Browse Marketplace', href: '/marketplace', icon: Users, accent: 'var(--brand)' },
+                  { label: 'Post a Request', href: '/post-request', icon: Plus, accent: 'var(--brand-mid)' },
+                  { label: 'My Requests', href: '/my-requests', icon: ClipboardList, accent: 'var(--amber)' },
+                  { label: 'Buy Sparks', href: '/buy-sparks', icon: Zap, accent: 'var(--green)' },
+                  { label: 'Community Funding', href: '/funding-requests', icon: TrendingUp, accent: 'var(--red)' },
+                  { label: 'My Transactions', href: '/transactions', icon: BarChart3, accent: 'var(--purple)' },
+                ].map((action, i) => (
+                  <a key={i} href={action.href} style={{
+                    display: 'flex', alignItems: 'center', gap: '0.75rem',
+                    padding: '0.7rem 0.75rem', borderRadius: 'var(--radius-sm)',
+                    color: 'var(--text-2)', fontSize: '0.825rem', fontWeight: 600,
+                    textDecoration: 'none', transition: 'all 0.15s'
+                  }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-3)'; e.currentTarget.style.color = 'var(--text)' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-2)' }}
+                  >
+                    <div style={{ width: 30, height: 30, borderRadius: 'var(--radius-sm)', background: 'var(--surface-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <action.icon size={14} style={{ color: action.accent }} />
+                    </div>
+                    {action.label}
+                    <ChevronRight size={13} style={{ marginLeft: 'auto', color: 'var(--text-3)' }} />
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* Recent activity */}
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+              <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h3 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text)' }}>Recent Activity</h3>
+                <a href="/transactions" style={{ fontSize: '0.75rem', color: 'var(--brand)', fontWeight: 600, textDecoration: 'none' }}>View all</a>
+              </div>
+              <div style={{ padding: '0.75rem' }}>
+                {recentActivity.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--text-3)', fontSize: '0.8rem' }}>
+                    No activity yet
+                  </div>
+                ) : (
+                  recentActivity.map((txn, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.625rem 0.75rem', borderRadius: 'var(--radius-sm)', transition: 'background 0.15s' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-3)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                    >
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: statusColor(txn.status), flexShrink: 0 }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {txn.skill?.skill_name}
+                        </div>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-3)' }}>{txn.status}</div>
+                      </div>
+                      <div style={{ background: statusBg(txn.status), color: statusColor(txn.status), padding: '0.15rem 0.5rem', borderRadius: '999px', fontSize: '0.68rem', fontWeight: 700, whiteSpace: 'nowrap' }}>
+                        {txn.status}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 900px) {
+          .dashboard-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </div>
   )
 }
