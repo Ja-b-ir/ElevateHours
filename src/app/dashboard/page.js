@@ -5,7 +5,8 @@ import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
 import {
   TrendingUp, Users, Clock, Zap, ArrowRight, Briefcase,
-  GraduationCap, Plus, BarChart3, Award, Target, ChevronRight
+  GraduationCap, Plus, BarChart3, Award, Target, ChevronRight,
+  ClipboardList
 } from 'lucide-react'
 
 export default function Dashboard() {
