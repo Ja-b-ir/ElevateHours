@@ -64,6 +64,12 @@ export default function FundingRequests() {
     setGiftError('')
     const amt = parseInt(giftAmount)
     if (!amt || amt < 100) { setGiftError('Minimum gift is 100 SPK'); return }
+    const permanent = (profile?.sparks_earned || 0) - (profile?.sparks_spent || 0) + (profile?.sparks_purchased_total || 0)
+  const donorTotal = permanent + (profile?.active_gifts_received || 0)
+  if (amt > donorTotal) {
+    setGiftError(`Insufficient balance. You have ${donorTotal} SPK but tried to gift ${amt} SPK.`)
+    return
+  }
     setGiftSubmitting(true)
     try {
       const { error } = await supabase.from('gifts').insert({ donor_id: user.id, funding_request_id: giftModal, amount: amt, date_given: new Date().toISOString().split('T')[0] })
