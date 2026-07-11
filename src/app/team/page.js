@@ -7,7 +7,7 @@ const TEAM = [
   {
   name: 'Mohammed Mabrouk',
   designation: 'Financial Strategist', // adjust to their real title
-  photo: '/team/mohammed-mabrouk.jpg',
+  photo: 'team/mohammed-mabrouk.jpg',
   quote: "I believe ElevateHours is building more than just a service—it is creating opportunities for people to learn, grow, and succeed in the digital economy. The company's commitment to quality, innovation, and continuous improvement makes it well-positioned for long-term success. I'm excited to contribute to its financial strategy and help build a sustainable, scalable business that delivers lasting value to both clients and the team.",
   socials: {
     linkedin: 'https://www.linkedin.com/in/mohammed-mabrouk-7b5327297/',
