@@ -24,59 +24,69 @@ const SOCIAL_ICONS = {
   website: { icon: Globe, color: 'var(--brand)' },
   email: { icon: Mail, color: 'var(--brand)' },
 }
-
+ 
 function MemberCard({ member, onOpen }) {
+  const [imgError, setImgError] = useState(false)
+  const showPhoto = member.photo && !imgError
+ 
   return (
     <button
       onClick={() => onOpen(member)}
       style={{
         background: 'var(--surface-2)', borderRadius: 16, border: '1px solid var(--border)',
-        padding: '1.75rem 1.25rem', textAlign: 'center', cursor: 'pointer',
-        transition: 'all var(--transition)', fontFamily: 'inherit'
+        overflow: 'hidden', textAlign: 'center', cursor: 'pointer',
+        transition: 'all var(--transition)', fontFamily: 'inherit', padding: 0
       }}
       onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--brand)'; e.currentTarget.style.boxShadow = 'var(--shadow)' }}
       onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none' }}
     >
       <div style={{
-        width: 84, height: 84, borderRadius: '50%', margin: '0 auto 1rem', overflow: 'hidden',
+        width: '100%', aspectRatio: '1 / 1',
         background: 'linear-gradient(135deg, var(--brand), var(--brand-mid))',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: 'white', fontWeight: 900, fontSize: '1.75rem'
+        color: 'white', fontWeight: 900, fontSize: '3rem', overflow: 'hidden'
       }}>
-        {member.photo ? (
+        {showPhoto ? (
           <img
             src={member.photo}
             alt={member.name}
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            onError={e => { e.target.style.display = 'none' }}
+            onError={() => setImgError(true)}
           />
         ) : (
           member.name?.[0]?.toUpperCase()
         )}
       </div>
-      <h3 style={{ fontWeight: 800, fontSize: '1.02rem', marginBottom: '0.25rem', color: 'var(--text)' }}>{member.name}</h3>
-      <div style={{ color: 'var(--brand)', fontWeight: 600, fontSize: '0.85rem' }}>{member.designation}</div>
+      <div style={{ padding: '1.125rem 1rem 1.375rem' }}>
+        <h3 style={{ fontWeight: 800, fontSize: '1.02rem', marginBottom: '0.25rem', color: 'var(--text)' }}>{member.name}</h3>
+        <div style={{ color: 'var(--brand)', fontWeight: 600, fontSize: '0.85rem' }}>{member.designation}</div>
+      </div>
     </button>
   )
 }
-
+ 
 export default function TeamPage() {
   const [selected, setSelected] = useState(null)
-
+  const [detailImgError, setDetailImgError] = useState(false)
+ 
+  useEffect(() => {
+    setDetailImgError(false)
+  }, [selected])
+ 
   useEffect(() => {
     document.body.style.overflow = selected ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [selected])
-
+ 
   useEffect(() => {
     const onKey = e => { if (e.key === 'Escape') setSelected(null) }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
-
+ 
   return (
     <div style={{ fontFamily: 'Inter, -apple-system, sans-serif', color: 'var(--text)', background: 'var(--bg)' }}>
-
+ 
       {/* Nav */}
       <nav style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -93,7 +103,7 @@ export default function TeamPage() {
           <a href="/auth/signup" style={{ background: 'var(--brand)', color: 'white', padding: '0.5rem 1.2rem', borderRadius: 8, fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none' }}>Get Started</a>
         </div>
       </nav>
-
+ 
       {/* Hero */}
       <section style={{
         background: 'linear-gradient(135deg, var(--brand) 0%, var(--brand-mid) 100%)',
@@ -116,7 +126,7 @@ export default function TeamPage() {
           </p>
         </div>
       </section>
-
+ 
       {/* Team Grid */}
       <section style={{ padding: '5rem 2rem', background: 'var(--surface)' }}>
         <div style={{ maxWidth: 1000, margin: '0 auto' }}>
@@ -134,7 +144,7 @@ export default function TeamPage() {
           )}
         </div>
       </section>
-
+ 
       {/* Footer */}
       <footer style={{ background: '#0B132B', color: 'white', padding: '2rem' }}>
         <div style={{ maxWidth: 1000, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
@@ -146,7 +156,7 @@ export default function TeamPage() {
           </div>
         </div>
       </footer>
-
+ 
       {/* Overlay */}
       {selected && (
         <div
@@ -157,7 +167,7 @@ export default function TeamPage() {
           }}
         />
       )}
-
+ 
       {/* Slide-in detail panel */}
       <div className="team-panel" style={{
         position: 'fixed', top: 0, right: 0, height: '100vh',
@@ -179,7 +189,7 @@ export default function TeamPage() {
             >
               <X size={18} />
             </button>
-
+ 
             <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
               <div style={{
                 width: 120, height: 120, borderRadius: '50%', margin: '0 auto 1.25rem', overflow: 'hidden',
@@ -187,12 +197,12 @@ export default function TeamPage() {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 color: 'white', fontWeight: 900, fontSize: '2.5rem'
               }}>
-                {selected.photo ? (
+                {selected.photo && !detailImgError ? (
                   <img
                     src={selected.photo}
                     alt={selected.name}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    onError={e => { e.target.style.display = 'none' }}
+                    onError={() => setDetailImgError(true)}
                   />
                 ) : (
                   selected.name?.[0]?.toUpperCase()
@@ -201,7 +211,7 @@ export default function TeamPage() {
               <h2 style={{ fontWeight: 800, fontSize: '1.4rem', color: 'var(--text)', marginBottom: '0.25rem' }}>{selected.name}</h2>
               <div style={{ color: 'var(--brand)', fontWeight: 600, fontSize: '0.95rem' }}>{selected.designation}</div>
             </div>
-
+ 
             {selected.quote && (
               <div style={{
                 background: 'linear-gradient(135deg, var(--brand), var(--brand-mid))',
@@ -211,14 +221,14 @@ export default function TeamPage() {
                 <p style={{ fontSize: '0.95rem', lineHeight: 1.7, fontStyle: 'italic', opacity: 0.95 }}>{selected.quote}</p>
               </div>
             )}
-
+ 
             {selected.bio && (
               <div style={{ marginBottom: '1.75rem' }}>
                 <div className="section-label">About</div>
                 <p style={{ color: 'var(--text-2)', lineHeight: 1.8, fontSize: '0.9rem' }}>{selected.bio}</p>
               </div>
             )}
-
+ 
             {selected.socials && Object.keys(selected.socials).length > 0 && (
               <div>
                 <div className="section-label">Connect</div>
@@ -251,7 +261,7 @@ export default function TeamPage() {
           </div>
         )}
       </div>
-
+ 
       <style>{`
         .team-panel { width: 50%; }
         @media (max-width: 900px) {
