@@ -5,9 +5,9 @@ import { X, Linkedin, Facebook, Twitter, Instagram, Globe, Mail } from 'lucide-r
 // Fill this in with real team members. Example shape below.
 const TEAM = [
   {
-  name: 'Mohammed Mabrouk',
+  name: 'Mohammad Mabrouk',
   designation: 'Strategic Financial Advisor', // adjust to their real title
-  photo: 'public/team/mabrouk.jpeg',
+  photo: '/team/mabrouk.jpeg',
   quote: "I believe ElevateHours is building more than just a service—it is creating opportunities for people to learn, grow, and succeed in the digital economy. The company's commitment to quality, innovation, and continuous improvement makes it well-positioned for long-term success. I'm excited to contribute to its financial strategy and help build a sustainable, scalable business that delivers lasting value to both clients and the team.",
   socials: {
     linkedin: 'https://www.linkedin.com/in/mohammed-mabrouk-7b5327297/',
