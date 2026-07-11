@@ -45,7 +45,11 @@ export default function SignupPage() {
       })
       if (error) throw error
       if (data?.user) {
-        await supabase.from('profiles').upsert({ id: data.user.id, email: form.email, full_name: form.full_name, account_type: form.account_type, whatsapp_number: form.whatsapp_number, country: form.country, sparks_purchased_total: 250 })
+        await supabase.from('profiles').upsert({
+          id: data.user.id, email: form.email, full_name: form.full_name, account_type: form.account_type,
+          whatsapp_number: form.whatsapp_number, country: form.country, country_updated_at: new Date().toISOString(),
+          sparks_purchased_total: 250
+        })
         window.location.href = '/dashboard'
       } else { setError('Signup failed. Please try again.') }
     } catch (err) { setError(err.message || JSON.stringify(err)) }
@@ -123,6 +127,7 @@ export default function SignupPage() {
                 {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
+            <p style={{ fontSize: '0.72rem', color: 'var(--text-3)', marginTop: '0.35rem' }}>Choose carefully — changing your country later requires an approved request.</p>
           </div>
 
           <div className="form-group">
