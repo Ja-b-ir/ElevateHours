@@ -57,7 +57,6 @@ export default function Navbar() {
     return () => supabase.removeChannel(ch)
   }, [user])
 
-  // Click-outside handler for dropdown (replaces the old fixed overlay div)
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -67,6 +66,15 @@ export default function Navbar() {
     if (dropdownOpen) document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [dropdownOpen])
+
+  // Close mobile menu automatically if the viewport is resized back to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 900) setMenuOpen(false)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -93,18 +101,19 @@ export default function Navbar() {
 
   return (
     <>
-      <nav style={{
+      <nav className="eh-navbar" style={{
         background: 'var(--surface)',
         borderBottom: '1px solid var(--border)',
         position: 'sticky', top: 0, zIndex: 100,
+        overflowX: 'hidden',
       }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 1.5rem', display: 'flex', alignItems: 'center', height: 60, gap: '0.25rem' }}>
+        <div className="eh-navbar-inner" style={{ maxWidth: 1280, margin: '0 auto', padding: '0 1.5rem', display: 'flex', flexWrap: 'nowrap', alignItems: 'center', height: 60, gap: '0.25rem' }}>
 
-          <a href="/dashboard" style={{ fontWeight: 900, fontSize: '1.2rem', letterSpacing: '-0.03em', color: 'var(--text)', marginRight: '1.5rem', flexShrink: 0, textDecoration: 'none' }}>
+          <a href="/dashboard" className="eh-logo" style={{ fontWeight: 900, fontSize: '1.2rem', letterSpacing: '-0.03em', color: 'var(--text)', marginRight: '1.5rem', flexShrink: 0, textDecoration: 'none', whiteSpace: 'nowrap' }}>
             Elevate<span style={{ color: 'var(--brand)' }}>Hours</span>
           </a>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.125rem', flex: 1, overflow: 'hidden' }} className="desktop-nav">
+          <div className="eh-desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: '0.125rem', flex: 1, overflow: 'hidden' }}>
             {links.map(({ href, label, icon: Icon }) => (
               <a key={href} href={href} style={{
                 display: 'flex', alignItems: 'center', gap: '0.375rem',
@@ -123,7 +132,7 @@ export default function Navbar() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: 'auto', flexShrink: 0 }}>
 
             <button onClick={toggleTheme} style={{
-              width: 36, height: 36, borderRadius: 'var(--radius-sm)',
+              width: 36, height: 36, borderRadius: 'var(--radius-sm)', flexShrink: 0,
               background: 'var(--surface-3)', border: '1px solid var(--border)',
               color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center',
               cursor: 'pointer'
@@ -132,16 +141,16 @@ export default function Navbar() {
             </button>
 
             <a href="/notifications" style={{
-              position: 'relative', width: 36, height: 36, borderRadius: 'var(--radius-sm)',
+              position: 'relative', width: 36, height: 36, borderRadius: 'var(--radius-sm)', flexShrink: 0,
               background: 'var(--surface-3)', border: '1px solid var(--border)',
               color: 'var(--text-2)', display: 'flex', alignItems: 'center',
-              justifyContent: 'center', textDecoration: 'none', fontSize: '1rem'
+              justifyContent: 'center', textDecoration: 'none'
             }}>
-              🔔
+              <Bell size={15} />
               {unreadCount > 0 && (
                 <span style={{
                   position: 'absolute', top: -4, right: -4,
-                  background: '#ef4444', color: '#fff', borderRadius: '50%',
+                  background: 'var(--red)', color: '#fff', borderRadius: '50%',
                   width: 16, height: 16, fontSize: '0.6rem', fontWeight: 800,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   border: '2px solid var(--surface)'
@@ -151,7 +160,7 @@ export default function Navbar() {
               )}
             </a>
 
-            <div style={{ position: 'relative' }} className="desktop-nav" ref={dropdownRef}>
+            <div className="eh-desktop-nav" style={{ position: 'relative' }} ref={dropdownRef}>
               <button onClick={() => setDropdownOpen(!dropdownOpen)} style={{
                 display: 'flex', alignItems: 'center', gap: '0.5rem',
                 padding: '0.35rem 0.75rem 0.35rem 0.5rem',
@@ -207,7 +216,7 @@ export default function Navbar() {
                       onClick={handleLogout}
                       style={{
                         display: 'flex', alignItems: 'center', gap: '0.625rem',
-                        padding: '0.65rem 1rem', color: '#ef4444',
+                        padding: '0.65rem 1rem', color: 'var(--red)',
                         fontSize: '0.85rem', fontWeight: 500, width: '100%',
                         background: 'none', border: 'none', cursor: 'pointer'
                       }}
@@ -224,9 +233,9 @@ export default function Navbar() {
 
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="mobile-menu-btn"
+              className="eh-mobile-menu-btn"
               style={{
-                display: 'none', width: 36, height: 36, borderRadius: 'var(--radius-sm)',
+                display: 'none', width: 36, height: 36, borderRadius: 'var(--radius-sm)', flexShrink: 0,
                 background: 'var(--surface-3)', border: '1px solid var(--border)',
                 color: 'var(--text)', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
               }}
@@ -262,21 +271,11 @@ export default function Navbar() {
               ))}
             </div>
             <div style={{ display: 'flex', gap: '0.5rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
-              <button onClick={toggleTheme} style={{
-                flex: 1, padding: '0.6rem', borderRadius: 'var(--radius-sm)',
-                background: 'var(--surface-3)', border: '1px solid var(--border)',
-                color: 'var(--text-2)', display: 'flex', alignItems: 'center',
-                justifyContent: 'center', gap: '0.5rem', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer'
-              }}>
+              <button onClick={toggleTheme} style={{ flex: 1, padding: '0.6rem', borderRadius: 'var(--radius-sm)', background: 'var(--surface-3)', border: '1px solid var(--border)', color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}>
                 {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
-                {theme === 'dark' ? 'Light' : 'Dark'}
+                {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
               </button>
-              <button onClick={handleLogout} style={{
-                flex: 1, padding: '0.6rem', borderRadius: 'var(--radius-sm)',
-                background: 'var(--red-light)', color: 'var(--red)',
-                border: 'none', display: 'flex', alignItems: 'center',
-                justifyContent: 'center', gap: '0.5rem', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer'
-              }}>
+              <button onClick={handleLogout} style={{ flex: 1, padding: '0.6rem', borderRadius: 'var(--radius-sm)', background: 'var(--red-light)', color: 'var(--red)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}>
                 <LogOut size={14} /> Sign Out
               </button>
             </div>
@@ -286,8 +285,12 @@ export default function Navbar() {
 
       <style>{`
         @media (max-width: 900px) {
-          .desktop-nav { display: none !important; }
-          .mobile-menu-btn { display: flex !important; }
+          .eh-desktop-nav { display: none !important; }
+          .eh-mobile-menu-btn { display: flex !important; }
+          .eh-navbar-inner { padding: 0 1rem !important; gap: 0.5rem !important; }
+        }
+        @media (max-width: 380px) {
+          .eh-logo { font-size: 1.05rem !important; margin-right: 0.5rem !important; }
         }
       `}</style>
     </>
