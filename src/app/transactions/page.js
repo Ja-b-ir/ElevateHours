@@ -53,6 +53,58 @@ export default function Transactions() {
     setUpdating(null)
   }
 
+  // Confirming a transaction is what actually rewards Sparks and updates both profiles.
+  const confirmTransaction = async (txn) => {
+    setUpdating(txn.id)
+    try {
+      const sparks = txn.total_sparks_transferred || 0
+
+      await supabase.from('transactions').update({ status: 'Confirmed' }).eq('id', txn.id)
+
+      // Credit the provider: Sparks earned, completed count, impact score
+      if (txn.provider_id) {
+        const { data: providerProfile } = await supabase
+          .from('profiles')
+          .select('sparks_earned, completed_transactions, impact_score')
+          .eq('id', txn.provider_id)
+          .single()
+
+        await supabase.from('profiles').update({
+          sparks_earned: (providerProfile?.sparks_earned || 0) + sparks,
+          completed_transactions: (providerProfile?.completed_transactions || 0) + 1,
+          impact_score: (providerProfile?.impact_score || 0) + 10,
+        }).eq('id', txn.provider_id)
+
+        await supabase.from('notifications').insert({
+          user_id: txn.provider_id,
+          title: 'Transaction Confirmed!',
+          message: `You earned ${sparks} SPK for "${txn.skill?.skill_name || 'your work'}". It's now in your balance.`,
+          type: 'confirmed',
+          related_id: txn.id
+        })
+      }
+
+      // Debit the receiver: Sparks spent
+      if (txn.receiver_id) {
+        const { data: receiverProfile } = await supabase
+          .from('profiles')
+          .select('sparks_spent')
+          .eq('id', txn.receiver_id)
+          .single()
+
+        await supabase.from('profiles').update({
+          sparks_spent: (receiverProfile?.sparks_spent || 0) + sparks,
+        }).eq('id', txn.receiver_id)
+      }
+
+      await fetchTransactions(user.id)
+      setEndorseModal(txn.id) // prompt them to rate right away
+    } catch (err) {
+      console.error(err)
+    }
+    setUpdating(null)
+  }
+
   const submitEndorsement = async () => {
     if (!endorseModal) return
     const txn = transactions.find(t => t.id === endorseModal)
@@ -160,7 +212,7 @@ export default function Transactions() {
                       )}
                       {txn.status === 'Pending Confirmation' && !isProvider && (
                         <>
-                          <button onClick={() => updateStatus(txn.id, 'Confirmed')} disabled={updating === txn.id} className="btn btn-success btn-sm">
+                          <button onClick={() => confirmTransaction(txn)} disabled={updating === txn.id} className="btn btn-success btn-sm">
                             <CheckCircle size={13} /> Confirm
                           </button>
                           <button onClick={() => updateStatus(txn.id, 'Disputed')} className="btn btn-danger btn-sm">
@@ -194,9 +246,19 @@ export default function Transactions() {
             <p style={{ color: 'var(--text-2)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>Share your experience working with this person.</p>
             <div className="form-group">
               <label className="form-label">Rating</label>
-              <select value={endorseForm.rating} onChange={e => setEndorseForm({ ...endorseForm, rating: parseInt(e.target.value) })} className="form-select">
-                {[5, 4, 3, 2, 1].map(r => <option key={r} value={r}>{r}/5 Stars</option>)}
-              </select>
+              <div style={{ display: 'flex', gap: '0.35rem' }}>
+                {[1, 2, 3, 4, 5].map(n => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setEndorseForm({ ...endorseForm, rating: n })}
+                    aria-label={n + ' star' + (n > 1 ? 's' : '')}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, display: 'flex' }}
+                  >
+                    <Star size={30} color="var(--amber)" fill={n <= endorseForm.rating ? 'var(--amber)' : 'none'} strokeWidth={1.5} />
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="form-group">
               <label className="form-label">Your Endorsement</label>
