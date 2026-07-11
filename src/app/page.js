@@ -172,6 +172,27 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Team & Founder */}
+      <section style={{ padding: '5rem 1.5rem', background: 'var(--brand-light)' }}>
+        <div style={{ maxWidth: 640, margin: '0 auto', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Who We Are</div>
+          <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '1rem' }}>
+            The people behind ElevateHours
+          </h2>
+          <p style={{ color: 'var(--text-2)', fontSize: '0.95rem', lineHeight: 1.75, marginBottom: '2.25rem' }}>
+            Built by a small team that believes skills and time are worth as much as money. Get to know the founder and the people making it happen.
+          </p>
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <a href="/founder" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--brand)', color: 'white', padding: '0.875rem 2rem', borderRadius: 'var(--radius)', fontWeight: 700, fontSize: '0.95rem', boxShadow: 'var(--shadow-brand)' }}>
+              Meet Our Founder <ArrowRight size={16} />
+            </a>
+            <a href="/team" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--surface)', color: 'var(--text)', padding: '0.875rem 2rem', borderRadius: 'var(--radius)', fontWeight: 700, fontSize: '0.95rem', border: '1.5px solid var(--border)' }}>
+              Our Team Members
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* Testimonials */}
       <section style={{ padding: '5rem 1.5rem' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
@@ -195,27 +216,6 @@ export default function LandingPage() {
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Team & Founder */}
-      <section style={{ padding: '5rem 1.5rem', background: 'var(--surface)' }}>
-        <div style={{ maxWidth: 640, margin: '0 auto', textAlign: 'center' }}>
-          <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Who We Are</div>
-          <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '1rem' }}>
-            The people behind ElevateHours
-          </h2>
-          <p style={{ color: 'var(--text-2)', fontSize: '0.95rem', lineHeight: 1.75, marginBottom: '2.25rem' }}>
-            Built by a small team that believes skills and time are worth as much as money. Get to know the founder and the people making it happen.
-          </p>
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <a href="/founder" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--brand)', color: 'white', padding: '0.875rem 2rem', borderRadius: 'var(--radius)', fontWeight: 700, fontSize: '0.95rem', boxShadow: 'var(--shadow-brand)' }}>
-              Meet Our Founder <ArrowRight size={16} />
-            </a>
-            <a href="/team" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--surface-2)', color: 'var(--text)', padding: '0.875rem 2rem', borderRadius: 'var(--radius)', fontWeight: 700, fontSize: '0.95rem', border: '1.5px solid var(--border)' }}>
-              Our Team Members
-            </a>
           </div>
         </div>
       </section>
