@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
+import { ClipboardList, Zap, Calendar, Users, CheckCircle2 } from 'lucide-react'
 
 export default function MyRequests() {
   const router = useRouter()
@@ -122,7 +123,7 @@ export default function MyRequests() {
 
         {requests.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '4rem', background: 'var(--surface)', borderRadius: 16, border: '1px solid var(--border)' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📋</div>
+            <ClipboardList size={40} style={{ margin: '0 auto 1rem', color: 'var(--border-2)' }} />
             <h3 style={{ fontWeight: 700, marginBottom: '0.5rem', color: 'var(--text)' }}>No requests posted yet</h3>
             <p style={{ color: 'var(--text-2)', marginBottom: '1rem' }}>Post a request to find skilled individuals for your needs.</p>
             <a href="/post-request" style={{ background: 'var(--brand)', color: 'white', padding: '0.65rem 1.5rem', borderRadius: 8, fontWeight: 600, textDecoration: 'none', fontSize: '0.875rem' }}>
@@ -156,9 +157,9 @@ export default function MyRequests() {
                         </p>
                         <div style={{ display: 'flex', gap: '1.25rem', fontSize: '0.85rem', color: 'var(--text-2)', flexWrap: 'wrap' }}>
                           <span>⏱ {req.agreed_hours}h</span>
-                          <span>⚡ <strong style={{ color: 'var(--amber)' }}>{req.total_sparks_transferred} SPK</strong></span>
-                          <span>📅 {req.date}</span>
-                          <span>👥 <strong style={{ color: 'var(--text)' }}>{req.applications ? req.applications.length : 0}</strong> applicants</span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Zap size={12} /> <strong style={{ color: 'var(--amber)' }}>{req.total_sparks_transferred} SPK</strong></span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Calendar size={12} /> {req.date}</span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Users size={12} /> <strong style={{ color: 'var(--text)' }}>{req.applications ? req.applications.length : 0}</strong> applicants</span>
                         </div>
                       </div>
 
@@ -198,7 +199,7 @@ export default function MyRequests() {
 
                     {acceptedApp && (
                       <div style={{ marginTop: '1rem', background: 'var(--green-light)', borderRadius: 10, padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <span style={{ fontSize: '1.25rem' }}>✅</span>
+                        <CheckCircle2 size={20} style={{ color: 'var(--green)' }} />
                         <div>
                           <div style={{ fontWeight: 700, color: 'var(--green)', fontSize: '0.875rem' }}>
                             {acceptedApp.applicant ? acceptedApp.applicant.full_name : 'Someone'} accepted
@@ -232,7 +233,9 @@ export default function MyRequests() {
                                   {app.applicant && app.applicant.full_name ? app.applicant.full_name[0].toUpperCase() : '?'}
                                 </div>
                                 <div>
-                                  <div style={{ fontWeight: 700, color: 'var(--text)' }}>{app.applicant ? app.applicant.full_name : 'Unknown'}</div>
+                                  <div style={{ fontWeight: 700 }}>
+                                    {app.applicant ? <a href={'/profile?id=' + app.applicant.id} style={{ color: 'var(--text)' }}>{app.applicant.full_name}</a> : 'Unknown'}
+                                  </div>
                                   <div style={{ color: 'var(--text-2)', fontSize: '0.8rem' }}>
                                     {app.applicant ? app.applicant.tier_level : ''} · {app.applicant ? app.applicant.completed_transactions || 0 : 0} completed · Impact: {app.applicant ? app.applicant.impact_score || 0 : 0}
                                   </div>
