@@ -6,19 +6,19 @@ export default function FounderPage() {
 
       {/* Nav */}
       <nav style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        display: 'flex', flexWrap: 'nowrap', justifyContent: 'space-between', alignItems: 'center',
         padding: '1.2rem 2rem', background: 'var(--surface)',
         boxShadow: 'var(--shadow-sm)', position: 'sticky', top: 0, zIndex: 100,
-        borderBottom: '1px solid var(--border)'
-      }}>
-        <a href="/" style={{ fontWeight: 800, fontSize: '1.4rem', letterSpacing: '-0.02em', textDecoration: 'none', color: 'var(--text)' }}>
+        borderBottom: '1px solid var(--border)', overflowX: 'hidden'
+      }} className="founder-nav">
+        <a href="/" style={{ fontWeight: 800, fontSize: '1.4rem', letterSpacing: '-0.02em', textDecoration: 'none', color: 'var(--text)', flexShrink: 0, whiteSpace: 'nowrap' }} className="founder-nav-logo">
           Elevate<span style={{ color: 'var(--amber)' }}>Hours</span>
         </a>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <a href="/" style={{ color: 'var(--text-2)', fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none' }}>Home</a>
-          <a href="/team" style={{ color: 'var(--text-2)', fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none' }}>Our Team</a>
-          <a href="/auth/login" style={{ color: 'var(--brand)', fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none' }}>Login</a>
-          <a href="/auth/signup" style={{ background: 'var(--brand)', color: 'white', padding: '0.5rem 1.2rem', borderRadius: 8, fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none' }}>Get Started</a>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexShrink: 0 }} className="founder-nav-links">
+          <a href="/" className="founder-nav-home" style={{ color: 'var(--text-2)', fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none' }}>Home</a>
+          <a href="/team" style={{ color: 'var(--text-2)', fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none', whiteSpace: 'nowrap' }}>Our Team</a>
+          <a href="/auth/login" className="founder-nav-login" style={{ color: 'var(--brand)', fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none' }}>Login</a>
+          <a href="/auth/signup" style={{ background: 'var(--brand)', color: 'white', padding: '0.5rem 1.2rem', borderRadius: 8, fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none', whiteSpace: 'nowrap' }}>Get Started</a>
         </div>
       </nav>
 
@@ -69,7 +69,7 @@ export default function FounderPage() {
       {/* Founder Profile */}
       <section style={{ padding: '5rem 2rem', background: 'var(--surface)' }}>
         <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-          <div style={{
+          <div className="founder-grid" style={{
             display: 'grid',
             gridTemplateColumns: 'minmax(260px, 340px) 1fr',
             gap: '4rem',
@@ -77,7 +77,7 @@ export default function FounderPage() {
           }}>
 
             {/* Photo & Info Card */}
-            <div style={{ position: 'sticky', top: '5rem' }}>
+            <div className="founder-sidebar" style={{ position: 'sticky', top: '5rem' }}>
               <div style={{
                 borderRadius: 20, overflow: 'hidden',
                 boxShadow: 'var(--shadow-lg)',
@@ -276,7 +276,17 @@ export default function FounderPage() {
 
       <style>{`
         @media (max-width: 768px) {
-          .founder-grid { grid-template-columns: 1fr !important; }
+          .founder-grid { grid-template-columns: 1fr !important; gap: 2.5rem !important; }
+          .founder-sidebar { position: static !important; top: auto !important; }
+        }
+        @media (max-width: 600px) {
+          .founder-nav { padding: 1rem !important; }
+          .founder-nav-links { gap: 0.6rem !important; }
+        }
+        @media (max-width: 480px) {
+          .founder-grid { gap: 2rem !important; }
+          .founder-nav-logo { font-size: 1.1rem !important; }
+          .founder-nav-home, .founder-nav-login { display: none !important; }
         }
       `}</style>
     </div>
