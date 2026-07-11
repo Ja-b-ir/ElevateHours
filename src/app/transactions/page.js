@@ -3,14 +3,15 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
+import { ArrowLeftRight, CheckCircle, XCircle, Star, Clock, Filter, Zap, Briefcase, GraduationCap } from 'lucide-react'
 
-const STATUS_STYLES = {
-  'Open': { background: '#dcfce7', color: '#166534' },
-  'In Progress': { background: '#dbeafe', color: '#1e40af' },
-  'Pending Confirmation': { background: '#fef3c7', color: '#92400e' },
-  'Confirmed': { background: '#dcfce7', color: '#166534' },
-  'Disputed': { background: '#fee2e2', color: '#991b1b' },
-  'Cancelled': { background: '#f1f5f9', color: '#64748b' },
+const STATUS_BADGE = {
+  'Open': 'badge badge-open',
+  'In Progress': 'badge badge-progress',
+  'Pending Confirmation': 'badge badge-pending',
+  'Confirmed': 'badge badge-confirmed',
+  'Disputed': 'badge badge-disputed',
+  'Cancelled': 'badge badge-cancelled',
 }
 
 export default function Transactions() {
@@ -39,7 +40,7 @@ export default function Transactions() {
   const fetchTransactions = async (uid) => {
     const { data } = await supabase
       .from('transactions')
-      .select(`*, skill:skills_catalog(skill_name, track), tier:tier_reference(tier_name), receiver:profiles!transactions_receiver_id_fkey(id, full_name), provider:profiles!transactions_provider_id_fkey(id, full_name)`)
+      .select('*, skill:skills_catalog(skill_name, track), tier:tier_reference(tier_name), receiver:profiles!transactions_receiver_id_fkey(id, full_name), provider:profiles!transactions_provider_id_fkey(id, full_name)')
       .or(`provider_id.eq.${uid},receiver_id.eq.${uid}`)
       .order('created_at', { ascending: false })
     setTransactions(data || [])
@@ -57,14 +58,9 @@ export default function Transactions() {
     const txn = transactions.find(t => t.id === endorseModal)
     const recipientId = txn.provider_id === user.id ? txn.receiver_id : txn.provider_id
     await supabase.from('endorsements').insert({
-      endorser_id: user.id,
-      recipient_id: recipientId,
-      transaction_id: endorseModal,
-      endorsement_text: endorseForm.text,
-      rating: endorseForm.rating,
-      track: txn.track,
-      skill_id: txn.skill_id,
-      date_given: new Date().toISOString().split('T')[0]
+      endorser_id: user.id, recipient_id: recipientId, transaction_id: endorseModal,
+      endorsement_text: endorseForm.text, rating: endorseForm.rating,
+      track: txn.track, skill_id: txn.skill_id, date_given: new Date().toISOString().split('T')[0]
     })
     setEndorseModal(null)
     setEndorseForm({ text: '', rating: 5 })
@@ -72,26 +68,25 @@ export default function Transactions() {
 
   const filtered = filter === 'All' ? transactions : transactions.filter(t => t.status === filter)
 
-  if (loading) return <div><Navbar /><div style={{ display: 'flex', justifyContent: 'center', padding: '4rem', color: '#64748b' }}>Loading transactions...</div></div>
+  if (loading) return <div><Navbar /><div className="loading-wrap"><div className="spinner" /> Loading transactions...</div></div>
 
   return (
-    <div style={{ background: '#F8F9FA', minHeight: '100vh' }}>
+    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <Navbar />
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '2rem 1.5rem' }}>
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: 800, letterSpacing: '-0.02em' }}>My Transactions</h1>
-          <p style={{ color: '#64748b', marginTop: '0.25rem' }}>Track all your work and education exchanges</p>
+      <div className="page-wrap">
+        <div className="page-header">
+          <h1 className="page-title">My Transactions</h1>
+          <p className="page-subtitle">Track all your work and education exchanges</p>
         </div>
 
-        {/* Status filter */}
-        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', overflowX: 'auto', flexWrap: 'wrap' }}>
+        {/* Filter pills */}
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          <Filter size={13} style={{ color: 'var(--text-3)' }} />
           {statuses.map(s => (
             <button key={s} onClick={() => setFilter(s)} style={{
-              padding: '0.4rem 1rem', borderRadius: 999, border: 'none',
-              background: filter === s ? '#0D7377' : 'white',
-              color: filter === s ? 'white' : '#64748b',
-              fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem',
-              border: `1.5px solid ${filter === s ? '#0D7377' : '#e2e8f0'}`
+              padding: '0.4rem 0.95rem', borderRadius: 'var(--radius-full)', border: `1.5px solid ${filter === s ? 'var(--brand)' : 'var(--border)'}`,
+              background: filter === s ? 'var(--brand)' : 'var(--surface)',
+              color: filter === s ? 'white' : 'var(--text-2)', fontWeight: 600, cursor: 'pointer', fontSize: '0.78rem', transition: 'all var(--transition)', fontFamily: 'inherit'
             }}>
               {s}
             </button>
@@ -99,76 +94,87 @@ export default function Transactions() {
         </div>
 
         {filtered.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '4rem', color: '#64748b', background: 'white', borderRadius: 16, border: '1px solid #e2e8f0' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📋</div>
-            <h3 style={{ fontWeight: 700, marginBottom: '0.5rem', color: '#0B132B' }}>No transactions yet</h3>
+          <div className="card empty-state">
+            <ArrowLeftRight size={40} style={{ margin: '0 auto 1rem', color: 'var(--border-2)' }} />
+            <h3>No transactions found</h3>
             <p>Browse the marketplace to find opportunities.</p>
-            <a href="/marketplace" style={{ color: '#0D7377', fontWeight: 600, marginTop: '0.5rem', display: 'inline-block' }}>Go to Marketplace →</a>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {filtered.map(txn => {
               const isProvider = txn.provider_id === user.id
-              const otherParty = isProvider ? txn.receiver : txn.provider
+              const other = isProvider ? txn.receiver : txn.provider
+              const TrackIcon = txn.track === 'Work' ? Briefcase : GraduationCap
               return (
-                <div key={txn.id} style={{
-                  background: 'white', borderRadius: 16, padding: '1.5rem',
-                  border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(13,115,119,0.06)'
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-                        <h3 style={{ fontWeight: 700, fontSize: '1.05rem' }}>{txn.skill?.skill_name}</h3>
-                        <span style={{
-                          ...STATUS_STYLES[txn.status],
-                          padding: '0.2rem 0.7rem', borderRadius: 999, fontSize: '0.75rem', fontWeight: 700
-                        }}>
-                          {txn.status}
-                        </span>
-                        <span style={{ background: txn.track === 'Work' ? '#ede9fe' : '#dbeafe', color: txn.track === 'Work' ? '#5b21b6' : '#1e40af', padding: '0.2rem 0.7rem', borderRadius: 999, fontSize: '0.75rem', fontWeight: 700 }}>
-                          {txn.track}
-                        </span>
+                <div key={txn.id} className="card" style={{ transition: 'box-shadow var(--transition)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1.25rem' }}>
+
+                    <div style={{ display: 'flex', gap: '1rem', flex: 1, minWidth: 260 }}>
+                      <div style={{
+                        width: 42, height: 42, borderRadius: '50%', flexShrink: 0,
+                        background: other ? 'linear-gradient(135deg, var(--brand), var(--brand-mid))' : 'var(--surface-3)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: 'white', fontWeight: 700, fontSize: '0.9rem'
+                      }}>
+                        {other?.full_name?.[0]?.toUpperCase() || <TrackIcon size={16} style={{ color: 'var(--text-3)' }} />}
                       </div>
-                      <div style={{ color: '#64748b', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
-                        {isProvider ? '📤 You are providing to' : '📥 You requested from'}: <strong>{otherParty?.full_name || 'Unassigned'}</strong>
-                      </div>
-                      <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.85rem', color: '#64748b', flexWrap: 'wrap' }}>
-                        <span>⏱ {txn.hours_contributed || txn.agreed_hours}h</span>
-                        <span>⚡ <strong style={{ color: '#F5A623' }}>{txn.total_sparks_transferred || 0} SPK</strong></span>
-                        <span>📅 {txn.date || 'N/A'}</span>
-                        <span>{txn.tier?.tier_name}</span>
-                      </div>
-                      {txn.description && (
-                        <p style={{ color: '#64748b', fontSize: '0.85rem', marginTop: '0.5rem', lineHeight: 1.5 }}>
-                          {txn.description}
+
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem', flexWrap: 'wrap' }}>
+                          <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text)' }}>{txn.skill?.skill_name}</span>
+                          <span className={STATUS_BADGE[txn.status] || 'badge badge-gray'}>{txn.status}</span>
+                          <span className={`badge ${txn.track === 'Work' ? 'badge-purple' : 'badge-blue'}`}>
+                            <TrackIcon size={10} style={{ marginRight: 3, verticalAlign: -1 }} />{txn.track}
+                          </span>
+                        </div>
+
+                        <p style={{ color: 'var(--text-2)', fontSize: '0.825rem', marginBottom: '0.625rem' }}>
+                          {isProvider ? 'Providing to' : 'Requested from'}:{' '}
+                          {other ? (
+                            <a href={'/profile?id=' + other.id} style={{ color: 'var(--brand)', fontWeight: 700, textDecoration: 'underline' }}>{other.full_name}</a>
+                          ) : (
+                            <strong style={{ color: 'var(--text)' }}>Unassigned</strong>
+                          )}
                         </p>
-                      )}
+
+                        <div style={{ display: 'flex', gap: '1.25rem', fontSize: '0.78rem', color: 'var(--text-3)', flexWrap: 'wrap' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Clock size={11} /> {txn.hours_contributed || txn.agreed_hours}h</span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontWeight: 700, color: 'var(--amber-dark)' }}><Zap size={11} /> {txn.total_sparks_transferred || 0} SPK</span>
+                          {txn.date && <span>{txn.date}</span>}
+                          {txn.tier?.tier_name && <span style={{ color: 'var(--text-2)' }}>{txn.tier.tier_name}</span>}
+                        </div>
+
+                        {txn.description && (
+                          <p style={{ color: 'var(--text-3)', fontSize: '0.78rem', marginTop: '0.625rem', lineHeight: 1.55, borderTop: '1px solid var(--border)', paddingTop: '0.625rem' }}>
+                            {txn.description}
+                          </p>
+                        )}
+                      </div>
                     </div>
 
-                    {/* Actions */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flexShrink: 0 }}>
                       {txn.status === 'In Progress' && isProvider && (
-                        <button onClick={() => updateStatus(txn.id, 'Pending Confirmation')} disabled={updating === txn.id} style={{ background: '#F5A623', color: '#0B132B', padding: '0.5rem 1rem', borderRadius: 8, border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
+                        <button onClick={() => updateStatus(txn.id, 'Pending Confirmation')} disabled={updating === txn.id} className="btn btn-amber btn-sm">
                           Mark Complete
                         </button>
                       )}
                       {txn.status === 'Pending Confirmation' && !isProvider && (
-                        <button onClick={() => updateStatus(txn.id, 'Confirmed')} disabled={updating === txn.id} style={{ background: '#14A085', color: 'white', padding: '0.5rem 1rem', borderRadius: 8, border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
-                          ✓ Confirm Completion
-                        </button>
-                      )}
-                      {txn.status === 'Pending Confirmation' && !isProvider && (
-                        <button onClick={() => updateStatus(txn.id, 'Disputed')} style={{ background: '#fee2e2', color: '#991b1b', padding: '0.5rem 1rem', borderRadius: 8, border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
-                          Dispute
-                        </button>
+                        <>
+                          <button onClick={() => updateStatus(txn.id, 'Confirmed')} disabled={updating === txn.id} className="btn btn-success btn-sm">
+                            <CheckCircle size={13} /> Confirm
+                          </button>
+                          <button onClick={() => updateStatus(txn.id, 'Disputed')} className="btn btn-danger btn-sm">
+                            <XCircle size={13} /> Dispute
+                          </button>
+                        </>
                       )}
                       {txn.status === 'Confirmed' && (
-                        <button onClick={() => setEndorseModal(txn.id)} style={{ background: '#e8f4f4', color: '#0D7377', padding: '0.5rem 1rem', borderRadius: 8, border: '1.5px solid #0D7377', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
-                          ⭐ Endorse
+                        <button onClick={() => setEndorseModal(txn.id)} className="btn btn-secondary btn-sm">
+                          <Star size={13} /> Endorse
                         </button>
                       )}
                       {txn.status === 'Open' && !isProvider && (
-                        <button onClick={() => updateStatus(txn.id, 'Cancelled')} style={{ background: '#f1f5f9', color: '#64748b', padding: '0.5rem 1rem', borderRadius: 8, border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
+                        <button onClick={() => updateStatus(txn.id, 'Cancelled')} className="btn btn-secondary btn-sm">
                           Cancel
                         </button>
                       )}
@@ -181,28 +187,24 @@ export default function Transactions() {
         )}
       </div>
 
-      {/* Endorse Modal */}
       {endorseModal && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 1000, padding: '1rem'
-        }}>
-          <div style={{ background: 'white', borderRadius: 20, padding: '2rem', maxWidth: 440, width: '100%' }}>
-            <h2 style={{ fontWeight: 800, marginBottom: '1.25rem' }}>Write an Endorsement</h2>
-            <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.4rem' }}>Rating</label>
-              <select value={endorseForm.rating} onChange={e => setEndorseForm({ ...endorseForm, rating: parseInt(e.target.value) })} style={{ width: '100%', padding: '0.7rem', border: '1.5px solid #e2e8f0', borderRadius: 8, fontSize: '0.95rem' }}>
-                {[5, 4, 3, 2, 1].map(r => <option key={r} value={r}>{'⭐'.repeat(r)} ({r}/5)</option>)}
+        <div className="modal-overlay" onClick={() => setEndorseModal(null)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()}>
+            <h2 style={{ marginBottom: '0.375rem' }}>Write an Endorsement</h2>
+            <p style={{ color: 'var(--text-2)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>Share your experience working with this person.</p>
+            <div className="form-group">
+              <label className="form-label">Rating</label>
+              <select value={endorseForm.rating} onChange={e => setEndorseForm({ ...endorseForm, rating: parseInt(e.target.value) })} className="form-select">
+                {[5, 4, 3, 2, 1].map(r => <option key={r} value={r}>{r}/5 Stars</option>)}
               </select>
             </div>
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.4rem' }}>Endorsement</label>
-              <textarea rows={4} value={endorseForm.text} onChange={e => setEndorseForm({ ...endorseForm, text: e.target.value })} placeholder="Share your experience working with this person..." style={{ width: '100%', padding: '0.7rem', border: '1.5px solid #e2e8f0', borderRadius: 8, fontSize: '0.95rem', resize: 'vertical' }} />
+            <div className="form-group">
+              <label className="form-label">Your Endorsement</label>
+              <textarea rows={4} value={endorseForm.text} onChange={e => setEndorseForm({ ...endorseForm, text: e.target.value })} placeholder="Share your experience..." className="form-textarea" />
             </div>
             <div style={{ display: 'flex', gap: '0.75rem' }}>
-              <button onClick={() => setEndorseModal(null)} style={{ flex: 1, padding: '0.75rem', background: '#F8F9FA', color: '#64748b', border: '1.5px solid #e2e8f0', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
-              <button onClick={submitEndorsement} style={{ flex: 1, padding: '0.75rem', background: '#0D7377', color: 'white', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }}>Submit Endorsement</button>
+              <button onClick={() => setEndorseModal(null)} className="btn btn-secondary" style={{ flex: 1 }}>Cancel</button>
+              <button onClick={submitEndorsement} className="btn btn-primary" style={{ flex: 1 }}>Submit</button>
             </div>
           </div>
         </div>
