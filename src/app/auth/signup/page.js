@@ -1,10 +1,36 @@
 'use client'
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { User, Mail, Lock, Phone, ChevronRight } from 'lucide-react'
+import { User, Mail, Lock, Phone, Globe, ChevronRight } from 'lucide-react'
+
+const COUNTRIES = [
+  'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia',
+  'Australia', 'Austria', 'Azerbaijan', 'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium',
+  'Belize', 'Benin', 'Bhutan', 'Bolivia', 'Bosnia and Herzegovina', 'Botswana', 'Brazil', 'Brunei', 'Bulgaria',
+  'Burkina Faso', 'Burundi', 'Cabo Verde', 'Cambodia', 'Cameroon', 'Canada', 'Central African Republic', 'Chad',
+  'Chile', 'China', 'Colombia', 'Comoros', 'Congo (Republic of the)', 'Congo (DR)', 'Costa Rica', "Cote d'Ivoire",
+  'Croatia', 'Cuba', 'Cyprus', 'Czechia', 'Denmark', 'Djibouti', 'Dominica', 'Dominican Republic', 'Ecuador',
+  'Egypt', 'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Estonia', 'Eswatini', 'Ethiopia', 'Fiji', 'Finland',
+  'France', 'Gabon', 'Gambia', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Grenada', 'Guatemala', 'Guinea',
+  'Guinea-Bissau', 'Guyana', 'Haiti', 'Honduras', 'Hungary', 'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq',
+  'Ireland', 'Italy', 'Jamaica', 'Japan', 'Jordan', 'Kazakhstan', 'Kenya', 'Kiribati', 'Kuwait', 'Kyrgyzstan',
+  'Laos', 'Latvia', 'Lebanon', 'Lesotho', 'Liberia', 'Libya', 'Liechtenstein', 'Lithuania', 'Luxembourg',
+  'Madagascar', 'Malawi', 'Malaysia', 'Maldives', 'Mali', 'Malta', 'Marshall Islands', 'Mauritania', 'Mauritius',
+  'Mexico', 'Micronesia', 'Moldova', 'Monaco', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique', 'Myanmar',
+  'Namibia', 'Nauru', 'Nepal', 'Netherlands', 'New Zealand', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea',
+  'North Macedonia', 'Norway', 'Oman', 'Pakistan', 'Palau', 'Palestine', 'Panama', 'Papua New Guinea',
+  'Paraguay', 'Peru', 'Philippines', 'Poland', 'Portugal', 'Qatar', 'Romania', 'Russia', 'Rwanda',
+  'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa', 'San Marino',
+  'Sao Tome and Principe', 'Saudi Arabia', 'Senegal', 'Serbia', 'Seychelles', 'Sierra Leone', 'Singapore',
+  'Slovakia', 'Slovenia', 'Solomon Islands', 'Somalia', 'South Africa', 'South Korea', 'South Sudan', 'Spain',
+  'Sri Lanka', 'Sudan', 'Suriname', 'Sweden', 'Switzerland', 'Syria', 'Taiwan', 'Tajikistan', 'Tanzania',
+  'Thailand', 'Timor-Leste', 'Togo', 'Tonga', 'Trinidad and Tobago', 'Tunisia', 'Turkey', 'Turkmenistan',
+  'Tuvalu', 'Uganda', 'Ukraine', 'United Arab Emirates', 'United Kingdom', 'United States', 'Uruguay',
+  'Uzbekistan', 'Vanuatu', 'Vatican City', 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe'
+]
 
 export default function SignupPage() {
-  const [form, setForm] = useState({ full_name: '', email: '', password: '', account_type: 'Personal', whatsapp_number: '' })
+  const [form, setForm] = useState({ full_name: '', email: '', password: '', account_type: 'Personal', whatsapp_number: '', country: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -19,7 +45,7 @@ export default function SignupPage() {
       })
       if (error) throw error
       if (data?.user) {
-        await supabase.from('profiles').upsert({ id: data.user.id, email: form.email, full_name: form.full_name, account_type: form.account_type, whatsapp_number: form.whatsapp_number, sparks_purchased_total: 250 })
+        await supabase.from('profiles').upsert({ id: data.user.id, email: form.email, full_name: form.full_name, account_type: form.account_type, whatsapp_number: form.whatsapp_number, country: form.country, sparks_purchased_total: 250 })
         window.location.href = '/dashboard'
       } else { setError('Signup failed. Please try again.') }
     } catch (err) { setError(err.message || JSON.stringify(err)) }
@@ -79,6 +105,25 @@ export default function SignupPage() {
               {note && <p style={{ fontSize: '0.72rem', color: 'var(--text-3)', marginTop: '0.35rem' }}>{note}</p>}
             </div>
           ))}
+
+          <div className="form-group">
+            <label className="form-label">Country</label>
+            <div style={{ position: 'relative' }}>
+              <div style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)', pointerEvents: 'none' }}>
+                <Globe size={15} />
+              </div>
+              <select
+                required
+                value={form.country}
+                onChange={e => setForm({ ...form, country: e.target.value })}
+                className="form-select"
+                style={{ paddingLeft: '2.5rem' }}
+              >
+                <option value="">Select your country...</option>
+                {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+          </div>
 
           <div className="form-group">
             <label className="form-label">Account Type</label>
