@@ -3,7 +3,35 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
-import { Mail, MessageCircle, CheckCircle2, BarChart3, Star, Zap, Award, AlertTriangle } from 'lucide-react'
+import { Mail, MessageCircle, CheckCircle2, BarChart3, Star, Zap, Award, AlertTriangle, Globe, Clock } from 'lucide-react'
+
+const COUNTRIES = [
+  'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia',
+  'Australia', 'Austria', 'Azerbaijan', 'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium',
+  'Belize', 'Benin', 'Bhutan', 'Bolivia', 'Bosnia and Herzegovina', 'Botswana', 'Brazil', 'Brunei', 'Bulgaria',
+  'Burkina Faso', 'Burundi', 'Cabo Verde', 'Cambodia', 'Cameroon', 'Canada', 'Central African Republic', 'Chad',
+  'Chile', 'China', 'Colombia', 'Comoros', 'Congo (Republic of the)', 'Congo (DR)', 'Costa Rica', "Cote d'Ivoire",
+  'Croatia', 'Cuba', 'Cyprus', 'Czechia', 'Denmark', 'Djibouti', 'Dominica', 'Dominican Republic', 'Ecuador',
+  'Egypt', 'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Estonia', 'Eswatini', 'Ethiopia', 'Fiji', 'Finland',
+  'France', 'Gabon', 'Gambia', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Grenada', 'Guatemala', 'Guinea',
+  'Guinea-Bissau', 'Guyana', 'Haiti', 'Honduras', 'Hungary', 'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq',
+  'Ireland', 'Italy', 'Jamaica', 'Japan', 'Jordan', 'Kazakhstan', 'Kenya', 'Kiribati', 'Kuwait', 'Kyrgyzstan',
+  'Laos', 'Latvia', 'Lebanon', 'Lesotho', 'Liberia', 'Libya', 'Liechtenstein', 'Lithuania', 'Luxembourg',
+  'Madagascar', 'Malawi', 'Malaysia', 'Maldives', 'Mali', 'Malta', 'Marshall Islands', 'Mauritania', 'Mauritius',
+  'Mexico', 'Micronesia', 'Moldova', 'Monaco', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique', 'Myanmar',
+  'Namibia', 'Nauru', 'Nepal', 'Netherlands', 'New Zealand', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea',
+  'North Macedonia', 'Norway', 'Oman', 'Pakistan', 'Palau', 'Palestine', 'Panama', 'Papua New Guinea',
+  'Paraguay', 'Peru', 'Philippines', 'Poland', 'Portugal', 'Qatar', 'Romania', 'Russia', 'Rwanda',
+  'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa', 'San Marino',
+  'Sao Tome and Principe', 'Saudi Arabia', 'Senegal', 'Serbia', 'Seychelles', 'Sierra Leone', 'Singapore',
+  'Slovakia', 'Slovenia', 'Solomon Islands', 'Somalia', 'South Africa', 'South Korea', 'South Sudan', 'Spain',
+  'Sri Lanka', 'Sudan', 'Suriname', 'Sweden', 'Switzerland', 'Syria', 'Taiwan', 'Tajikistan', 'Tanzania',
+  'Thailand', 'Timor-Leste', 'Togo', 'Tonga', 'Trinidad and Tobago', 'Tunisia', 'Turkey', 'Turkmenistan',
+  'Tuvalu', 'Uganda', 'Ukraine', 'United Arab Emirates', 'United Kingdom', 'United States', 'Uruguay',
+  'Uzbekistan', 'Vanuatu', 'Vatican City', 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe'
+]
+
+const COOLDOWN_DAYS = 60
 
 function ProfileContent() {
   const router = useRouter()
@@ -22,6 +50,11 @@ function ProfileContent() {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
   const [deleting, setDeleting] = useState(false)
+  const [showCountryModal, setShowCountryModal] = useState(false)
+  const [newCountry, setNewCountry] = useState('')
+  const [countrySubmitting, setCountrySubmitting] = useState(false)
+  const [countryError, setCountryError] = useState('')
+  const [pendingRequest, setPendingRequest] = useState(null)
 
   useEffect(() => {
     const init = async () => {
@@ -54,6 +87,17 @@ function ProfileContent() {
         .select('*, badge:badges(badge_name, description, badge_type)')
         .eq('profile_id', targetId)
       setBadges(badgeData || [])
+      if (!viewId || viewId === user.id) {
+        const { data: pending } = await supabase
+          .from('country_change_requests')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('status', 'Pending')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+        setPendingRequest(pending || null)
+      }
       setLoading(false)
     }
     init()
@@ -88,6 +132,36 @@ function ProfileContent() {
     }
   }
 
+  const daysUntilEligible = () => {
+    if (!profile?.country_updated_at) return 0
+    const diffDays = (new Date() - new Date(profile.country_updated_at)) / 86400000
+    return Math.max(0, Math.ceil(COOLDOWN_DAYS - diffDays))
+  }
+
+  const submitCountryRequest = async () => {
+    setCountryError('')
+    if (!newCountry) { setCountryError('Please select a country'); return }
+    if (newCountry === profile.country) { setCountryError('That is already your current country'); return }
+    setCountrySubmitting(true)
+    try {
+      const { data, error } = await supabase.from('country_change_requests').insert({
+        user_id: currentUser.id,
+        current_country: profile.country || '',
+        requested_country: newCountry,
+        status: 'Pending'
+      }).select().single()
+      if (error) throw error
+      setPendingRequest(data)
+      setShowCountryModal(false)
+      setNewCountry('')
+      setSuccess('Country change request submitted for review.')
+      setTimeout(function() { setSuccess('') }, 4000)
+    } catch (err) {
+      setCountryError(err.message)
+    }
+    setCountrySubmitting(false)
+  }
+
   const isOwnProfile = !viewId || viewId === currentUser?.id
   const permanentBalance = (profile?.sparks_earned || 0) - (profile?.sparks_spent || 0) + (profile?.sparks_purchased_total || 0)
   const totalBalance = permanentBalance + (profile?.active_gifts_received || 0)
@@ -117,6 +191,11 @@ function ProfileContent() {
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <Navbar />
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '2rem 1.5rem' }}>
+        {success && !editing && (
+          <div style={{ background: 'var(--green-light)', color: 'var(--green)', padding: '0.75rem 1.125rem', borderRadius: 10, fontSize: '0.875rem', fontWeight: 600, marginBottom: '1.25rem' }}>
+            {success}
+          </div>
+        )}
 
         {/* Profile Header Card */}
         <div style={{ background: 'var(--surface)', borderRadius: 20, padding: '2rem', marginBottom: '1.5rem', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
@@ -264,6 +343,35 @@ function ProfileContent() {
             </div>
           )}
 
+          {/* Country — own profile only */}
+          {isOwnProfile && !editing && (
+            <div style={{ marginTop: '1.25rem', padding: '1rem 1.25rem', background: 'var(--surface-2)', borderRadius: 12, border: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <Globe size={18} style={{ color: 'var(--text-2)' }} />
+                <div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-2)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Country</div>
+                  <div style={{ fontWeight: 700, color: 'var(--text)' }}>{profile.country || 'Not set'}</div>
+                </div>
+              </div>
+              {pendingRequest ? (
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--amber-dark)', fontSize: '0.8rem', fontWeight: 600 }}>
+                  <Clock size={14} /> Change to {pendingRequest.requested_country} pending review
+                </span>
+              ) : daysUntilEligible() > 0 ? (
+                <span style={{ color: 'var(--text-3)', fontSize: '0.8rem' }}>
+                  Next request available in {daysUntilEligible()} day{daysUntilEligible() === 1 ? '' : 's'}
+                </span>
+              ) : (
+                <button
+                  onClick={function() { setShowCountryModal(true) }}
+                  style={{ background: 'var(--brand-light)', color: 'var(--brand)', padding: '0.45rem 1rem', borderRadius: 8, border: '1.5px solid var(--brand)', fontWeight: 600, cursor: 'pointer', fontSize: '0.8rem' }}
+                >
+                  Request Country Change
+                </button>
+              )}
+            </div>
+          )}
+
           {/* Balance — own profile only */}
           {isOwnProfile && !editing && (
             <div style={{ marginTop: '1.25rem', padding: '1.25rem', background: 'linear-gradient(135deg, var(--brand), var(--brand-mid))', borderRadius: 12, color: 'white' }}>
@@ -363,6 +471,46 @@ function ProfileContent() {
           </div>
         )}
       </div>
+
+      {/* Country Change Request Modal */}
+      {showCountryModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
+          <div style={{ background: 'var(--surface)', borderRadius: 20, padding: '2rem', maxWidth: 440, width: '100%' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', color: 'var(--brand)', marginBottom: '1rem' }}><Globe size={36} /></div>
+            <h2 style={{ fontWeight: 800, fontSize: '1.2rem', marginBottom: '0.5rem', color: 'var(--text)', textAlign: 'center' }}>Request Country Change</h2>
+            <p style={{ color: 'var(--text-2)', fontSize: '0.875rem', lineHeight: 1.6, marginBottom: '1.5rem', textAlign: 'center' }}>
+              Your current country is <strong style={{ color: 'var(--text)' }}>{profile.country || 'Not set'}</strong>. This request will be reviewed before it takes effect, and you won't be able to request again for {COOLDOWN_DAYS} days after approval.
+            </p>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.5rem', color: 'var(--text)' }}>New Country</label>
+              <select
+                value={newCountry}
+                onChange={function(e) { setNewCountry(e.target.value) }}
+                style={{ width: '100%', padding: '0.7rem', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.95rem', outline: 'none', background: 'var(--surface-2)', color: 'var(--text)' }}
+              >
+                <option value="">Select a country...</option>
+                {COUNTRIES.map(function(c) { return <option key={c} value={c}>{c}</option> })}
+              </select>
+            </div>
+            {countryError && <div style={{ color: 'var(--red)', fontSize: '0.825rem', marginBottom: '1rem' }}>{countryError}</div>}
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <button
+                onClick={function() { setShowCountryModal(false); setNewCountry(''); setCountryError('') }}
+                style={{ flex: 1, padding: '0.75rem', background: 'var(--surface-3)', color: 'var(--text-2)', border: '1.5px solid var(--border)', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitCountryRequest}
+                disabled={countrySubmitting || !newCountry}
+                style={{ flex: 1, padding: '0.75rem', background: 'var(--brand)', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: countrySubmitting ? 'not-allowed' : 'pointer', opacity: countrySubmitting || !newCountry ? 0.6 : 1 }}
+              >
+                {countrySubmitting ? 'Submitting...' : 'Submit Request'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete Account Modal */}
       {showDeleteModal && (
