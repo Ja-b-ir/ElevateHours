@@ -32,17 +32,17 @@ export default function LandingPage() {
     <div style={{ fontFamily: 'Inter, -apple-system, sans-serif', background: 'var(--bg)', color: 'var(--text)', minHeight: '100vh' }}>
 
       {/* Navbar */}
-      <nav style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 100, backdropFilter: 'blur(12px)' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 60 }}>
-          <div style={{ fontWeight: 900, fontSize: '1.2rem', letterSpacing: '-0.03em' }}>
+      <nav style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 100, backdropFilter: 'blur(12px)', overflowX: 'hidden' }}>
+        <div className="eh-land-nav" style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem', display: 'flex', flexWrap: 'nowrap', alignItems: 'center', justifyContent: 'space-between', height: 60 }}>
+          <div className="eh-land-logo" style={{ fontWeight: 900, fontSize: '1.2rem', letterSpacing: '-0.03em', whiteSpace: 'nowrap', flexShrink: 0 }}>
             Elevate<span style={{ color: 'var(--brand)' }}>Hours</span>
           </div>
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-            <button onClick={toggleTheme} style={{ width: 36, height: 36, borderRadius: 'var(--radius-sm)', background: 'var(--surface-3)', border: '1px solid var(--border)', color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <div className="eh-land-actions" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexShrink: 0 }}>
+            <button onClick={toggleTheme} style={{ width: 36, height: 36, borderRadius: 'var(--radius-sm)', background: 'var(--surface-3)', border: '1px solid var(--border)', color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
               {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
             </button>
-            <a href="/auth/login" style={{ color: 'var(--text-2)', fontWeight: 600, fontSize: '0.875rem', padding: '0.45rem 0.875rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--surface-2)' }}>Sign in</a>
-            <a href="/auth/signup" style={{ color: 'white', fontWeight: 600, fontSize: '0.875rem', padding: '0.45rem 1rem', borderRadius: 'var(--radius-sm)', background: 'var(--brand)' }}>Get Started</a>
+            <a href="/auth/login" className="eh-land-signin" style={{ color: 'var(--text-2)', fontWeight: 600, fontSize: '0.875rem', padding: '0.45rem 0.875rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--surface-2)', whiteSpace: 'nowrap' }}>Sign in</a>
+            <a href="/auth/signup" style={{ color: 'white', fontWeight: 600, fontSize: '0.875rem', padding: '0.45rem 1rem', borderRadius: 'var(--radius-sm)', background: 'var(--brand)', whiteSpace: 'nowrap' }}>Get Started</a>
           </div>
         </div>
       </nav>
@@ -279,6 +279,18 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      <style>{`
+        @media (max-width: 480px) {
+          .eh-land-nav { padding: 0 1rem !important; }
+          .eh-land-logo { font-size: 1.05rem !important; }
+          .eh-land-actions { gap: 0.4rem !important; }
+          .eh-land-signin { padding: 0.45rem 0.65rem !important; font-size: 0.8rem !important; }
+        }
+        @media (max-width: 360px) {
+          .eh-land-signin { display: none !important; }
+        }
+      `}</style>
     </div>
   )
 }
