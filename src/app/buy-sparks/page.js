@@ -65,29 +65,12 @@ export default function BuySparks() {
   const RATE = isRegional ? REGIONAL_RATE : STANDARD_RATE
 
   const purchaseBundle = async (bundle) => {
-    setPurchasing(bundle.name)
-    try {
-      await supabase.from('spark_purchases').insert({ buyer_id: user.id, purchase_type: 'Bundle', bundle: bundle.name, sparks_purchased: bundle.sparks, price_paid: bundle.price, date_purchased: new Date().toISOString().split('T')[0] })
-      setSuccess(`Successfully purchased ${bundle.sparks.toLocaleString()} SPK!`)
-      await refreshProfile()
-      setTimeout(() => setSuccess(''), 4000)
-    } catch (err) { console.error(err) }
-    setPurchasing(null)
-  }
+  alert('Payment gateway coming soon! Spark purchases will be available once payment integration is complete.')
+}
 
-  const purchaseFixed = async () => {
-    const amt = parseInt(customAmount)
-    if (!amt || amt < 100) { alert('Minimum purchase is 100 SPK'); return }
-    setPurchasing('fixed')
-    try {
-      await supabase.from('spark_purchases').insert({ buyer_id: user.id, purchase_type: 'Fixed Rate', sparks_purchased: amt, price_paid: (amt * RATE).toFixed(2), date_purchased: new Date().toISOString().split('T')[0] })
-      setSuccess(`Successfully purchased ${amt.toLocaleString()} SPK!`)
-      setCustomAmount('')
-      await refreshProfile()
-      setTimeout(() => setSuccess(''), 4000)
-    } catch (err) { console.error(err) }
-    setPurchasing(null)
-  }
+const purchaseFixed = async () => {
+  alert('Payment gateway coming soon! Spark purchases will be available once payment integration is complete.')
+}
 
   const permanent = (profile?.sparks_earned || 0) - (profile?.sparks_spent || 0) + (profile?.sparks_purchased_total || 0)
   const total = permanent + (profile?.active_gifts_received || 0)
