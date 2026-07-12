@@ -53,6 +53,53 @@ export default function Transactions() {
     setUpdating(null)
   }
 
+  // Requester marks the delivered work as complete — this notifies the provider,
+  // who must confirm before anything is finalized or rewarded.
+  const markAsComplete = async (txn) => {
+    setUpdating(txn.id)
+    try {
+      await supabase.from('transactions').update({ status: 'Pending Confirmation' }).eq('id', txn.id)
+
+      if (txn.provider_id) {
+        await supabase.from('notifications').insert({
+          user_id: txn.provider_id,
+          title: 'Work Marked as Complete',
+          message: `${txn.receiver?.full_name || 'The requester'} marked "${txn.skill?.skill_name || 'your work'}" as complete. Please confirm to receive your Sparks.`,
+          type: 'application',
+          related_id: txn.id
+        })
+      }
+
+      await fetchTransactions(user.id)
+    } catch (err) {
+      console.error(err)
+    }
+    setUpdating(null)
+  }
+
+  // Provider declines — reverts to In Progress and notifies the requester.
+  const declineCompletion = async (txn) => {
+    setUpdating(txn.id)
+    try {
+      await supabase.from('transactions').update({ status: 'In Progress' }).eq('id', txn.id)
+
+      if (txn.receiver_id) {
+        await supabase.from('notifications').insert({
+          user_id: txn.receiver_id,
+          title: 'Completion Declined',
+          message: `${txn.provider?.full_name || 'The provider'} declined the completion for "${txn.skill?.skill_name || 'this request'}". It's back in progress.`,
+          type: 'rejected',
+          related_id: txn.id
+        })
+      }
+
+      await fetchTransactions(user.id)
+    } catch (err) {
+      console.error(err)
+    }
+    setUpdating(null)
+  }
+
   // Confirming a transaction is what actually rewards Sparks and updates both profiles.
   const confirmTransaction = async (txn) => {
     setUpdating(txn.id)
@@ -205,20 +252,23 @@ export default function Transactions() {
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flexShrink: 0 }}>
-                      {txn.status === 'In Progress' && isProvider && (
-                        <button onClick={() => updateStatus(txn.id, 'Pending Confirmation')} disabled={updating === txn.id} className="btn btn-amber btn-sm">
+                      {txn.status === 'In Progress' && !isProvider && (
+                        <button onClick={() => markAsComplete(txn)} disabled={updating === txn.id} className="btn btn-amber btn-sm">
                           Mark Complete
                         </button>
                       )}
-                      {txn.status === 'Pending Confirmation' && !isProvider && (
+                      {txn.status === 'Pending Confirmation' && isProvider && (
                         <>
                           <button onClick={() => confirmTransaction(txn)} disabled={updating === txn.id} className="btn btn-success btn-sm">
                             <CheckCircle size={13} /> Confirm
                           </button>
-                          <button onClick={() => updateStatus(txn.id, 'Disputed')} className="btn btn-danger btn-sm">
-                            <XCircle size={13} /> Dispute
+                          <button onClick={() => declineCompletion(txn)} disabled={updating === txn.id} className="btn btn-danger btn-sm">
+                            <XCircle size={13} /> Decline
                           </button>
                         </>
+                      )}
+                      {txn.status === 'Pending Confirmation' && !isProvider && (
+                        <span style={{ fontSize: '0.78rem', color: 'var(--text-3)', fontStyle: 'italic' }}>Waiting on provider to confirm</span>
                       )}
                       {txn.status === 'Confirmed' && (
                         <button onClick={() => setEndorseModal(txn.id)} className="btn btn-secondary btn-sm">
