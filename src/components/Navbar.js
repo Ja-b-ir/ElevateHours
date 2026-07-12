@@ -205,10 +205,10 @@ export default function Navbar() {
 
               {dropdownOpen && (
                 <div style={{
-                  position: 'absolute', right: 0, top: 'calc(100% + 8px)',
+                  position: 'fixed', right: 16, top: 68,
                   background: 'var(--surface)', border: '1px solid var(--border)',
                   borderRadius: 'var(--radius)', boxShadow: 'var(--shadow-lg)',
-                  minWidth: 180, zIndex: 200, overflow: 'hidden'
+                  minWidth: 200, zIndex: 9999, overflow: 'hidden'
                 }}>
                   <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border)' }}>
                     <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text)' }}>{profile?.full_name}</div>
