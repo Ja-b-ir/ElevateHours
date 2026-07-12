@@ -99,8 +99,9 @@ export default function NotificationsPage() {
                 display: 'flex', gap: '0.875rem', alignItems: 'flex-start',
                 transition: 'all var(--transition)'
               }
+              const destination = notif.type === 'application' ? '/my-requests' : '/transactions'
               return notif.related_id ? (
-                <a key={notif.id} href="/transactions" style={{ ...cardStyle, textDecoration: 'none' }}>{content}</a>
+                <a key={notif.id} href={destination} style={{ ...cardStyle, textDecoration: 'none' }}>{content}</a>
               ) : (
                 <div key={notif.id} style={cardStyle}>{content}</div>
               )
