@@ -14,6 +14,7 @@ export default function Navbar() {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [unreadCount, setUnreadCount] = useState(0)
+  const [pendingApps, setPendingApps] = useState(0)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [theme, setTheme] = useState('light')
   const dropdownRef = useRef(null)
@@ -41,6 +42,7 @@ export default function Navbar() {
         const { data: prof } = await supabase.from('profiles').select('full_name, account_type').eq('id', user.id).single()
         setProfile(prof)
         fetchUnread(user.id)
+        fetchPendingApps(user.id)
       }
     }
     init()
@@ -51,10 +53,19 @@ export default function Navbar() {
     setUnreadCount(count || 0)
   }
 
+  const fetchPendingApps = async (uid) => {
+    const { data: myTxns } = await supabase.from('transactions').select('id').eq('receiver_id', uid)
+    const ids = (myTxns || []).map(t => t.id)
+    if (ids.length === 0) { setPendingApps(0); return }
+    const { count } = await supabase.from('applications').select('*', { count: 'exact', head: true }).eq('status', 'Pending').in('transaction_id', ids)
+    setPendingApps(count || 0)
+  }
+
   useEffect(() => {
     if (!user) return
     const ch = supabase.channel('notif-count').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, () => fetchUnread(user.id)).subscribe()
-    return () => supabase.removeChannel(ch)
+    const appCh = supabase.channel('app-count').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'applications' }, () => fetchPendingApps(user.id)).subscribe()
+    return () => { supabase.removeChannel(ch); supabase.removeChannel(appCh) }
   }, [user])
 
   useEffect(() => {
@@ -116,7 +127,7 @@ export default function Navbar() {
           <div className="eh-desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: '0.125rem', flex: 1, overflow: 'hidden' }}>
             {links.map(({ href, label, icon: Icon }) => (
               <a key={href} href={href} style={{
-                display: 'flex', alignItems: 'center', gap: '0.375rem',
+                display: 'flex', alignItems: 'center', gap: '0.375rem', position: 'relative',
                 padding: '0.45rem 0.75rem', borderRadius: 'var(--radius-sm)',
                 fontSize: '0.825rem', fontWeight: 600,
                 color: isActive(href) ? 'var(--brand)' : 'var(--text-2)',
@@ -125,6 +136,15 @@ export default function Navbar() {
               }}>
                 <Icon size={14} />
                 {label}
+                {href === '/my-requests' && pendingApps > 0 && (
+                  <span style={{
+                    background: 'var(--red)', color: '#fff', borderRadius: '50%',
+                    minWidth: 16, height: 16, padding: '0 3px', fontSize: '0.62rem', fontWeight: 800,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}>
+                    {pendingApps > 9 ? '9+' : pendingApps}
+                  </span>
+                )}
               </a>
             ))}
           </div>
@@ -258,6 +278,15 @@ export default function Navbar() {
                 }}>
                   <Icon size={15} />
                   {label}
+                  {href === '/my-requests' && pendingApps > 0 && (
+                    <span style={{
+                      background: 'var(--red)', color: '#fff', borderRadius: '50%',
+                      minWidth: 18, height: 18, padding: '0 4px', fontSize: '0.68rem', fontWeight: 800,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: 'auto'
+                    }}>
+                      {pendingApps > 9 ? '9+' : pendingApps}
+                    </span>
+                  )}
                 </a>
               ))}
               {dropdownLinks.map(({ href, label, icon: Icon }) => (
