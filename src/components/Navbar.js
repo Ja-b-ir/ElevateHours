@@ -117,6 +117,7 @@ export default function Navbar() {
         borderBottom: '1px solid var(--border)',
         position: 'sticky', top: 0, zIndex: 100,
         overflowX: 'hidden',
+        overflowY: 'visible',
       }}>
         <div className="eh-navbar-inner" style={{ maxWidth: 1280, margin: '0 auto', padding: '0 1.5rem', display: 'flex', flexWrap: 'nowrap', alignItems: 'center', height: 60, gap: '0.25rem' }}>
 
