@@ -18,6 +18,7 @@ export default function Marketplace() {
   const [loading, setLoading] = useState(true)
   const [applying, setApplying] = useState(null)
   const [success, setSuccess] = useState('')
+  const [myName, setMyName] = useState('')
 
   const tabs = [
     { key: 'Find Work', label: 'Find Work', icon: Briefcase },
@@ -31,6 +32,8 @@ export default function Marketplace() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/auth/login'); return }
       setUser(user)
+      const { data: myProf } = await supabase.from('profiles').select('full_name').eq('id', user.id).single()
+      setMyName(myProf?.full_name || 'Someone')
       const { data: tierData } = await supabase.from('tier_reference').select('*').order('multiplier')
       setTiers(tierData || [])
       const { data: apps } = await supabase.from('applications').select('transaction_id').eq('applicant_id', user.id)
@@ -68,6 +71,18 @@ export default function Marketplace() {
       const { error } = await supabase.from('applications').insert({ transaction_id: txnId, applicant_id: user.id, status: 'Pending' })
       if (error) throw error
       setMyApplications(prev => new Set([...prev, txnId]))
+
+      const txn = transactions.find(t => t.id === txnId)
+      if (txn?.receiver_id) {
+        await supabase.from('notifications').insert({
+          user_id: txn.receiver_id,
+          title: 'New Application',
+          message: `${myName} applied to your request for "${txn.skill?.skill_name || 'a request'}".`,
+          type: 'application',
+          related_id: txnId
+        })
+      }
+
       setSuccess('Application submitted!')
       setTimeout(() => setSuccess(''), 3000)
     } catch (err) { console.error(err) }
