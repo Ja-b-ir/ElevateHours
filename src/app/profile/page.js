@@ -3,7 +3,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
-import { Mail, MessageCircle, CheckCircle2, BarChart3, Star, Zap, Award, AlertTriangle, Globe, Clock } from 'lucide-react'
+import { Mail, MessageCircle, MessageSquare, CheckCircle2, BarChart3, Star, Zap, Award, AlertTriangle, Globe, Clock } from 'lucide-react'
 
 const COUNTRIES = [
   'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia',
@@ -243,13 +243,20 @@ function ProfileContent() {
 
           {/* Contact icons for other users */}
           {!isOwnProfile && (
-            <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem', alignItems: 'center' }}>
+              <a
+                href={'/messages/' + profile.id}
+                title={'Message ' + profile.full_name}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', height: 44, padding: '0 1.25rem', borderRadius: 999, background: 'var(--brand)', color: 'white', fontWeight: 700, fontSize: '0.875rem' }}
+              >
+                <MessageSquare size={16} /> Message
+              </a>
               <a
                 href={'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(profile.email || '')}
                 target="_blank"
                 rel="noopener noreferrer"
                 title={'Email ' + profile.full_name}
-                style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--brand-light)', color: 'var(--brand)', border: '1.5px solid var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--brand-light)', color: 'var(--brand)', border: '1.5px solid var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
               >
                 <Mail size={18} />
               </a>
@@ -259,7 +266,7 @@ function ProfileContent() {
                   target="_blank"
                   rel="noopener noreferrer"
                   title={'WhatsApp ' + profile.full_name}
-                  style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--green-light)', color: 'var(--green)', border: '1.5px solid var(--green)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--green-light)', color: 'var(--green)', border: '1.5px solid var(--green)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
                 >
                   <MessageCircle size={18} />
                 </a>
