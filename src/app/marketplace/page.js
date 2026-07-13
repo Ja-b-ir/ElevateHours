@@ -1,14 +1,18 @@
 'use client'
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
 import { Search, Clock, Users, Briefcase, GraduationCap, ChevronRight, Check, Zap, MessageCircle, Mail } from 'lucide-react'
 
-export default function Marketplace() {
+function MarketplaceContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const tabParam = searchParams.get('tab')
+  const initialTab = tabParam === 'education' ? 'Find Education' : tabParam === 'work' ? 'Find Work' : 'Find Work'
+
   const [user, setUser] = useState(null)
-  const [activeTab, setActiveTab] = useState('Find Work')
+  const [activeTab, setActiveTab] = useState(initialTab)
   const [transactions, setTransactions] = useState([])
   const [profiles, setProfiles] = useState([])
   const [tiers, setTiers] = useState([])
@@ -245,5 +249,13 @@ export default function Marketplace() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function Marketplace() {
+  return (
+    <Suspense fallback={<div><Navbar /><div className="loading-wrap"><div className="spinner" /> Loading marketplace...</div></div>}>
+      <MarketplaceContent />
+    </Suspense>
   )
 }
