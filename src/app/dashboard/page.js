@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
 import {
@@ -8,8 +9,10 @@ import {
 } from 'lucide-react'
 
 export default function Dashboard() {
+  const router = useRouter()
   const [profile, setProfile] = useState(null)
-  const [transactions, setTransactions] = useState([])
+  const [workOpportunities, setWorkOpportunities] = useState([])
+  const [eduOpportunities, setEduOpportunities] = useState([])
   const [recentActivity, setRecentActivity] = useState([])
   const [activeTab, setActiveTab] = useState('Work')
   const [loading, setLoading] = useState(true)
@@ -24,15 +27,27 @@ export default function Dashboard() {
         .from('profiles').select('*').eq('id', user.id).single()
       setProfile(prof)
 
-      const { data: txns } = await supabase
+      const { data: workTxns } = await supabase
         .from('transactions')
         .select('*, skill:skills_catalog(skill_name, track), tier:tier_reference(tier_name), receiver:profiles!transactions_receiver_id_fkey(full_name)')
         .eq('status', 'Open')
+        .eq('track', 'Work')
         .is('provider_id', null)
         .neq('receiver_id', user.id)
         .order('created_at', { ascending: false })
-        .limit(6)
-      setTransactions(txns || [])
+        .limit(5)
+      setWorkOpportunities(workTxns || [])
+
+      const { data: eduTxns } = await supabase
+        .from('transactions')
+        .select('*, skill:skills_catalog(skill_name, track), tier:tier_reference(tier_name), receiver:profiles!transactions_receiver_id_fkey(full_name)')
+        .eq('status', 'Open')
+        .eq('track', 'Education')
+        .is('provider_id', null)
+        .neq('receiver_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(5)
+      setEduOpportunities(eduTxns || [])
 
       const { data: activity } = await supabase
         .from('transactions')
@@ -60,7 +75,8 @@ export default function Dashboard() {
 
   const permanent = (profile?.sparks_earned || 0) - (profile?.sparks_spent || 0) + (profile?.sparks_purchased_total || 0)
   const total = permanent + (profile?.active_gifts_received || 0)
-  const filtered = transactions.filter(t => t.skill?.track === activeTab)
+  const filtered = activeTab === 'Work' ? workOpportunities : eduOpportunities
+  const viewAllHref = activeTab === 'Work' ? '/marketplace?tab=work' : '/marketplace?tab=education'
 
   const statusColor = (status) => {
     const map = {
@@ -219,7 +235,7 @@ export default function Dashboard() {
                   <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '0.15rem' }}>Open Opportunities</h2>
                   <p style={{ fontSize: '0.78rem', color: 'var(--text-3)' }}>Latest requests from the community</p>
                 </div>
-                <a href="/marketplace" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: 'var(--brand)', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none' }}>
+                <a href={viewAllHref} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: 'var(--brand)', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none' }}>
                   View all <ArrowRight size={13} />
                 </a>
               </div>
@@ -249,44 +265,55 @@ export default function Dashboard() {
                     <p style={{ fontSize: '0.8rem' }}>Check the marketplace or post a request.</p>
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    {filtered.map(txn => {
-                      const tc = tierColor(txn.tier?.tier_name)
-                      return (
-                        <div key={txn.id} style={{
-                          padding: '1.125rem', background: 'var(--surface-2)',
-                          borderRadius: 'var(--radius)', border: '1px solid var(--border)',
-                          display: 'flex', justifyContent: 'space-between',
-                          alignItems: 'flex-start', gap: '1rem', transition: 'border-color 0.15s, box-shadow 0.15s'
-                        }}
-                          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--brand)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(13,115,119,0.08)' }}
-                          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none' }}
-                        >
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.375rem', flexWrap: 'wrap' }}>
-                              <span style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--text)' }}>{txn.skill?.skill_name}</span>
-                              <span style={{ background: tc.bg, color: tc.color, padding: '0.15rem 0.55rem', borderRadius: '999px', fontSize: '0.68rem', fontWeight: 700 }}>
-                                {txn.tier?.tier_name?.split(':')[0]}
-                              </span>
+                  <>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      {filtered.map(txn => {
+                        const tc = tierColor(txn.tier?.tier_name)
+                        return (
+                          <div key={txn.id} style={{
+                            padding: '1.125rem', background: 'var(--surface-2)',
+                            borderRadius: 'var(--radius)', border: '1px solid var(--border)',
+                            display: 'flex', justifyContent: 'space-between',
+                            alignItems: 'flex-start', gap: '1rem', transition: 'border-color 0.15s, box-shadow 0.15s'
+                          }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--brand)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(13,115,119,0.08)' }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none' }}
+                          >
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.375rem', flexWrap: 'wrap' }}>
+                                <span style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--text)' }}>{txn.skill?.skill_name}</span>
+                                <span style={{ background: tc.bg, color: tc.color, padding: '0.15rem 0.55rem', borderRadius: '999px', fontSize: '0.68rem', fontWeight: 700 }}>
+                                  {txn.tier?.tier_name?.split(':')[0]}
+                                </span>
+                              </div>
+                              <p style={{ fontSize: '0.78rem', color: 'var(--text-3)', lineHeight: 1.5, marginBottom: '0.625rem' }}>
+                                {txn.description?.slice(0, 90)}{txn.description?.length > 90 ? '...' : ''}
+                              </p>
+                              <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', color: 'var(--text-3)' }}>
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Clock size={11} /> {txn.agreed_hours}h</span>
+                                <span>by {txn.receiver?.full_name}</span>
+                              </div>
                             </div>
-                            <p style={{ fontSize: '0.78rem', color: 'var(--text-3)', lineHeight: 1.5, marginBottom: '0.625rem' }}>
-                              {txn.description?.slice(0, 90)}{txn.description?.length > 90 ? '...' : ''}
-                            </p>
-                            <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', color: 'var(--text-3)' }}>
-                              <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Clock size={11} /> {txn.agreed_hours}h</span>
-                              <span>by {txn.receiver?.full_name}</span>
+                            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                              <div style={{ fontWeight: 900, fontSize: '1rem', color: 'var(--amber)', letterSpacing: '-0.02em' }}>
+                                ⚡ {txn.total_sparks_transferred || 0}
+                              </div>
+                              <div style={{ fontSize: '0.68rem', color: 'var(--text-3)', marginTop: '0.1rem' }}>SPK</div>
                             </div>
                           </div>
-                          <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                            <div style={{ fontWeight: 900, fontSize: '1rem', color: 'var(--amber)', letterSpacing: '-0.02em' }}>
-                              ⚡ {txn.total_sparks_transferred || 0}
-                            </div>
-                            <div style={{ fontSize: '0.68rem', color: 'var(--text-3)', marginTop: '0.1rem' }}>SPK</div>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
+                        )
+                      })}
+                    </div>
+
+                    <a href={viewAllHref} style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
+                      marginTop: '1rem', padding: '0.75rem', borderRadius: 'var(--radius-sm)',
+                      border: '1.5px solid var(--border)', background: 'var(--surface-2)',
+                      color: 'var(--text)', fontWeight: 600, fontSize: '0.825rem', textDecoration: 'none'
+                    }}>
+                      View All {activeTab} Opportunities <ArrowRight size={14} />
+                    </a>
+                  </>
                 )}
               </div>
             </div>
