@@ -16,6 +16,7 @@ export default function ConversationThread() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const [debugInfo, setDebugInfo] = useState(null)
   const bottomRef = useRef(null)
   const channelRef = useRef(null)
 
@@ -26,8 +27,9 @@ export default function ConversationThread() {
       if (user.id === otherUserId) { router.push('/messages'); return }
       setUser(user)
 
-      const { data: otherProf } = await supabase.from('profiles').select('id, full_name, account_type').eq('id', otherUserId).single()
+      const { data: otherProf, error: otherProfError } = await supabase.from('profiles').select('id, full_name, account_type').eq('id', otherUserId).single()
       setOtherUser(otherProf)
+      setDebugInfo({ otherUserId, otherProfError: otherProfError?.message })
 
       await fetchMessages(user.id)
       await markAsRead(user.id)
@@ -123,6 +125,15 @@ export default function ConversationThread() {
             <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>{otherUser?.account_type}</div>
           </div>
         </div>
+
+        {!otherUser && (
+          <div className="alert alert-error" style={{ fontSize: '0.78rem', fontFamily: 'monospace' }}>
+            Debug: could not find a profile for this conversation.<br />
+            otherUserId param = "{String(debugInfo?.otherUserId)}"<br />
+            {debugInfo?.otherProfError && <>Supabase error: {debugInfo.otherProfError}<br /></>}
+            If otherUserId shows as "undefined", your dynamic route folder isn't named exactly <code>[userId]</code>.
+          </div>
+        )}
 
         {/* Messages */}
         <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem', paddingBottom: '1rem' }}>
