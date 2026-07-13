@@ -24,17 +24,30 @@ export default function MessagesInbox() {
   }, [])
 
   const fetchConversations = async (uid) => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('messages')
-      .select('*, sender:profiles!messages_sender_id_fkey(id, full_name, account_type), receiver:profiles!messages_receiver_id_fkey(id, full_name, account_type)')
+      .select('*')
       .or(`sender_id.eq.${uid},receiver_id.eq.${uid}`)
       .order('created_at', { ascending: false })
 
+    if (error) {
+      console.error('fetchConversations error:', error)
+      setConversations([])
+      return
+    }
+
+    // Collect the "other person" id for every message, then fetch all those profiles in one go.
+    const otherIds = Array.from(new Set((data || []).map(m => m.sender_id === uid ? m.receiver_id : m.sender_id)))
+    let profilesById = {}
+    if (otherIds.length > 0) {
+      const { data: profilesData } = await supabase.from('profiles').select('id, full_name, account_type').in('id', otherIds)
+      profilesById = Object.fromEntries((profilesData || []).map(p => [p.id, p]))
+    }
+
     const map = new Map()
     for (const msg of data || []) {
-      const otherIsSender = msg.sender_id !== uid
-      const other = otherIsSender ? msg.sender : msg.receiver
-      const otherId = otherIsSender ? msg.sender_id : msg.receiver_id
+      const otherId = msg.sender_id === uid ? msg.receiver_id : msg.sender_id
+      const other = profilesById[otherId]
       if (!other) continue
       if (!map.has(otherId)) {
         map.set(otherId, {
