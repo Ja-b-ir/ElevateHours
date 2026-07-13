@@ -245,7 +245,7 @@ function ProfileContent() {
           {!isOwnProfile && (
             <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem', alignItems: 'center' }}>
               <a
-                href={'/messages/' + profile.id}
+                href={'/messages/conversation?id=' + profile.id}
                 title={'Message ' + profile.full_name}
                 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', height: 44, padding: '0 1.25rem', borderRadius: 999, background: 'var(--brand)', color: 'white', fontWeight: 700, fontSize: '0.875rem' }}
               >
