@@ -88,7 +88,7 @@ export default function MessagesInbox() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {filtered.map(c => (
-              <a key={c.otherId} href={'/messages/' + c.otherId} style={{
+              <a key={c.otherId} href={'/messages/conversation?id=' + c.otherId} style={{
                 display: 'flex', alignItems: 'center', gap: '0.875rem', padding: '1rem 1.125rem',
                 background: c.unread > 0 ? 'var(--brand-light)' : 'var(--surface)',
                 border: `1px solid ${c.unread > 0 ? 'var(--brand)' : 'var(--border)'}`,
