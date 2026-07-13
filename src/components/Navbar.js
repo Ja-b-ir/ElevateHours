@@ -4,7 +4,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import {
   LayoutDashboard, Store, PlusCircle, ClipboardList, ArrowLeftRight,
-  Heart, Zap, User, Award, Bell, Sun, Moon, Menu, X, LogOut, ChevronDown
+  Heart, Zap, User, Award, Bell, Sun, Moon, Menu, X, LogOut, ChevronDown, MessageSquare
 } from 'lucide-react'
 
 export default function Navbar() {
@@ -15,6 +15,7 @@ export default function Navbar() {
   const [profile, setProfile] = useState(null)
   const [unreadCount, setUnreadCount] = useState(0)
   const [pendingApps, setPendingApps] = useState(0)
+  const [unreadMessages, setUnreadMessages] = useState(0)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [theme, setTheme] = useState('light')
   const dropdownRef = useRef(null)
@@ -43,6 +44,7 @@ export default function Navbar() {
         setProfile(prof)
         fetchUnread(user.id)
         fetchPendingApps(user.id)
+        fetchUnreadMessages(user.id)
       }
     }
     init()
@@ -61,11 +63,17 @@ export default function Navbar() {
     setPendingApps(count || 0)
   }
 
+  const fetchUnreadMessages = async (uid) => {
+    const { count } = await supabase.from('messages').select('*', { count: 'exact', head: true }).eq('receiver_id', uid).eq('is_read', false)
+    setUnreadMessages(count || 0)
+  }
+
   useEffect(() => {
     if (!user) return
     const ch = supabase.channel('notif-count').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, () => fetchUnread(user.id)).subscribe()
     const appCh = supabase.channel('app-count').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'applications' }, () => fetchPendingApps(user.id)).subscribe()
-    return () => { supabase.removeChannel(ch); supabase.removeChannel(appCh) }
+    const msgCh = supabase.channel('msg-count').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` }, () => fetchUnreadMessages(user.id)).subscribe()
+    return () => { supabase.removeChannel(ch); supabase.removeChannel(appCh); supabase.removeChannel(msgCh) }
   }, [user])
 
   useEffect(() => {
@@ -177,6 +185,26 @@ export default function Navbar() {
                   border: '2px solid var(--surface)'
                 }}>
                   {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </a>
+
+            <a href="/messages" style={{
+              position: 'relative', width: 36, height: 36, borderRadius: 'var(--radius-sm)', flexShrink: 0,
+              background: 'var(--surface-3)', border: '1px solid var(--border)',
+              color: 'var(--text-2)', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', textDecoration: 'none'
+            }}>
+              <MessageSquare size={15} />
+              {unreadMessages > 0 && (
+                <span style={{
+                  position: 'absolute', top: -4, right: -4,
+                  background: 'var(--brand)', color: '#fff', borderRadius: '50%',
+                  width: 16, height: 16, fontSize: '0.6rem', fontWeight: 800,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  border: '2px solid var(--surface)'
+                }}>
+                  {unreadMessages > 9 ? '9+' : unreadMessages}
                 </span>
               )}
             </a>
