@@ -40,7 +40,7 @@ function ProfileContent() {
   const [currentUser, setCurrentUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [skills, setSkills] = useState([])
-  const [endorsements, setEndorsements] = useState([])
+  const [reviewStats, setReviewStats] = useState({ count: 0, average: 0 })
   const [badges, setBadges] = useState([])
   const [editing, setEditing] = useState(false)
   const [editForm, setEditForm] = useState({})
@@ -75,13 +75,15 @@ function ProfileContent() {
         .select('skill:skills_catalog(id, skill_name, track, tier:tier_reference(tier_name))')
         .eq('profile_id', targetId)
       setSkills(skillsData?.map(function(s) { return s.skill }) || [])
-      const { data: endData } = await supabase
+      const { data: ratingsData } = await supabase
         .from('endorsements')
-        .select('*, endorser:profiles!endorsements_endorser_id_fkey(full_name), skill:skills_catalog(skill_name)')
+        .select('rating')
         .eq('recipient_id', targetId)
-        .order('created_at', { ascending: false })
-        .limit(10)
-      setEndorsements(endData || [])
+      const ratings = (ratingsData || []).map(function(r) { return r.rating }).filter(function(r) { return r != null })
+      setReviewStats({
+        count: ratings.length,
+        average: ratings.length ? ratings.reduce(function(a, b) { return a + b }, 0) / ratings.length : 0
+      })
       const { data: badgeData } = await supabase
         .from('user_badges')
         .select('*, badge:badges(badge_name, description, badge_type)')
@@ -205,7 +207,16 @@ function ProfileContent() {
                 {profile.full_name?.[0]?.toUpperCase()}
               </div>
               <div>
-                <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.35rem', color: 'var(--text)' }}>{profile.full_name}</h1>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
+                  <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text)' }}>{profile.full_name}</h1>
+                  {reviewStats.count > 0 && (
+                    <a href={'/reviews?id=' + profile.id} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'var(--text)', fontSize: '0.85rem', fontWeight: 700 }}>
+                      <Star size={14} color="var(--amber)" fill="var(--amber)" />
+                      {reviewStats.average.toFixed(1)}
+                      <span style={{ color: 'var(--text-3)', fontWeight: 500 }}>({reviewStats.count})</span>
+                    </a>
+                  )}
+                </div>
                 <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                   <span style={{ background: profile.account_type === 'Personal' ? 'var(--brand-light)' : 'var(--amber-light)', color: profile.account_type === 'Personal' ? 'var(--brand)' : 'var(--amber-dark)', padding: '0.2rem 0.75rem', borderRadius: 999, fontSize: '0.8rem', fontWeight: 700 }}>
                     {profile.account_type}
@@ -439,28 +450,34 @@ function ProfileContent() {
           </div>
         </div>
 
-        {/* Endorsements */}
-        {endorsements.length > 0 && (
-          <div style={{ background: 'var(--surface)', borderRadius: 16, padding: '1.5rem', marginBottom: '1.5rem', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
-            <h2 style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '1rem', color: 'var(--text)' }}>Endorsements</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {endorsements.map(function(e, i) {
-                return (
-                  <div key={i} style={{ padding: '1rem 1.25rem', background: 'var(--surface-2)', borderRadius: 12, border: '1px solid var(--border)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <a href={'/profile?id=' + e.endorser_id} style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)' }}>{e.endorser?.full_name}</a>
-                      <span style={{ display: 'flex', gap: '0.1rem', color: 'var(--amber)' }}>
-                        {Array.from({ length: e.rating || 0 }).map(function(_, si) { return <Star key={si} size={13} fill="var(--amber)" /> })}
-                      </span>
-                    </div>
-                    <p style={{ color: 'var(--text-2)', fontSize: '0.875rem', lineHeight: 1.6 }}>{e.endorsement_text}</p>
-                    {e.skill && <div style={{ color: 'var(--text-3)', fontSize: '0.75rem', marginTop: '0.5rem' }}>{e.skill.skill_name} · {e.date_given}</div>}
-                  </div>
-                )
-              })}
+        {/* Reviews summary */}
+        <div style={{ background: 'var(--surface)', borderRadius: 16, padding: '1.5rem', marginBottom: '1.5rem', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.03em', lineHeight: 1 }}>
+              {reviewStats.count > 0 ? reviewStats.average.toFixed(1) : '—'}
+            </div>
+            <div>
+              <div style={{ display: 'flex', gap: '0.15rem', marginBottom: '0.25rem' }}>
+                {[1, 2, 3, 4, 5].map(function(n) {
+                  const filled = n <= Math.round(reviewStats.average)
+                  return <Star key={n} size={16} color="var(--amber)" fill={filled ? 'var(--amber)' : 'none'} />
+                })}
+              </div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-2)' }}>
+                {reviewStats.count} review{reviewStats.count === 1 ? '' : 's'}
+              </div>
             </div>
           </div>
-        )}
+          <a href={'/reviews?id=' + profile.id} style={{
+            display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+            background: 'var(--brand-light)', color: 'var(--brand)',
+            padding: '0.6rem 1.25rem', borderRadius: 8, fontWeight: 700, fontSize: '0.875rem',
+            border: '1.5px solid var(--brand)'
+          }}>
+            <Star size={15} /> Reviews
+          </a>
+        </div>
+
 
         {/* Danger Zone — own profile only */}
         {isOwnProfile && (
