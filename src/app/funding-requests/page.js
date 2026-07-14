@@ -36,7 +36,33 @@ export default function FundingRequests() {
 
   const fetchRequests = async () => {
     const { data } = await supabase.from('funding_requests').select('*, requester:profiles(full_name, account_type)').eq('status', 'Open').order('created_at', { ascending: false })
-    setRequests(data || [])
+    const now = new Date()
+    const stillOpen = []
+    const expiredIds = []
+    for (const req of data || []) {
+      if (req.expiry_date && new Date(req.expiry_date) < now) {
+        expiredIds.push(req.id)
+      } else {
+        stillOpen.push(req)
+      }
+    }
+    setRequests(stillOpen)
+    // Clean up expired requests in the background so they don't keep coming back.
+    if (expiredIds.length > 0) {
+      for (const id of expiredIds) {
+        await deleteRequestPermanently(id)
+      }
+    }
+  }
+
+  // Fully removes a funding request and its associated gift records.
+  const deleteRequestPermanently = async (requestId) => {
+    try {
+      await supabase.from('gifts').delete().eq('funding_request_id', requestId)
+      await supabase.from('funding_requests').delete().eq('id', requestId)
+    } catch (err) {
+      console.error('cleanup error:', err)
+    }
   }
 
   const permanent = (profile?.sparks_earned || 0) - (profile?.sparks_spent || 0) + (profile?.sparks_purchased_total || 0)
@@ -49,11 +75,12 @@ export default function FundingRequests() {
     if (parseInt(form.amount_requested) > 2000) { setError('Maximum request is 2,000 SPK'); return }
     setSubmitting(true)
     try {
-      const { error } = await supabase.from('funding_requests').insert({ requester_id: user.id, requester_name: profile.full_name, amount_requested: parseInt(form.amount_requested), reason: form.reason, status: 'Open', date_requested: new Date().toISOString().split('T')[0] })
+      const expiryDate = new Date(Date.now() + 7 * 86400000).toISOString()
+      const { error } = await supabase.from('funding_requests').insert({ requester_id: user.id, requester_name: profile.full_name, amount_requested: parseInt(form.amount_requested), reason: form.reason, status: 'Open', date_requested: new Date().toISOString().split('T')[0], expiry_date: expiryDate })
       if (error) throw error
       setShowForm(false)
       setForm({ amount_requested: '', reason: '' })
-      setSuccess('Funding request posted!')
+      setSuccess('Funding request posted! It will stay open for 7 days.')
       setTimeout(() => setSuccess(''), 3000)
       await fetchRequests()
     } catch (err) { setError(err.message) }
@@ -94,12 +121,14 @@ export default function FundingRequests() {
         })
       }
 
-      // Update the funding request's progress, close it out if fully funded
+      // Update the funding request's progress, delete it (and its gift records) if fully funded
       const newFundedTotal = (req.amount_funded_so_far || 0) + amt
-      await supabase.from('funding_requests').update({
-        amount_funded_so_far: newFundedTotal,
-        status: newFundedTotal >= req.amount_requested ? 'Fulfilled' : 'Open'
-      }).eq('id', giftModal)
+      if (newFundedTotal >= req.amount_requested) {
+        await supabase.from('gifts').delete().eq('funding_request_id', giftModal)
+        await supabase.from('funding_requests').delete().eq('id', giftModal)
+      } else {
+        await supabase.from('funding_requests').update({ amount_funded_so_far: newFundedTotal }).eq('id', giftModal)
+      }
 
       setGiftModal(null); setGiftAmount('')
       setSuccess('Gift sent!')
