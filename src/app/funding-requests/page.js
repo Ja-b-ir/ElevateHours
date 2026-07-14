@@ -64,16 +64,43 @@ export default function FundingRequests() {
     setGiftError('')
     const amt = parseInt(giftAmount)
     if (!amt || amt < 100) { setGiftError('Minimum gift is 100 SPK'); return }
-    const permanent = (profile?.sparks_earned || 0) - (profile?.sparks_spent || 0) + (profile?.sparks_purchased_total || 0)
-  const donorTotal = permanent + (profile?.active_gifts_received || 0)
-  if (amt > donorTotal) {
-    setGiftError(`Insufficient balance. You have ${donorTotal} SPK but tried to gift ${amt} SPK.`)
-    return
-  }
+    if (amt > total) { setGiftError('You only have ' + total.toLocaleString() + ' SPK available'); return }
     setGiftSubmitting(true)
     try {
+      const req = requests.find(r => r.id === giftModal)
+      if (!req) throw new Error('Request not found')
+
       const { error } = await supabase.from('gifts').insert({ donor_id: user.id, funding_request_id: giftModal, amount: amt, date_given: new Date().toISOString().split('T')[0] })
       if (error) throw error
+
+      // Deduct from the donor's own balance
+      const newSparksSpent = (profile.sparks_spent || 0) + amt
+      await supabase.from('profiles').update({ sparks_spent: newSparksSpent }).eq('id', user.id)
+      setProfile({ ...profile, sparks_spent: newSparksSpent })
+
+      // Credit the recipient's gifted balance (expires in 30 days per platform rules)
+      if (req.requester_id) {
+        const { data: recipientProfile } = await supabase.from('profiles').select('active_gifts_received').eq('id', req.requester_id).single()
+        await supabase.from('profiles').update({
+          active_gifts_received: (recipientProfile?.active_gifts_received || 0) + amt
+        }).eq('id', req.requester_id)
+
+        await supabase.from('notifications').insert({
+          user_id: req.requester_id,
+          title: 'You Received a Gift!',
+          message: `${profile.full_name} gifted you ${amt} SPK.`,
+          type: 'gift',
+          related_id: giftModal
+        })
+      }
+
+      // Update the funding request's progress, close it out if fully funded
+      const newFundedTotal = (req.amount_funded_so_far || 0) + amt
+      await supabase.from('funding_requests').update({
+        amount_funded_so_far: newFundedTotal,
+        status: newFundedTotal >= req.amount_requested ? 'Fulfilled' : 'Open'
+      }).eq('id', giftModal)
+
       setGiftModal(null); setGiftAmount('')
       setSuccess('Gift sent!')
       setTimeout(() => setSuccess(''), 3000)
