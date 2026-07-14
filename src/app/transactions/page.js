@@ -53,18 +53,18 @@ export default function Transactions() {
     setUpdating(null)
   }
 
-  // Requester marks the delivered work as complete — this notifies the provider,
-  // who must confirm before anything is finalized or rewarded.
+  // Provider (person who did the work) marks it complete — this notifies the
+  // requester (person who posted it), who must confirm before Sparks are awarded.
   const markAsComplete = async (txn) => {
     setUpdating(txn.id)
     try {
       await supabase.from('transactions').update({ status: 'Pending Confirmation' }).eq('id', txn.id)
 
-      if (txn.provider_id) {
+      if (txn.receiver_id) {
         await supabase.from('notifications').insert({
-          user_id: txn.provider_id,
+          user_id: txn.receiver_id,
           title: 'Work Marked as Complete',
-          message: `${txn.receiver?.full_name || 'The requester'} marked "${txn.skill?.skill_name || 'your work'}" as complete. Please confirm to receive your Sparks.`,
+          message: `${txn.provider?.full_name || 'The provider'} marked "${txn.skill?.skill_name || 'your request'}" as complete. Please confirm to release their Sparks.`,
           type: 'application',
           related_id: txn.id
         })
@@ -77,17 +77,17 @@ export default function Transactions() {
     setUpdating(null)
   }
 
-  // Provider declines — reverts to In Progress and notifies the requester.
+  // Requester declines — reverts to In Progress and notifies the provider.
   const declineCompletion = async (txn) => {
     setUpdating(txn.id)
     try {
       await supabase.from('transactions').update({ status: 'In Progress' }).eq('id', txn.id)
 
-      if (txn.receiver_id) {
+      if (txn.provider_id) {
         await supabase.from('notifications').insert({
-          user_id: txn.receiver_id,
+          user_id: txn.provider_id,
           title: 'Completion Declined',
-          message: `${txn.provider?.full_name || 'The provider'} declined the completion for "${txn.skill?.skill_name || 'this request'}". It's back in progress.`,
+          message: `${txn.receiver?.full_name || 'The requester'} declined the completion for "${txn.skill?.skill_name || 'this request'}". It's back in progress.`,
           type: 'rejected',
           related_id: txn.id
         })
@@ -252,12 +252,15 @@ export default function Transactions() {
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flexShrink: 0 }}>
-                      {txn.status === 'In Progress' && !isProvider && (
+                      {txn.status === 'In Progress' && isProvider && (
                         <button onClick={() => markAsComplete(txn)} disabled={updating === txn.id} className="btn btn-amber btn-sm">
                           Mark Complete
                         </button>
                       )}
-                      {txn.status === 'Pending Confirmation' && isProvider && (
+                      {txn.status === 'In Progress' && !isProvider && (
+                        <span style={{ fontSize: '0.78rem', color: 'var(--text-3)', fontStyle: 'italic' }}>Waiting on provider to mark complete</span>
+                      )}
+                      {txn.status === 'Pending Confirmation' && !isProvider && (
                         <>
                           <button onClick={() => confirmTransaction(txn)} disabled={updating === txn.id} className="btn btn-success btn-sm">
                             <CheckCircle size={13} /> Confirm
@@ -267,8 +270,8 @@ export default function Transactions() {
                           </button>
                         </>
                       )}
-                      {txn.status === 'Pending Confirmation' && !isProvider && (
-                        <span style={{ fontSize: '0.78rem', color: 'var(--text-3)', fontStyle: 'italic' }}>Waiting on provider to confirm</span>
+                      {txn.status === 'Pending Confirmation' && isProvider && (
+                        <span style={{ fontSize: '0.78rem', color: 'var(--text-3)', fontStyle: 'italic' }}>Waiting on requester to confirm</span>
                       )}
                       {txn.status === 'Confirmed' && (
                         <button onClick={() => setEndorseModal(txn.id)} className="btn btn-secondary btn-sm">
