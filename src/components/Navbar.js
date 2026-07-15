@@ -4,7 +4,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import {
   LayoutDashboard, Store, PlusCircle, ClipboardList, ArrowLeftRight,
-  Heart, Zap, User, Award, Bell, Sun, Moon, Menu, X, LogOut, ChevronDown, MessageSquare
+  Heart, Zap, User, Award, Bell, Sun, Moon, Menu, X, LogOut, ChevronDown, MessageSquare, Bookmark
 } from 'lucide-react'
 
 export default function Navbar() {
@@ -114,6 +114,7 @@ export default function Navbar() {
 
   const dropdownLinks = [
     { href: '/profile', label: 'My Profile', icon: User },
+    { href: '/saved', label: 'Saved', icon: Bookmark },
     { href: '/badges', label: 'Badges', icon: Award },
     { href: '/notifications', label: 'Notifications', icon: Bell },
   ]
