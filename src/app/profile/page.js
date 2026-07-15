@@ -3,7 +3,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
-import { Mail, MessageCircle, MessageSquare, CheckCircle2, BarChart3, Star, Zap, Award, AlertTriangle, Globe, Clock } from 'lucide-react'
+import { Mail, MessageCircle, MessageSquare, CheckCircle2, BarChart3, Star, Zap, Award, AlertTriangle, Globe, Clock, Flag } from 'lucide-react'
 
 const COUNTRIES = [
   'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia',
@@ -48,6 +48,12 @@ function ProfileContent() {
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState('')
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showReportModal, setShowReportModal] = useState(false)
+  const [reportReason, setReportReason] = useState('')
+  const [reportDetails, setReportDetails] = useState('')
+  const [reportSubmitting, setReportSubmitting] = useState(false)
+  const [reportError, setReportError] = useState('')
+  const [reportSuccess, setReportSuccess] = useState(false)
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
   const [deleting, setDeleting] = useState(false)
   const [showCountryModal, setShowCountryModal] = useState(false)
@@ -138,6 +144,27 @@ function ProfileContent() {
     if (!profile?.country_updated_at) return 0
     const diffDays = (new Date() - new Date(profile.country_updated_at)) / 86400000
     return Math.max(0, Math.ceil(COOLDOWN_DAYS - diffDays))
+  }
+
+  const submitReport = async () => {
+    setReportError('')
+    if (!reportReason) { setReportError('Please select a reason'); return }
+    setReportSubmitting(true)
+    try {
+      const { error } = await supabase.from('reports').insert({
+        reporter_id: currentUser.id,
+        reported_id: profile.id,
+        reason: reportReason,
+        details: reportDetails,
+      })
+      if (error) throw error
+      setReportSuccess(true)
+      setReportReason('')
+      setReportDetails('')
+    } catch (err) {
+      setReportError(err.message)
+    }
+    setReportSubmitting(false)
   }
 
   const submitCountryRequest = async () => {
@@ -282,6 +309,13 @@ function ProfileContent() {
                   <MessageCircle size={18} />
                 </a>
               )}
+              <button
+                onClick={function() { setShowReportModal(true) }}
+                title={'Report ' + profile.full_name}
+                style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.35rem', background: 'none', border: 'none', color: 'var(--text-3)', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}
+              >
+                <Flag size={14} /> Report
+              </button>
             </div>
           )}
 
@@ -495,6 +529,85 @@ function ProfileContent() {
           </div>
         )}
       </div>
+
+      {/* Report Modal */}
+      {showReportModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}
+          onClick={function() { setShowReportModal(false); setReportSuccess(false); setReportError('') }}
+        >
+          <div style={{ background: 'var(--surface)', borderRadius: 20, padding: '2rem', maxWidth: 440, width: '100%' }} onClick={function(e) { e.stopPropagation() }}>
+            {reportSuccess ? (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'center', color: 'var(--green)', marginBottom: '1rem' }}><CheckCircle2 size={40} /></div>
+                <h2 style={{ fontWeight: 800, fontSize: '1.2rem', marginBottom: '0.5rem', color: 'var(--text)', textAlign: 'center' }}>Report Submitted</h2>
+                <p style={{ color: 'var(--text-2)', fontSize: '0.875rem', lineHeight: 1.6, marginBottom: '1.5rem', textAlign: 'center' }}>
+                  Thanks for helping keep the community safe. Our team will review this report.
+                </p>
+                <button
+                  onClick={function() { setShowReportModal(false); setReportSuccess(false) }}
+                  style={{ width: '100%', padding: '0.75rem', background: 'var(--brand)', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }}
+                >
+                  Done
+                </button>
+              </>
+            ) : (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'center', color: 'var(--red)', marginBottom: '1rem' }}><Flag size={36} /></div>
+                <h2 style={{ fontWeight: 800, fontSize: '1.2rem', marginBottom: '0.5rem', color: 'var(--text)', textAlign: 'center' }}>Report {profile.full_name}</h2>
+                <p style={{ color: 'var(--text-2)', fontSize: '0.875rem', lineHeight: 1.6, marginBottom: '1.5rem', textAlign: 'center' }}>
+                  Let us know what happened. Reports are reviewed by our team and kept confidential.
+                </p>
+
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.5rem', color: 'var(--text)' }}>Reason</label>
+                  <select
+                    value={reportReason}
+                    onChange={function(e) { setReportReason(e.target.value) }}
+                    style={{ width: '100%', padding: '0.7rem', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.95rem', outline: 'none', background: 'var(--surface-2)', color: 'var(--text)' }}
+                  >
+                    <option value="">Select a reason...</option>
+                    <option value="Scam or Fraud">Scam or Fraud</option>
+                    <option value="Didn't Deliver Work">Didn't Deliver Work</option>
+                    <option value="Fake Profile">Fake Profile</option>
+                    <option value="Harassment or Abuse">Harassment or Abuse</option>
+                    <option value="Inappropriate Behavior">Inappropriate Behavior</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.5rem', color: 'var(--text)' }}>Details (optional)</label>
+                  <textarea
+                    rows={4}
+                    value={reportDetails}
+                    onChange={function(e) { setReportDetails(e.target.value) }}
+                    placeholder="Describe what happened..."
+                    style={{ width: '100%', padding: '0.7rem', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.95rem', resize: 'vertical', outline: 'none', background: 'var(--surface-2)', color: 'var(--text)' }}
+                  />
+                </div>
+
+                {reportError && <div style={{ color: 'var(--red)', fontSize: '0.825rem', marginBottom: '1rem' }}>{reportError}</div>}
+
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <button
+                    onClick={function() { setShowReportModal(false) }}
+                    style={{ flex: 1, padding: '0.75rem', background: 'var(--surface-3)', color: 'var(--text-2)', border: '1.5px solid var(--border)', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={submitReport}
+                    disabled={reportSubmitting || !reportReason}
+                    style={{ flex: 1, padding: '0.75rem', background: 'var(--red)', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: reportSubmitting ? 'not-allowed' : 'pointer', opacity: reportSubmitting || !reportReason ? 0.6 : 1 }}
+                  >
+                    {reportSubmitting ? 'Submitting...' : 'Submit Report'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Country Change Request Modal */}
       {showCountryModal && (
