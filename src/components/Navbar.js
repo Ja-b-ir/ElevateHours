@@ -132,7 +132,7 @@ export default function Navbar() {
         <div className="eh-navbar-inner" style={{ maxWidth: 1280, margin: '0 auto', padding: '0 1.5rem', display: 'flex', flexWrap: 'nowrap', alignItems: 'center', height: 60, gap: '0.25rem' }}>
 
           <div className="eh-logo" style={{ marginRight: '1.5rem', flexShrink: 0 }}>
-            <Logo height={26} linkTo="/dashboard" />
+            <Logo height={38} linkTo="/dashboard" />
           </div>
 
           <div className="eh-desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: '0.125rem', flex: 1, overflow: 'hidden' }}>
