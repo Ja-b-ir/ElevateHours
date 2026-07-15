@@ -1,19 +1,25 @@
 'use client'
 import { useState, useEffect } from 'react'
+import Logo from '@/components/Logo'
 import { X, Linkedin, Facebook, Twitter, Instagram, Globe, Mail } from 'lucide-react'
 
 // Fill this in with real team members. Example shape below.
 const TEAM = [
-  {
-  name: 'Mohammad Mabrouk',
-  designation: 'Strategic Financial Advisor', // adjust to their real title
-  photo: '/team/mabrouk.jpeg',
-  quote: "I believe ElevateHours is building more than just a service—it is creating opportunities for people to learn, grow, and succeed in the digital economy. The company's commitment to quality, innovation, and continuous improvement makes it well-positioned for long-term success. I'm excited to contribute to its financial strategy and help build a sustainable, scalable business that delivers lasting value to both clients and the team.",
-  socials: {
-    linkedin: 'https://www.linkedin.com/in/mohammed-mabrouk-7b5327297/',
-    email: 'mabrouk.3k4@gmail.com',
-  }
-},
+  // {
+  //   name: 'Full Name',
+  //   designation: 'Role / Title',
+  //   photo: '/team/full-name.jpg', // put image in /public/team/, falls back to initial avatar if missing
+  //   bio: 'A longer paragraph about this person — background, what they do at ElevateHours, etc.',
+  //   quote: 'A short personal quote in their own words.',
+  //   socials: {
+  //     linkedin: 'https://linkedin.com/in/...',
+  //     facebook: 'https://facebook.com/...',
+  //     twitter: 'https://twitter.com/...',
+  //     instagram: 'https://instagram.com/...',
+  //     website: 'https://...',
+  //     email: 'name@example.com',
+  //   }
+  // },
 ]
 
 const SOCIAL_ICONS = {
@@ -24,11 +30,11 @@ const SOCIAL_ICONS = {
   website: { icon: Globe, color: 'var(--brand)' },
   email: { icon: Mail, color: 'var(--brand)' },
 }
- 
+
 function MemberCard({ member, onOpen }) {
   const [imgError, setImgError] = useState(false)
   const showPhoto = member.photo && !imgError
- 
+
   return (
     <button
       onClick={() => onOpen(member)}
@@ -64,29 +70,29 @@ function MemberCard({ member, onOpen }) {
     </button>
   )
 }
- 
+
 export default function TeamPage() {
   const [selected, setSelected] = useState(null)
   const [detailImgError, setDetailImgError] = useState(false)
- 
+
   useEffect(() => {
     setDetailImgError(false)
   }, [selected])
- 
+
   useEffect(() => {
     document.body.style.overflow = selected ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [selected])
- 
+
   useEffect(() => {
     const onKey = e => { if (e.key === 'Escape') setSelected(null) }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
- 
+
   return (
     <div style={{ fontFamily: 'Inter, -apple-system, sans-serif', color: 'var(--text)', background: 'var(--bg)' }}>
- 
+
       {/* Nav */}
       <nav style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -94,16 +100,16 @@ export default function TeamPage() {
         boxShadow: 'var(--shadow-sm)', position: 'sticky', top: 0, zIndex: 100,
         borderBottom: '1px solid var(--border)'
       }}>
-        <a href="/" style={{ fontWeight: 800, fontSize: '1.4rem', letterSpacing: '-0.02em', textDecoration: 'none', color: 'var(--text)' }}>
-          Elevate<span style={{ color: 'var(--amber)' }}>Hours</span>
-        </a>
+        <div>
+          <Logo height={24} linkTo="/" />
+        </div>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <a href="/" style={{ color: 'var(--text-2)', fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none' }}>Home</a>
           <a href="/founder" style={{ color: 'var(--text-2)', fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none' }}>Founder</a>
           <a href="/auth/signup" style={{ background: 'var(--brand)', color: 'white', padding: '0.5rem 1.2rem', borderRadius: 8, fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none' }}>Get Started</a>
         </div>
       </nav>
- 
+
       {/* Hero */}
       <section style={{
         background: 'linear-gradient(135deg, var(--brand) 0%, var(--brand-mid) 100%)',
@@ -126,7 +132,7 @@ export default function TeamPage() {
           </p>
         </div>
       </section>
- 
+
       {/* Team Grid */}
       <section style={{ padding: '5rem 2rem', background: 'var(--surface)' }}>
         <div style={{ maxWidth: 1000, margin: '0 auto' }}>
@@ -144,19 +150,19 @@ export default function TeamPage() {
           )}
         </div>
       </section>
- 
+
       {/* Footer */}
       <footer style={{ background: '#0B132B', color: 'white', padding: '2rem' }}>
         <div style={{ maxWidth: 1000, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-          <div style={{ fontWeight: 800, fontSize: '1.2rem' }}>
-            Elevate<span style={{ color: 'var(--amber)' }}>Hours</span>
+          <div>
+            <Logo height={22} linkTo="/" forceTheme="dark" />
           </div>
           <div style={{ opacity: 0.5, fontSize: '0.85rem' }}>
             Built by <a href="https://www.facebook.com/codescriptors/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--amber)', fontWeight: 600 }}>CodeScriptors IT Solutions</a>
           </div>
         </div>
       </footer>
- 
+
       {/* Overlay */}
       {selected && (
         <div
@@ -167,7 +173,7 @@ export default function TeamPage() {
           }}
         />
       )}
- 
+
       {/* Slide-in detail panel */}
       <div className="team-panel" style={{
         position: 'fixed', top: 0, right: 0, height: '100vh',
@@ -189,7 +195,7 @@ export default function TeamPage() {
             >
               <X size={18} />
             </button>
- 
+
             <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
               <div style={{
                 width: 120, height: 120, borderRadius: '50%', margin: '0 auto 1.25rem', overflow: 'hidden',
@@ -211,7 +217,7 @@ export default function TeamPage() {
               <h2 style={{ fontWeight: 800, fontSize: '1.4rem', color: 'var(--text)', marginBottom: '0.25rem' }}>{selected.name}</h2>
               <div style={{ color: 'var(--brand)', fontWeight: 600, fontSize: '0.95rem' }}>{selected.designation}</div>
             </div>
- 
+
             {selected.quote && (
               <div style={{
                 background: 'linear-gradient(135deg, var(--brand), var(--brand-mid))',
@@ -221,14 +227,14 @@ export default function TeamPage() {
                 <p style={{ fontSize: '0.95rem', lineHeight: 1.7, fontStyle: 'italic', opacity: 0.95 }}>{selected.quote}</p>
               </div>
             )}
- 
+
             {selected.bio && (
               <div style={{ marginBottom: '1.75rem' }}>
                 <div className="section-label">About</div>
                 <p style={{ color: 'var(--text-2)', lineHeight: 1.8, fontSize: '0.9rem' }}>{selected.bio}</p>
               </div>
             )}
- 
+
             {selected.socials && Object.keys(selected.socials).length > 0 && (
               <div>
                 <div className="section-label">Connect</div>
@@ -261,7 +267,7 @@ export default function TeamPage() {
           </div>
         )}
       </div>
- 
+
       <style>{`
         .team-panel { width: 50%; }
         @media (max-width: 900px) {
