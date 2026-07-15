@@ -1,7 +1,8 @@
 'use client'
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { User, Mail, Lock, Phone, Globe, ChevronRight } from 'lucide-react'
+import { User, Mail, Lock, Phone, Globe, ChevronRight, Gift } from 'lucide-react'
 
 const COUNTRIES = [
   'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia',
@@ -29,7 +30,9 @@ const COUNTRIES = [
   'Uzbekistan', 'Vanuatu', 'Vatican City', 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe'
 ]
 
-export default function SignupPage() {
+function SignupContent() {
+  const searchParams = useSearchParams()
+  const refCode = searchParams.get('ref')
   const [form, setForm] = useState({ full_name: '', email: '', password: '', account_type: 'Personal', whatsapp_number: '', country: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -45,11 +48,34 @@ export default function SignupPage() {
       })
       if (error) throw error
       if (data?.user) {
+        // Validate the referral code actually belongs to a real profile before trusting it
+        let referrerId = null
+        if (refCode && refCode !== data.user.id) {
+          const { data: referrerProfile } = await supabase.from('profiles').select('id, full_name, sparks_earned').eq('id', refCode).single()
+          if (referrerProfile) referrerId = referrerProfile.id
+        }
+
         await supabase.from('profiles').upsert({
           id: data.user.id, email: form.email, full_name: form.full_name, account_type: form.account_type,
           whatsapp_number: form.whatsapp_number, country: form.country, country_updated_at: new Date().toISOString(),
-          sparks_purchased_total: 250
+          sparks_purchased_total: referrerId ? 300 : 250, // +50 bonus for being referred
+          referred_by: referrerId
         })
+
+        if (referrerId) {
+          const { data: referrerProfile } = await supabase.from('profiles').select('sparks_earned').eq('id', referrerId).single()
+          await supabase.from('profiles').update({
+            sparks_earned: (referrerProfile?.sparks_earned || 0) + 100
+          }).eq('id', referrerId)
+
+          await supabase.from('notifications').insert({
+            user_id: referrerId,
+            title: 'Referral Bonus!',
+            message: `${form.full_name} joined using your referral link. You earned 100 SPK!`,
+            type: 'gift',
+          })
+        }
+
         window.location.href = '/dashboard'
       } else { setError('Signup failed. Please try again.') }
     } catch (err) { setError(err.message || JSON.stringify(err)) }
@@ -89,6 +115,11 @@ export default function SignupPage() {
         <div style={{ marginBottom: '2rem' }}>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.4rem' }}>Create your account</h1>
           <p style={{ color: 'var(--text-2)', fontSize: '0.875rem' }}>Already have one? <a href="/auth/login" style={{ color: 'var(--brand)', fontWeight: 600 }}>Sign in</a></p>
+          {refCode && (
+            <div style={{ marginTop: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--amber-light)', color: 'var(--amber-dark)', padding: '0.6rem 0.875rem', borderRadius: 8, fontSize: '0.8rem', fontWeight: 600 }}>
+              <Gift size={15} /> You were invited! Sign up now for 300 SPK instead of the usual 250.
+            </div>
+          )}
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -166,5 +197,13 @@ export default function SignupPage() {
         @media (max-width: 768px) { .auth-left { display: none !important; } }
       `}</style>
     </div>
+  )
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-2)' }}>Loading...</div>}>
+      <SignupContent />
+    </Suspense>
   )
 }
