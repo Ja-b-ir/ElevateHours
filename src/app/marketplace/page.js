@@ -3,7 +3,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
-import { Search, Clock, Users, Briefcase, GraduationCap, ChevronRight, Check, Zap, MessageCircle, Mail } from 'lucide-react'
+import { Search, Clock, Users, Briefcase, GraduationCap, ChevronRight, Check, Zap, MessageCircle, Mail, Bookmark } from 'lucide-react'
 
 function MarketplaceContent() {
   const router = useRouter()
@@ -23,6 +23,7 @@ function MarketplaceContent() {
   const [applying, setApplying] = useState(null)
   const [success, setSuccess] = useState('')
   const [myName, setMyName] = useState('')
+  const [savedIds, setSavedIds] = useState(new Set())
 
   const tabs = [
     { key: 'Find Work', label: 'Find Work', icon: Briefcase },
@@ -42,6 +43,8 @@ function MarketplaceContent() {
       setTiers(tierData || [])
       const { data: apps } = await supabase.from('applications').select('transaction_id').eq('applicant_id', user.id)
       setMyApplications(new Set(apps?.map(a => a.transaction_id) || []))
+      const { data: saved } = await supabase.from('saved_opportunities').select('transaction_id').eq('user_id', user.id)
+      setSavedIds(new Set(saved?.map(s => s.transaction_id) || []))
       setLoading(false)
     }
     init()
@@ -91,6 +94,17 @@ function MarketplaceContent() {
       setTimeout(() => setSuccess(''), 3000)
     } catch (err) { console.error(err) }
     setApplying(null)
+  }
+
+  const toggleSaved = async (txnId) => {
+    const isSaved = savedIds.has(txnId)
+    if (isSaved) {
+      setSavedIds(prev => { const next = new Set(prev); next.delete(txnId); return next })
+      await supabase.from('saved_opportunities').delete().eq('user_id', user.id).eq('transaction_id', txnId)
+    } else {
+      setSavedIds(prev => new Set([...prev, txnId]))
+      await supabase.from('saved_opportunities').insert({ user_id: user.id, transaction_id: txnId })
+    }
   }
 
   const tierBadgeClass = (tierName) => {
@@ -155,11 +169,19 @@ function MarketplaceContent() {
               <div className="grid-auto">
                 {filteredTxns.map(txn => {
                   const applied = myApplications.has(txn.id)
+                  const saved = savedIds.has(txn.id)
                   return (
                     <div key={txn.id} className="card" style={{ border: applied ? '1.5px solid var(--brand)' : '1px solid var(--border)', display: 'flex', flexDirection: 'column' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.625rem' }}>
-                        <h3 style={{ fontSize: '0.9rem', flex: 1, marginRight: '0.5rem', color: 'var(--text)' }}>{txn.skill?.skill_name}</h3>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.625rem' }}>
+                        <h3 style={{ fontSize: '0.9rem', flex: 1, color: 'var(--text)' }}>{txn.skill?.skill_name}</h3>
                         <span className={tierBadgeClass(txn.tier?.tier_name)}>{txn.tier?.tier_name?.split(':')[0]}</span>
+                        <button
+                          onClick={() => toggleSaved(txn.id)}
+                          title={saved ? 'Remove from saved' : 'Save opportunity'}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: saved ? 'var(--brand)' : 'var(--text-3)', padding: 0, flexShrink: 0, display: 'flex' }}
+                        >
+                          <Bookmark size={17} fill={saved ? 'var(--brand)' : 'none'} />
+                        </button>
                       </div>
                       <p style={{ color: 'var(--text-2)', fontSize: '0.8rem', lineHeight: 1.6, flex: 1, marginBottom: '1rem' }}>
                         {txn.description || 'No description provided.'}
