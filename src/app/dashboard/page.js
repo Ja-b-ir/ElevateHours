@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
 import {
   TrendingUp, Users, Clock, Zap, ArrowRight, Briefcase,
-  GraduationCap, Plus, BarChart3, Award, Target, ChevronRight
+  GraduationCap, Plus, BarChart3, Award, Target, ChevronRight, Gift
 } from 'lucide-react'
 
 export default function Dashboard() {
@@ -332,6 +332,7 @@ export default function Dashboard() {
                   { label: 'Buy Sparks', href: '/buy-sparks', icon: Zap, accent: 'var(--green)' },
                   { label: 'Community Funding', href: '/funding-requests', icon: TrendingUp, accent: 'var(--red)' },
                   { label: 'My Transactions', href: '/transactions', icon: ArrowRight, accent: 'var(--purple)' },
+                  { label: 'Invite Friends', href: '/referrals', icon: Gift, accent: 'var(--amber)' },
                 ].map((action, i) => (
                   <a key={i} href={action.href} style={{
                     display: 'flex', alignItems: 'center', gap: '0.75rem',
