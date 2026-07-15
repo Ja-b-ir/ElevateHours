@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import Logo from '@/components/Logo'
 import { Sun, Moon, ArrowRight, Check, ChevronRight } from 'lucide-react'
 
 export default function LandingPage() {
@@ -34,8 +35,8 @@ export default function LandingPage() {
       {/* Navbar */}
       <nav style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 100, backdropFilter: 'blur(12px)', overflowX: 'hidden' }}>
         <div className="eh-land-nav" style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem', display: 'flex', flexWrap: 'nowrap', alignItems: 'center', justifyContent: 'space-between', height: 60 }}>
-          <div className="eh-land-logo" style={{ fontWeight: 900, fontSize: '1.2rem', letterSpacing: '-0.03em', whiteSpace: 'nowrap', flexShrink: 0 }}>
-            Elevate<span style={{ color: 'var(--brand)' }}>Hours</span>
+          <div className="eh-land-logo" style={{ flexShrink: 0 }}>
+            <Logo height={26} linkTo="/" />
           </div>
           <div className="eh-land-actions" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexShrink: 0 }}>
             <button onClick={toggleTheme} style={{ width: 36, height: 36, borderRadius: 'var(--radius-sm)', background: 'var(--surface-3)', border: '1px solid var(--border)', color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
@@ -243,8 +244,8 @@ export default function LandingPage() {
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2.5rem', marginBottom: '2.5rem' }}>
             <div>
-              <div style={{ fontWeight: 900, fontSize: '1.1rem', letterSpacing: '-0.03em', marginBottom: '0.625rem' }}>
-                Elevate<span style={{ color: 'var(--brand)' }}>Hours</span>
+              <div style={{ marginBottom: '0.625rem' }}>
+                <Logo height={22} linkTo="/" />
               </div>
               <p style={{ color: 'var(--text-3)', fontSize: '0.825rem', lineHeight: 1.65, marginBottom: '0.75rem' }}>Turn Your Skills Into Impact</p>
               <div style={{ color: 'var(--text-3)', fontSize: '0.75rem' }}>
