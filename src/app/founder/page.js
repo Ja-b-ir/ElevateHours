@@ -1,4 +1,5 @@
 'use client'
+import Logo from '@/components/Logo'
 
 export default function FounderPage() {
   return (
@@ -11,9 +12,9 @@ export default function FounderPage() {
         boxShadow: 'var(--shadow-sm)', position: 'sticky', top: 0, zIndex: 100,
         borderBottom: '1px solid var(--border)', overflowX: 'hidden'
       }} className="founder-nav">
-        <a href="/" style={{ fontWeight: 800, fontSize: '1.4rem', letterSpacing: '-0.02em', textDecoration: 'none', color: 'var(--text)', flexShrink: 0, whiteSpace: 'nowrap' }} className="founder-nav-logo">
-          Elevate<span style={{ color: 'var(--amber)' }}>Hours</span>
-        </a>
+        <div className="founder-nav-logo" style={{ flexShrink: 0 }}>
+          <Logo height={24} linkTo="/" />
+        </div>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexShrink: 0 }} className="founder-nav-links">
           <a href="/" className="founder-nav-home" style={{ color: 'var(--text-2)', fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none' }}>Home</a>
           <a href="/team" style={{ color: 'var(--text-2)', fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none', whiteSpace: 'nowrap' }}>Our Team</a>
@@ -265,8 +266,8 @@ export default function FounderPage() {
       {/* Footer */}
       <footer style={{ background: '#0B132B', color: 'white', padding: '2rem' }}>
         <div style={{ maxWidth: 1000, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-          <div style={{ fontWeight: 800, fontSize: '1.2rem' }}>
-            Elevate<span style={{ color: 'var(--amber)' }}>Hours</span>
+          <div>
+            <Logo height={22} linkTo="/" forceTheme="dark" />
           </div>
           <div style={{ opacity: 0.5, fontSize: '0.85rem' }}>
             Built by <a href="https://www.facebook.com/codescriptors/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--amber)', fontWeight: 600 }}>CodeScriptors IT Solutions</a>
