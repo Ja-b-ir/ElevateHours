@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import Logo from './Logo'
 import {
   LayoutDashboard, Store, PlusCircle, ClipboardList, ArrowLeftRight,
   Heart, Zap, User, Award, Bell, Sun, Moon, Menu, X, LogOut, ChevronDown, MessageSquare, Bookmark
@@ -130,9 +131,9 @@ export default function Navbar() {
       }}>
         <div className="eh-navbar-inner" style={{ maxWidth: 1280, margin: '0 auto', padding: '0 1.5rem', display: 'flex', flexWrap: 'nowrap', alignItems: 'center', height: 60, gap: '0.25rem' }}>
 
-          <a href="/dashboard" className="eh-logo" style={{ fontWeight: 900, fontSize: '1.2rem', letterSpacing: '-0.03em', color: 'var(--text)', marginRight: '1.5rem', flexShrink: 0, textDecoration: 'none', whiteSpace: 'nowrap' }}>
-            Elevate<span style={{ color: 'var(--brand)' }}>Hours</span>
-          </a>
+          <div className="eh-logo" style={{ marginRight: '1.5rem', flexShrink: 0 }}>
+            <Logo height={26} linkTo="/dashboard" />
+          </div>
 
           <div className="eh-desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: '0.125rem', flex: 1, overflow: 'hidden' }}>
             {links.map(({ href, label, icon: Icon }) => (
