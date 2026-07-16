@@ -31,6 +31,7 @@ export default function Logo({ height = 28, style = {}, linkTo = '/', className 
     <img
       src={src}
       alt="ElevateHours"
+      className="site-logo-img"
       style={{ height, width: 'auto', display: 'block', ...style }}
       onError={() => setImgError(true)}
     />
