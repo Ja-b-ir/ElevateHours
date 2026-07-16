@@ -101,25 +101,37 @@ export default function Transactions() {
   }
 
   // Confirming a transaction is what actually rewards Sparks and updates both profiles.
+  const TIER_THRESHOLDS = [
+    { name: 'Tier 3: Strategic', min: 10000 },
+    { name: 'Tier 2: Specialized', min: 5000 },
+    { name: 'Tier 1: Foundational', min: 0 },
+  ]
+  const tierForSparks = (sparks) => TIER_THRESHOLDS.find(t => sparks >= t.min)?.name || 'Tier 1: Foundational'
+
   const confirmTransaction = async (txn) => {
     setUpdating(txn.id)
     try {
       const sparks = txn.total_sparks_transferred || 0
 
-      await supabase.from('transactions').update({ status: 'Confirmed' }).eq('id', txn.id)
+      await supabase.from('transactions').update({ status: 'Confirmed', completed_at: new Date().toISOString() }).eq('id', txn.id)
 
       // Credit the provider: Sparks earned, completed count, impact score
       if (txn.provider_id) {
         const { data: providerProfile } = await supabase
           .from('profiles')
-          .select('sparks_earned, completed_transactions, impact_score')
+          .select('sparks_earned, completed_transactions, impact_score, tier_level')
           .eq('id', txn.provider_id)
           .single()
 
+        const newSparksEarned = (providerProfile?.sparks_earned || 0) + sparks
+        const newTier = tierForSparks(newSparksEarned)
+        const tierChanged = newTier !== providerProfile?.tier_level
+
         await supabase.from('profiles').update({
-          sparks_earned: (providerProfile?.sparks_earned || 0) + sparks,
+          sparks_earned: newSparksEarned,
           completed_transactions: (providerProfile?.completed_transactions || 0) + 1,
           impact_score: (providerProfile?.impact_score || 0) + 10,
+          tier_level: newTier,
         }).eq('id', txn.provider_id)
 
         await supabase.from('notifications').insert({
@@ -129,6 +141,15 @@ export default function Transactions() {
           type: 'confirmed',
           related_id: txn.id
         })
+
+        if (tierChanged) {
+          await supabase.from('notifications').insert({
+            user_id: txn.provider_id,
+            title: 'Tier Upgraded!',
+            message: `Congratulations — you've been upgraded to ${newTier}!`,
+            type: 'confirmed',
+          })
+        }
       }
 
       // Debit the receiver: Sparks spent
