@@ -129,13 +129,13 @@ export default function Navbar() {
         overflowX: 'hidden',
         overflowY: 'visible',
       }}>
-        <div className="eh-navbar-inner" style={{ maxWidth: 1280, margin: '0 auto', padding: '0 1.5rem', display: 'flex', flexWrap: 'nowrap', alignItems: 'center', height: 60, gap: '0.25rem' }}>
+        <div className="eh-navbar-inner" style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem', display: 'flex', flexWrap: 'nowrap', alignItems: 'center', height: 68, gap: '0.25rem' }}>
 
           <div className="eh-logo" style={{ marginRight: '1rem', flexShrink: 0 }}>
-            <Logo height={26} linkTo="/dashboard" />
+            <Logo height={40} linkTo="/dashboard" />
           </div>
 
-          <div className="eh-desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: '0.125rem', flex: 1, overflow: 'hidden' }}>
+          <div className="eh-desktop-nav" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.125rem', flex: 1, overflow: 'hidden' }}>
             {links.map(({ href, label, icon: Icon }) => (
               <a key={href} href={href} style={{
                 display: 'flex', alignItems: 'center', gap: '0.3rem', position: 'relative',
