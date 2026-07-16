@@ -13,7 +13,7 @@ export default function FounderPage() {
         borderBottom: '1px solid var(--border)', overflowX: 'hidden'
       }} className="founder-nav">
         <div className="founder-nav-logo" style={{ flexShrink: 0 }}>
-          <Logo height={38} linkTo="/" />
+          <Logo height={36} linkTo="/" />
         </div>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexShrink: 0 }} className="founder-nav-links">
           <a href="/" className="founder-nav-home" style={{ color: 'var(--text-2)', fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none' }}>Home</a>
@@ -267,7 +267,7 @@ export default function FounderPage() {
       <footer style={{ background: '#0B132B', color: 'white', padding: '2rem' }}>
         <div style={{ maxWidth: 1000, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <Logo height={38} linkTo="/" forceTheme="dark" />
+            <Logo height={26} linkTo="/" forceTheme="dark" />
           </div>
           <div style={{ opacity: 0.5, fontSize: '0.85rem' }}>
             Built by <a href="https://www.facebook.com/codescriptors/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--amber)', fontWeight: 600 }}>CodeScriptors IT Solutions</a>
@@ -288,6 +288,7 @@ export default function FounderPage() {
           .founder-grid { gap: 2rem !important; }
           .founder-nav-logo { font-size: 1.1rem !important; }
           .founder-nav-home, .founder-nav-login { display: none !important; }
+          .founder-nav-logo .site-logo-img { height: 26px !important; }
         }
       `}</style>
     </div>
