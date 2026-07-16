@@ -65,12 +65,29 @@ export default function BuySparks() {
   const RATE = isRegional ? REGIONAL_RATE : STANDARD_RATE
 
   const purchaseBundle = async (bundle) => {
-  alert('Payment gateway coming soon! Spark purchases will be available once payment integration is complete.')
-}
+    setPurchasing(bundle.name)
+    try {
+      await supabase.from('spark_purchases').insert({ buyer_id: user.id, purchase_type: 'Bundle', bundle: bundle.name, sparks_purchased: bundle.sparks, price_paid: bundle.price, date_purchased: new Date().toISOString().split('T')[0] })
+      setSuccess(`Successfully purchased ${bundle.sparks.toLocaleString()} SPK!`)
+      await refreshProfile()
+      setTimeout(() => setSuccess(''), 4000)
+    } catch (err) { console.error(err) }
+    setPurchasing(null)
+  }
 
-const purchaseFixed = async () => {
-  alert('Payment gateway coming soon! Spark purchases will be available once payment integration is complete.')
-}
+  const purchaseFixed = async () => {
+    const amt = parseInt(customAmount)
+    if (!amt || amt < 100) { alert('Minimum purchase is 100 SPK'); return }
+    setPurchasing('fixed')
+    try {
+      await supabase.from('spark_purchases').insert({ buyer_id: user.id, purchase_type: 'Fixed Rate', sparks_purchased: amt, price_paid: (amt * RATE).toFixed(2), date_purchased: new Date().toISOString().split('T')[0] })
+      setSuccess(`Successfully purchased ${amt.toLocaleString()} SPK!`)
+      setCustomAmount('')
+      await refreshProfile()
+      setTimeout(() => setSuccess(''), 4000)
+    } catch (err) { console.error(err) }
+    setPurchasing(null)
+  }
 
   const permanent = (profile?.sparks_earned || 0) - (profile?.sparks_spent || 0) + (profile?.sparks_purchased_total || 0)
   const total = permanent + (profile?.active_gifts_received || 0)
@@ -100,7 +117,7 @@ const purchaseFixed = async () => {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.6fr', gap: '1.5rem', alignItems: 'start' }}>
+        <div className="buy-sparks-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1.6fr', gap: '1.5rem', alignItems: 'start' }}>
 
           {/* Fixed rate */}
           <div className="card">
@@ -125,7 +142,7 @@ const purchaseFixed = async () => {
           <div>
             <h3 style={{ marginBottom: '0.375rem' }}>Bundle Packages</h3>
             <p style={{ color: 'var(--text-2)', fontSize: '0.825rem', marginBottom: '1.25rem' }}>Better value — save more with larger bundles</p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.875rem' }}>
+            <div className="bundle-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.875rem' }}>
               {BUNDLES.map(bundle => (
                 <div key={bundle.name} style={{
                   background: 'var(--surface)', borderRadius: 'var(--radius-lg)', padding: '1.25rem',
@@ -162,6 +179,15 @@ const purchaseFixed = async () => {
           </p>
         </div>
       </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .buy-sparks-grid { grid-template-columns: 1fr !important; }
+        }
+        @media (max-width: 480px) {
+          .bundle-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </div>
   )
 }
