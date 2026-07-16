@@ -5,8 +5,20 @@ import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
 import {
   TrendingUp, Users, Clock, Zap, ArrowRight, Briefcase,
-  GraduationCap, Plus, BarChart3, Award, Target, ChevronRight, Gift
+  GraduationCap, Plus, BarChart3, Award, Target, ChevronRight, Gift, Flame
 } from 'lucide-react'
+
+const TIERS = [
+  { name: 'Tier 1: Foundational', min: 0, next: 5000 },
+  { name: 'Tier 2: Specialized', min: 5000, next: 10000 },
+  { name: 'Tier 3: Strategic', min: 10000, next: null },
+]
+
+function tierInfo(sparksEarned) {
+  if (sparksEarned >= 10000) return TIERS[2]
+  if (sparksEarned >= 5000) return TIERS[1]
+  return TIERS[0]
+}
 
 export default function Dashboard() {
   const router = useRouter()
@@ -14,6 +26,7 @@ export default function Dashboard() {
   const [workOpportunities, setWorkOpportunities] = useState([])
   const [eduOpportunities, setEduOpportunities] = useState([])
   const [recentActivity, setRecentActivity] = useState([])
+  const [streakDays, setStreakDays] = useState({}) // { 'YYYY-MM-DD': sparksThatDay }
   const [activeTab, setActiveTab] = useState('Work')
   const [loading, setLoading] = useState(true)
 
@@ -23,8 +36,18 @@ export default function Dashboard() {
       if (!session) { window.location.replace('/auth/login'); return }
       const user = session.user
 
-      const { data: prof } = await supabase
+      let { data: prof } = await supabase
         .from('profiles').select('*').eq('id', user.id).single()
+
+      // Self-heal: if tier_level doesn't match sparks_earned (e.g. from older data
+      // or manual edits), correct it here rather than trusting a stale stored value.
+      if (prof) {
+        const correctTier = tierInfo(prof.sparks_earned || 0).name
+        if (correctTier !== prof.tier_level) {
+          await supabase.from('profiles').update({ tier_level: correctTier }).eq('id', user.id)
+          prof = { ...prof, tier_level: correctTier }
+        }
+      }
       setProfile(prof)
 
       const { data: workTxns } = await supabase
@@ -56,6 +79,20 @@ export default function Dashboard() {
         .order('created_at', { ascending: false })
         .limit(5)
       setRecentActivity(activity || [])
+
+      // Activity streak: every day this user completed work as the provider
+      const { data: completed } = await supabase
+        .from('transactions')
+        .select('completed_at, total_sparks_transferred')
+        .eq('provider_id', user.id)
+        .eq('status', 'Confirmed')
+        .not('completed_at', 'is', null)
+      const dayMap = {}
+      for (const t of completed || []) {
+        const day = t.completed_at.split('T')[0]
+        dayMap[day] = (dayMap[day] || 0) + (t.total_sparks_transferred || 0)
+      }
+      setStreakDays(dayMap)
 
       setLoading(false)
     }
@@ -216,23 +253,35 @@ export default function Dashboard() {
 
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'var(--amber)', borderRadius: '16px 16px 0 0' }} />
-            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.875rem' }}>Your Stats</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {[
-                { label: 'Completed Jobs', value: profile?.completed_transactions || 0, icon: <BarChart3 size={13} />, color: 'var(--brand)' },
-                { label: 'Impact Score', value: profile?.impact_score || 0, icon: <Target size={13} />, color: 'var(--amber)' },
-                { label: 'Trust Score', value: profile?.organization_trust_score || 0, icon: <Award size={13} />, color: 'var(--green)' },
-              ].map((stat, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-2)', fontSize: '0.8rem' }}>
-                    <span style={{ color: stat.color }}>{stat.icon}</span>
-                    {stat.label}
-                  </div>
-                  <span style={{ fontWeight: 800, fontSize: '0.9rem', color: stat.color }}>{stat.value}</span>
-                </div>
-              ))}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
+              <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Tier Progress</div>
+              <Award size={15} style={{ color: 'var(--amber)' }} />
             </div>
+            <div style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text)', marginBottom: '0.6rem' }}>
+              {tierInfo(profile?.sparks_earned || 0).name}
+            </div>
+            {tierInfo(profile?.sparks_earned || 0).next ? (
+              <>
+                <div style={{ background: 'var(--surface-3)', borderRadius: 999, height: 8, overflow: 'hidden', marginBottom: '0.5rem' }}>
+                  <div style={{
+                    height: '100%', borderRadius: 999,
+                    background: 'linear-gradient(90deg, var(--amber), var(--brand))',
+                    width: Math.min(100, (((profile?.sparks_earned || 0) - tierInfo(profile?.sparks_earned || 0).min) / (tierInfo(profile?.sparks_earned || 0).next - tierInfo(profile?.sparks_earned || 0).min)) * 100) + '%'
+                  }} />
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>
+                  {(profile?.sparks_earned || 0).toLocaleString()} / {tierInfo(profile?.sparks_earned || 0).next.toLocaleString()} SPK to next tier
+                </div>
+              </>
+            ) : (
+              <div style={{ fontSize: '0.78rem', color: 'var(--green)', fontWeight: 600 }}>You've reached the highest tier</div>
+            )}
           </div>
+        </div>
+
+        {/* Activity Streak */}
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', marginBottom: '1.5rem' }}>
+          <ActivityStreak streakDays={streakDays} />
         </div>
 
         <div className="dash-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '1.5rem', alignItems: 'start' }}>
@@ -398,6 +447,122 @@ export default function Dashboard() {
           .dash-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
+    </div>
+  )
+}
+
+function ActivityStreak({ streakDays }) {
+  const todayStr = new Date().toISOString().split('T')[0]
+
+  // Current streak: count backwards from today (or yesterday, if today has no activity yet)
+  const dayKey = (d) => d.toISOString().split('T')[0]
+  let cursor = new Date()
+  if (!streakDays[dayKey(cursor)]) cursor.setDate(cursor.getDate() - 1)
+  let currentStreak = 0
+  while (streakDays[dayKey(cursor)]) {
+    currentStreak++
+    cursor.setDate(cursor.getDate() - 1)
+  }
+
+  // Longest streak across all recorded history
+  const sortedDates = Object.keys(streakDays).sort()
+  let longestStreak = 0, run = 0, prevDate = null
+  for (const d of sortedDates) {
+    if (prevDate) {
+      const diff = (new Date(d) - new Date(prevDate)) / 86400000
+      run = diff === 1 ? run + 1 : 1
+    } else {
+      run = 1
+    }
+    longestStreak = Math.max(longestStreak, run)
+    prevDate = d
+  }
+
+  const activeDays = Object.keys(streakDays).length
+
+  // Build last 18 weeks as a 7-row x N-column grid, GitHub-style
+  const WEEKS = 18
+  const totalDays = WEEKS * 7
+  const start = new Date()
+  start.setDate(start.getDate() - totalDays + 1)
+  // Align start to a Sunday so columns line up as full weeks
+  start.setDate(start.getDate() - start.getDay())
+
+  const cells = []
+  const cursor2 = new Date(start)
+  while (cells.length < WEEKS * 7 + 7) {
+    cells.push(new Date(cursor2))
+    cursor2.setDate(cursor2.getDate() + 1)
+  }
+
+  const colorFor = (sparks) => {
+    if (!sparks) return 'var(--surface-3)'
+    if (sparks < 50) return 'var(--green-light)'
+    if (sparks < 150) return 'var(--green)'
+    if (sparks < 300) return 'var(--brand)'
+    return 'var(--brand-dark)'
+  }
+
+  const weeks = []
+  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7))
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+        <div>
+          <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '0.15rem' }}>Activity Streak</h2>
+          <p style={{ fontSize: '0.78rem', color: 'var(--text-3)' }}>Days you completed work, shaded by Sparks earned</p>
+        </div>
+        <div style={{ display: 'flex', gap: '1.5rem' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', justifyContent: 'center', color: currentStreak > 0 ? 'var(--amber)' : 'var(--text-3)' }}>
+              <Flame size={16} fill={currentStreak > 0 ? 'var(--amber)' : 'none'} />
+              <span style={{ fontWeight: 800, fontSize: '1.1rem' }}>{currentStreak}</span>
+            </div>
+            <div style={{ fontSize: '0.68rem', color: 'var(--text-3)' }}>Current streak</div>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--text)' }}>{longestStreak}</div>
+            <div style={{ fontSize: '0.68rem', color: 'var(--text-3)' }}>Longest streak</div>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--text)' }}>{activeDays}</div>
+            <div style={{ fontSize: '0.68rem', color: 'var(--text-3)' }}>Active days</div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ overflowX: 'auto', paddingBottom: '0.25rem' }}>
+        <div style={{ display: 'flex', gap: 3 }}>
+          {weeks.map((week, wi) => (
+            <div key={wi} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              {week.map((date, di) => {
+                const key = dayKey(date)
+                const sparks = streakDays[key] || 0
+                const isFuture = date > new Date()
+                return (
+                  <div
+                    key={di}
+                    title={isFuture ? '' : key + (sparks ? ' · ' + sparks + ' SPK earned' : ' · no activity')}
+                    style={{
+                      width: 11, height: 11, borderRadius: 2,
+                      background: isFuture ? 'transparent' : colorFor(sparks),
+                    }}
+                  />
+                )
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.75rem', fontSize: '0.7rem', color: 'var(--text-3)' }}>
+        Less
+        {['var(--surface-3)', 'var(--green-light)', 'var(--green)', 'var(--brand)', 'var(--brand-dark)'].map((c, i) => (
+          <div key={i} style={{ width: 10, height: 10, borderRadius: 2, background: c }} />
+        ))}
+        More
+      </div>
     </div>
   )
 }
