@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import Logo from './Logo'
+import Logo from '@/components/Logo'
 import {
   LayoutDashboard, Store, PlusCircle, ClipboardList, ArrowLeftRight,
   Heart, Zap, User, Award, Bell, Sun, Moon, Menu, X, LogOut, ChevronDown, MessageSquare, Bookmark
@@ -131,16 +131,16 @@ export default function Navbar() {
       }}>
         <div className="eh-navbar-inner" style={{ maxWidth: 1280, margin: '0 auto', padding: '0 1.5rem', display: 'flex', flexWrap: 'nowrap', alignItems: 'center', height: 60, gap: '0.25rem' }}>
 
-          <div className="eh-logo" style={{ marginRight: '1.5rem', flexShrink: 0 }}>
-            <Logo height={38} linkTo="/dashboard" />
+          <div className="eh-logo" style={{ marginRight: '1rem', flexShrink: 0 }}>
+            <Logo height={26} linkTo="/dashboard" />
           </div>
 
           <div className="eh-desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: '0.125rem', flex: 1, overflow: 'hidden' }}>
             {links.map(({ href, label, icon: Icon }) => (
               <a key={href} href={href} style={{
-                display: 'flex', alignItems: 'center', gap: '0.375rem', position: 'relative',
-                padding: '0.45rem 0.75rem', borderRadius: 'var(--radius-sm)',
-                fontSize: '0.825rem', fontWeight: 600,
+                display: 'flex', alignItems: 'center', gap: '0.3rem', position: 'relative',
+                padding: '0.45rem 0.5rem', borderRadius: 'var(--radius-sm)',
+                fontSize: '0.8rem', fontWeight: 600,
                 color: isActive(href) ? 'var(--brand)' : 'var(--text-2)',
                 background: isActive(href) ? 'var(--brand-light)' : 'transparent',
                 whiteSpace: 'nowrap', textDecoration: 'none'
@@ -160,7 +160,7 @@ export default function Navbar() {
             ))}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: 'auto', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginLeft: 'auto', flexShrink: 0 }}>
 
             <button onClick={toggleTheme} style={{
               width: 36, height: 36, borderRadius: 'var(--radius-sm)', flexShrink: 0,
