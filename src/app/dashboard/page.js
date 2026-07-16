@@ -128,7 +128,16 @@ export default function Dashboard() {
                 {profile?.tier_level || 'Tier 1: Foundational'} &nbsp;·&nbsp; Impact Score: {profile?.impact_score || 0} &nbsp;·&nbsp; {profile?.completed_transactions || 0} completed
               </p>
             </div>
-            <div style={{ display: 'flex', gap: '0.625rem' }}>
+            <div style={{ display: 'flex', gap: '0.625rem', flexWrap: 'wrap' }}>
+              <a href="/referrals" style={{
+                display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+                padding: '0.6rem 1.125rem', borderRadius: 'var(--radius-sm)',
+                background: 'linear-gradient(135deg, var(--amber), var(--amber-dark))', color: '#1B1C25',
+                fontSize: '0.825rem', fontWeight: 700, textDecoration: 'none',
+                boxShadow: '0 4px 12px rgba(221,162,45,0.3)'
+              }}>
+                <Gift size={14} /> Invite Friends
+              </a>
               <a href="/post-request" style={{
                 display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
                 padding: '0.6rem 1.125rem', borderRadius: 'var(--radius-sm)',
@@ -332,7 +341,6 @@ export default function Dashboard() {
                   { label: 'Buy Sparks', href: '/buy-sparks', icon: Zap, accent: 'var(--green)' },
                   { label: 'Community Funding', href: '/funding-requests', icon: TrendingUp, accent: 'var(--red)' },
                   { label: 'My Transactions', href: '/transactions', icon: ArrowRight, accent: 'var(--purple)' },
-                  { label: 'Invite Friends', href: '/referrals', icon: Gift, accent: 'var(--amber)' },
                 ].map((action, i) => (
                   <a key={i} href={action.href} style={{
                     display: 'flex', alignItems: 'center', gap: '0.75rem',
