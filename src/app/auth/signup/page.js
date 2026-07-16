@@ -90,7 +90,7 @@ function SignupContent() {
       <div style={{ flex: 1, background: 'linear-gradient(145deg, var(--brand) 0%, var(--brand-mid) 60%, var(--brand-mid) 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '3rem', color: 'white' }} className="auth-left">
         <div style={{ maxWidth: 400 }}>
           <div style={{ marginBottom: '2.5rem' }}>
-            <Logo height={44} linkTo={null} forceTheme="dark" />
+            <Logo height={30} linkTo={null} forceTheme="dark" />
           </div>
           <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', fontWeight: 800, marginBottom: '1rem', lineHeight: 1.25, letterSpacing: '-0.02em' }}>
             Start turning your skills into real opportunity.
@@ -118,7 +118,7 @@ function SignupContent() {
           <p style={{ color: 'var(--text-2)', fontSize: '0.875rem' }}>Already have one? <a href="/auth/login" style={{ color: 'var(--brand)', fontWeight: 600 }}>Sign in</a></p>
           {refCode && (
             <div style={{ marginTop: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--amber-light)', color: 'var(--amber-dark)', padding: '0.6rem 0.875rem', borderRadius: 8, fontSize: '0.8rem', fontWeight: 600 }}>
-              <Gift size={15} /> You were invited! Sign up now for 300 SPK instead of the usual 250.
+              {typeof Gift === 'function' && <Gift size={15} />} You were invited! Sign up now for 300 SPK instead of the usual 250.
             </div>
           )}
         </div>
