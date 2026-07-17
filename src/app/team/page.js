@@ -9,7 +9,7 @@ const TEAM = [
     rank: 1,
     name: 'Mohammad Mabrouk',
     designation: 'Strategic Financial Advisor',
-    photo: '/team/mabrouk.jpeg',
+    photo: 'team/mabrouk.jpeg',
     bio: 'Replace with a paragraph about this person — background, what they do at ElevateHours.',
     quote: 'Replace with a short quote in their own words.',
     socials: { linkedin: '', email: '' }
