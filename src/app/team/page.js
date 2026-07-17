@@ -3,23 +3,44 @@ import { useState, useEffect } from 'react'
 import Logo from '@/components/Logo'
 import { X, Linkedin, Facebook, Twitter, Instagram, Globe, Mail } from 'lucide-react'
 
-// Fill this in with real team members. Example shape below.
+// Fill this in with real team members. rank: 1 = most senior (shown first, larger card).
 const TEAM = [
-  // {
-  //   name: 'Full Name',
-  //   designation: 'Role / Title',
-  //   photo: '/team/full-name.jpg', // put image in /public/team/, falls back to initial avatar if missing
-  //   bio: 'A longer paragraph about this person — background, what they do at ElevateHours, etc.',
-  //   quote: 'A short personal quote in their own words.',
-  //   socials: {
-  //     linkedin: 'https://linkedin.com/in/...',
-  //     facebook: 'https://facebook.com/...',
-  //     twitter: 'https://twitter.com/...',
-  //     instagram: 'https://instagram.com/...',
-  //     website: 'https://...',
-  //     email: 'name@example.com',
-  //   }
-  // },
+  {
+    rank: 1,
+    name: 'Full Name',
+    designation: 'Strategic Financial Advisor',
+    photo: '/team/advisor.jpg',
+    bio: 'Replace with a paragraph about this person — background, what they do at ElevateHours.',
+    quote: 'Replace with a short quote in their own words.',
+    socials: { linkedin: '', email: '' }
+  },
+  {
+    rank: 2,
+    name: 'Full Name',
+    designation: 'Community Programme Coordinator',
+    photo: '/team/coordinator1.jpg',
+    bio: 'Replace with a paragraph about this person.',
+    quote: '',
+    socials: { linkedin: '', email: '' }
+  },
+  {
+    rank: 2,
+    name: 'Full Name',
+    designation: 'Community Programme Coordinator',
+    photo: '/team/coordinator2.jpg',
+    bio: 'Replace with a paragraph about this person.',
+    quote: '',
+    socials: { linkedin: '', email: '' }
+  },
+  {
+    rank: 2,
+    name: 'Full Name',
+    designation: 'Community Programme Coordinator',
+    photo: '/team/coordinator3.jpg',
+    bio: 'Replace with a paragraph about this person.',
+    quote: '',
+    socials: { linkedin: '', email: '' }
+  },
 ]
 
 const SOCIAL_ICONS = {
@@ -31,7 +52,7 @@ const SOCIAL_ICONS = {
   email: { icon: Mail, color: 'var(--brand)' },
 }
 
-function MemberCard({ member, onOpen }) {
+function MemberCard({ member, onOpen, featured }) {
   const [imgError, setImgError] = useState(false)
   const showPhoto = member.photo && !imgError
 
@@ -39,12 +60,15 @@ function MemberCard({ member, onOpen }) {
     <button
       onClick={() => onOpen(member)}
       style={{
-        background: 'var(--surface-2)', borderRadius: 16, border: '1px solid var(--border)',
+        width: '100%',
+        background: 'var(--surface-2)', borderRadius: 16,
+        border: featured ? '2px solid var(--brand)' : '1px solid var(--border)',
+        boxShadow: featured ? 'var(--shadow-brand)' : 'none',
         overflow: 'hidden', textAlign: 'center', cursor: 'pointer',
         transition: 'all var(--transition)', fontFamily: 'inherit', padding: 0
       }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--brand)'; e.currentTarget.style.boxShadow = 'var(--shadow)' }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none' }}
+      onMouseEnter={e => { e.currentTarget.style.boxShadow = featured ? 'var(--shadow-brand)' : 'var(--shadow)' }}
+      onMouseLeave={e => { e.currentTarget.style.boxShadow = featured ? 'var(--shadow-brand)' : 'none' }}
     >
       <div style={{
         width: '100%', aspectRatio: '1 / 1',
@@ -101,7 +125,7 @@ export default function TeamPage() {
         borderBottom: '1px solid var(--border)'
       }}>
         <div>
-          <Logo height={38} linkTo="/" />
+          <Logo height={24} linkTo="/" />
         </div>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <a href="/" style={{ color: 'var(--text-2)', fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none' }}>Home</a>
@@ -142,11 +166,28 @@ export default function TeamPage() {
               <p style={{ fontSize: '0.9rem' }}>We're putting together introductions for everyone behind ElevateHours.</p>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.5rem' }}>
-              {TEAM.map((member, i) => (
-                <MemberCard key={i} member={member} onOpen={setSelected} />
-              ))}
-            </div>
+            (() => {
+              // Group by rank (1 = most senior) so hierarchy is visually clear —
+              // each rank tier renders as its own centered row, most senior first.
+              const ranks = Array.from(new Set(TEAM.map(m => m.rank ?? 99))).sort((a, b) => a - b)
+              return ranks.map(rank => {
+                const members = TEAM.filter(m => (m.rank ?? 99) === rank)
+                const isTopRank = rank === ranks[0]
+                return (
+                  <div key={rank} style={{ marginBottom: '3rem' }}>
+                    <div style={{
+                      display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '1.75rem'
+                    }}>
+                      {members.map((member, i) => (
+                        <div key={i} style={{ width: isTopRank ? 240 : 210 }}>
+                          <MemberCard member={member} onOpen={setSelected} featured={isTopRank} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })
+            })()
           )}
         </div>
       </section>
@@ -155,7 +196,7 @@ export default function TeamPage() {
       <footer style={{ background: '#0B132B', color: 'white', padding: '2rem' }}>
         <div style={{ maxWidth: 1000, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <Logo height={38} linkTo="/" forceTheme="dark" />
+            <Logo height={22} linkTo="/" forceTheme="dark" />
           </div>
           <div style={{ opacity: 0.5, fontSize: '0.85rem' }}>
             Built by <a href="https://www.facebook.com/codescriptors/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--amber)', fontWeight: 600 }}>CodeScriptors IT Solutions</a>
