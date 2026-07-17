@@ -28,7 +28,7 @@ const TEAM = [
     name: 'Mariam Akter Khushi',
     designation: 'Community Programme Coordinator',
     photo: 'team/khushi.jpg',
-    bio: 'Mariam Akter Khushi is a final-year Bachelor of Computer Science and Engineering (CSE) student, currently working on her final-year project. She is passionate about technology, continuous learning, and community development. As a Community Programme Coordinator at ElevateHours, she is dedicated to connecting students, educators, and organizations to create meaningful learning opportunities, promote skill development, and help students gain practical experience for successful careers.',
+    bio: 'Mariam Khushi is a final-year Bachelor of Computer Science and Engineering (CSE) student, currently working on her final-year project. She is passionate about technology, continuous learning, and community development. As a Community Programme Coordinator at ElevateHours, she is dedicated to connecting students, educators, and organizations to create meaningful learning opportunities, promote skill development, and help students gain practical experience for successful careers.',
     quote: 'I aim to connect students, educators, and organizations to create meaningful learning and work opportunities. I believe ElevateHours empowers individuals by rewarding skills, encouraging collaboration, and helping students build experience, confidence, and career-ready profiles through real-world engagement.',
     socials: { linkedin: '', email: 'mariamakterkhushi7@gmail.com' }
   },
