@@ -16,16 +16,16 @@ const TEAM = [
   },
   {
     rank: 2,
-    name: 'Full Name',
+    name: 'Syada Rafia Bari Risha',
     designation: 'Community Programme Coordinator',
-    photo: '/team/coordinator1.jpg',
-    bio: 'Replace with a paragraph about this person.',
-    quote: '',
-    socials: { linkedin: '', email: '' }
+    photo: 'team/risha.jpeg',
+    bio: 'Syada Rafiya Bari Risha is a final-year Computer Science and Engineering (CSE) student with an interest in Artificial Intelligence, Machine Learning, and research. She is currently working on her final-year project, exploring AI and ML applications for real-world problems. Through her teaching experience, she has developed leadership, mentoring, and management skills by guiding students, coordinating learning activities, and supporting their academic growth. She is eager to expand her knowledge, strengthen her technical expertise, and contribute to impactful research and technology-driven solutions.',
+    quote: 'As a Community Programme Coordinator at ElevateHours, I envision this platform as a place where time becomes a bridge to opportunity and every skill has a story to tell. The cashless time banking model creates a unique ecosystem where learning, contribution, and growth are valued equally. My intention is to nurture a community where students transform their potential into experience, educators amplify their impact, and organizations connect with fresh talent. I aim to inspire collaboration, empower individuals, and help create a future where every hour invested becomes a pathway toward success.',
+    socials: { linkedin: '', email: 'sayadarafia07@gmail.com' }
   },
   {
     rank: 2,
-    name: 'Full Name',
+    name: 'Mariam Akter Khushi',
     designation: 'Community Programme Coordinator',
     photo: '/team/coordinator2.jpg',
     bio: 'Replace with a paragraph about this person.',
@@ -34,7 +34,7 @@ const TEAM = [
   },
   {
     rank: 2,
-    name: 'Full Name',
+    name: 'Mohammad Hossain',
     designation: 'Community Programme Coordinator',
     photo: '/team/coordinator3.jpg',
     bio: 'Replace with a paragraph about this person.',
