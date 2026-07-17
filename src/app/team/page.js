@@ -7,9 +7,9 @@ import { X, Linkedin, Facebook, Twitter, Instagram, Globe, Mail } from 'lucide-r
 const TEAM = [
   {
     rank: 1,
-    name: 'Full Name',
+    name: 'Mohammad Mabrouk',
     designation: 'Strategic Financial Advisor',
-    photo: '/team/advisor.jpg',
+    photo: '/team/mabrouk.jpeg',
     bio: 'Replace with a paragraph about this person — background, what they do at ElevateHours.',
     quote: 'Replace with a short quote in their own words.',
     socials: { linkedin: '', email: '' }
