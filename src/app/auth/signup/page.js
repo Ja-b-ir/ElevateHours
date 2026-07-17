@@ -164,18 +164,19 @@ function SignupContent() {
 
           <div className="form-group">
             <label className="form-label">Account Type</label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.6rem' }}>
               {[
                 { value: 'Personal', label: 'Personal', sub: 'Student / Freelancer' },
-                { value: 'Organization', label: 'Organization', sub: 'Startup / NGO' }
+                { value: 'Educator', label: 'Educator', sub: 'Teach & mentor' },
+                { value: 'Organization', label: 'Org / NGO', sub: 'Startup / Nonprofit' }
               ].map(opt => (
                 <button key={opt.value} type="button" onClick={() => setForm({ ...form, account_type: opt.value })} style={{
-                  padding: '0.875rem', borderRadius: 'var(--radius)', border: `2px solid ${form.account_type === opt.value ? 'var(--brand)' : 'var(--border)'}`,
+                  padding: '0.75rem 0.6rem', borderRadius: 'var(--radius)', border: `2px solid ${form.account_type === opt.value ? 'var(--brand)' : 'var(--border)'}`,
                   background: form.account_type === opt.value ? 'var(--brand-light)' : 'var(--surface-2)',
                   cursor: 'pointer', textAlign: 'left', transition: 'all var(--transition)'
                 }}>
-                  <div style={{ fontWeight: 700, fontSize: '0.875rem', color: form.account_type === opt.value ? 'var(--brand)' : 'var(--text)', marginBottom: '0.2rem' }}>{opt.label}</div>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--text-3)' }}>{opt.sub}</div>
+                  <div style={{ fontWeight: 700, fontSize: '0.8rem', color: form.account_type === opt.value ? 'var(--brand)' : 'var(--text)', marginBottom: '0.15rem' }}>{opt.label}</div>
+                  <div style={{ fontSize: '0.66rem', color: 'var(--text-3)' }}>{opt.sub}</div>
                 </button>
               ))}
             </div>
