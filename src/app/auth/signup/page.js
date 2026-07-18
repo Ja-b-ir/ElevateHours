@@ -56,12 +56,13 @@ function SignupContent() {
           if (referrerProfile) referrerId = referrerProfile.id
         }
 
-        await supabase.from('profiles').upsert({
+        const { error: profileError } = await supabase.from('profiles').upsert({
           id: data.user.id, email: form.email, full_name: form.full_name, account_type: form.account_type,
           whatsapp_number: form.whatsapp_number, country: form.country, country_updated_at: new Date().toISOString(),
           sparks_purchased_total: referrerId ? 300 : 250, // +50 bonus for being referred
           referred_by: referrerId
         })
+        if (profileError) throw profileError
 
         if (referrerId) {
           const { data: referrerProfile } = await supabase.from('profiles').select('sparks_earned').eq('id', referrerId).single()
