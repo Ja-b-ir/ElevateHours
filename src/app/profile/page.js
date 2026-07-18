@@ -3,7 +3,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
-import { Mail, MessageCircle, MessageSquare, CheckCircle2, BarChart3, Star, Zap, Award, AlertTriangle, Globe, Clock, Flag } from 'lucide-react'
+import { Mail, MessageCircle, MessageSquare, CheckCircle2, BarChart3, Star, Zap, Award, AlertTriangle, Globe, Clock, Flag, X } from 'lucide-react'
 
 const COUNTRIES = [
   'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia',
@@ -61,6 +61,9 @@ function ProfileContent() {
   const [countrySubmitting, setCountrySubmitting] = useState(false)
   const [countryError, setCountryError] = useState('')
   const [pendingRequest, setPendingRequest] = useState(null)
+  const [skillsCatalog, setSkillsCatalog] = useState([])
+  const [addingSkillId, setAddingSkillId] = useState('')
+  const [skillSubmitting, setSkillSubmitting] = useState(false)
 
   useEffect(() => {
     const init = async () => {
@@ -74,13 +77,20 @@ function ProfileContent() {
         bio: prof?.bio || '',
         full_name: prof?.full_name || '',
         tier_level: prof?.tier_level || 'Tier 1: Foundational',
-        whatsapp_number: prof?.whatsapp_number || ''
+        whatsapp_number: prof?.whatsapp_number || '',
+        teaching_focus: prof?.teaching_focus || '',
+        institution: prof?.institution || '',
+        field_of_study: prof?.field_of_study || ''
       })
       const { data: skillsData } = await supabase
         .from('profile_skills_offered')
-        .select('skill:skills_catalog(id, skill_name, track, tier:tier_reference(tier_name))')
+        .select('id, skill:skills_catalog(id, skill_name, track, tier:tier_reference(tier_name))')
         .eq('profile_id', targetId)
-      setSkills(skillsData?.map(function(s) { return s.skill }) || [])
+      setSkills(skillsData?.map(function(s) { return { linkId: s.id, ...s.skill } }) || [])
+      if (!viewId || viewId === user.id) {
+        const { data: allSkills } = await supabase.from('skills_catalog').select('id, skill_name, track').order('skill_name')
+        setSkillsCatalog(allSkills || [])
+      }
       const { data: ratingsData } = await supabase
         .from('endorsements')
         .select('rating')
@@ -117,7 +127,10 @@ function ProfileContent() {
       bio: editForm.bio,
       full_name: editForm.full_name || profile.full_name,
       tier_level: editForm.tier_level || profile.tier_level,
-      whatsapp_number: editForm.whatsapp_number
+      whatsapp_number: editForm.whatsapp_number,
+      teaching_focus: editForm.teaching_focus,
+      institution: editForm.institution,
+      field_of_study: editForm.field_of_study,
     }
     await supabase.from('profiles').update(updates).eq('id', currentUser.id)
     setProfile({ ...profile, ...updates })
@@ -125,6 +138,27 @@ function ProfileContent() {
     setSuccess('Profile updated successfully!')
     setTimeout(function() { setSuccess('') }, 3000)
     setSaving(false)
+  }
+
+  const addSkill = async () => {
+    if (!addingSkillId) return
+    setSkillSubmitting(true)
+    try {
+      const { data, error } = await supabase.from('profile_skills_offered').insert({
+        profile_id: currentUser.id, skill_id: addingSkillId
+      }).select('id, skill:skills_catalog(id, skill_name, track, tier:tier_reference(tier_name))').single()
+      if (error) throw error
+      setSkills(prev => [...prev, { linkId: data.id, ...data.skill }])
+      setAddingSkillId('')
+    } catch (err) {
+      console.error(err)
+    }
+    setSkillSubmitting(false)
+  }
+
+  const removeSkill = async (linkId) => {
+    setSkills(prev => prev.filter(s => s.linkId !== linkId))
+    await supabase.from('profile_skills_offered').delete().eq('id', linkId)
   }
 
   const deleteAccount = async () => {
@@ -324,6 +358,32 @@ function ProfileContent() {
             <p style={{ color: 'var(--text-2)', lineHeight: 1.7, fontSize: '0.95rem' }}>{profile.bio}</p>
           )}
 
+          {/* Educator: what they teach */}
+          {!editing && profile.account_type === 'Educator' && profile.teaching_focus && (
+            <div style={{ marginTop: '0.875rem', background: 'var(--brand-light)', borderRadius: 10, padding: '0.875rem 1rem' }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--brand)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>What They Teach</div>
+              <p style={{ color: 'var(--text)', fontSize: '0.875rem', lineHeight: 1.6 }}>{profile.teaching_focus}</p>
+            </div>
+          )}
+
+          {/* Student: institution / field of study */}
+          {!editing && profile.account_type === 'Personal' && (profile.institution || profile.field_of_study) && (
+            <div style={{ marginTop: '0.875rem', display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+              {profile.institution && (
+                <div>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.2rem' }}>Institution</div>
+                  <div style={{ fontSize: '0.875rem', color: 'var(--text)', fontWeight: 600 }}>{profile.institution}</div>
+                </div>
+              )}
+              {profile.field_of_study && (
+                <div>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.2rem' }}>Department / Subject</div>
+                  <div style={{ fontSize: '0.875rem', color: 'var(--text)', fontWeight: 600 }}>{profile.field_of_study}</div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Edit Form */}
           {editing && isOwnProfile && (
             <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
@@ -373,6 +433,45 @@ function ProfileContent() {
                   style={{ width: '100%', padding: '0.7rem', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.95rem', resize: 'vertical', outline: 'none', background: 'var(--surface-2)', color: 'var(--text)' }}
                 />
               </div>
+
+              {profile.account_type === 'Educator' && (
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.4rem', color: 'var(--text)' }}>What do you teach?</label>
+                  <textarea
+                    rows={2}
+                    value={editForm.teaching_focus}
+                    onChange={function(e) { setEditForm({ ...editForm, teaching_focus: e.target.value }) }}
+                    placeholder="e.g. Web development, graphic design, IELTS preparation..."
+                    style={{ width: '100%', padding: '0.7rem', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.95rem', resize: 'vertical', outline: 'none', background: 'var(--surface-2)', color: 'var(--text)' }}
+                  />
+                  <p style={{ fontSize: '0.72rem', color: 'var(--text-3)', marginTop: '0.35rem' }}>Shown to students browsing Marketplace → Find Educator.</p>
+                </div>
+              )}
+
+              {profile.account_type === 'Personal' && (
+                <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+                  <div style={{ flex: 1, minWidth: 180 }}>
+                    <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.4rem', color: 'var(--text)' }}>Institution</label>
+                    <input
+                      type="text"
+                      value={editForm.institution}
+                      onChange={function(e) { setEditForm({ ...editForm, institution: e.target.value }) }}
+                      placeholder="School / University"
+                      style={{ width: '100%', padding: '0.7rem', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.95rem', outline: 'none', background: 'var(--surface-2)', color: 'var(--text)' }}
+                    />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 180 }}>
+                    <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.4rem', color: 'var(--text)' }}>Department / Subject</label>
+                    <input
+                      type="text"
+                      value={editForm.field_of_study}
+                      onChange={function(e) { setEditForm({ ...editForm, field_of_study: e.target.value }) }}
+                      placeholder="e.g. Computer Science"
+                      style={{ width: '100%', padding: '0.7rem', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.95rem', outline: 'none', background: 'var(--surface-2)', color: 'var(--text)' }}
+                    />
+                  </div>
+                </div>
+              )}
 
               <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                 <button
@@ -451,17 +550,47 @@ function ProfileContent() {
           <div style={{ background: 'var(--surface)', borderRadius: 16, padding: '1.5rem', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
             <h2 style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '1rem', color: 'var(--text)' }}>Skills Offered</h2>
             {skills.length === 0 ? (
-              <p style={{ color: 'var(--text-2)', fontSize: '0.875rem' }}>No skills listed yet.</p>
+              <p style={{ color: 'var(--text-2)', fontSize: '0.875rem', marginBottom: isOwnProfile ? '1rem' : 0 }}>No skills listed yet.</p>
             ) : (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: isOwnProfile ? '1rem' : 0 }}>
                 {skills.map(function(s, i) {
                   const tc = tierColor(s?.tier?.tier_name)
                   return (
-                    <span key={i} style={{ background: tc.bg, color: tc.color, padding: '0.3rem 0.75rem', borderRadius: 8, fontSize: '0.8rem', fontWeight: 600 }}>
+                    <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', background: tc.bg, color: tc.color, padding: '0.3rem 0.5rem 0.3rem 0.75rem', borderRadius: 8, fontSize: '0.8rem', fontWeight: 600 }}>
                       {s?.skill_name}
+                      {isOwnProfile && (
+                        <button
+                          onClick={function() { removeSkill(s.linkId) }}
+                          title="Remove"
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: tc.color, opacity: 0.6, display: 'flex', padding: 0 }}
+                        >
+                          <X size={12} />
+                        </button>
+                      )}
                     </span>
                   )
                 })}
+              </div>
+            )}
+            {isOwnProfile && (
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <select
+                  value={addingSkillId}
+                  onChange={function(e) { setAddingSkillId(e.target.value) }}
+                  style={{ flex: 1, padding: '0.55rem 0.7rem', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.85rem', outline: 'none', background: 'var(--surface-2)', color: 'var(--text)' }}
+                >
+                  <option value="">Add a skill...</option>
+                  {skillsCatalog.filter(function(sc) { return !skills.some(function(s) { return s.id === sc.id }) }).map(function(sc) {
+                    return <option key={sc.id} value={sc.id}>{sc.skill_name} ({sc.track})</option>
+                  })}
+                </select>
+                <button
+                  onClick={addSkill}
+                  disabled={!addingSkillId || skillSubmitting}
+                  style={{ background: 'var(--brand)', color: 'white', border: 'none', borderRadius: 8, padding: '0 1rem', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', opacity: !addingSkillId || skillSubmitting ? 0.6 : 1 }}
+                >
+                  Add
+                </button>
               </div>
             )}
           </div>
