@@ -110,6 +110,12 @@ export default function Dashboard() {
     </div>
   )
 
+  // Educators and Organizations/NGOs get a distinct dashboard focused on Programs,
+  // instead of the Personal dashboard's marketplace-opportunity feed.
+  if (profile && profile.account_type !== 'Personal') {
+    return <OrgDashboard profile={profile} />
+  }
+
   const permanent = (profile?.sparks_earned || 0) - (profile?.sparks_spent || 0) + (profile?.sparks_purchased_total || 0)
   const total = permanent + (profile?.active_gifts_received || 0)
   const filtered = activeTab === 'Work' ? workOpportunities : eduOpportunities
@@ -447,6 +453,150 @@ export default function Dashboard() {
           .dash-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
+    </div>
+  )
+}
+
+function OrgDashboard({ profile }) {
+  const [programs, setPrograms] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const load = async () => {
+      const { data: progs } = await supabase.from('programs').select('*').eq('creator_id', profile.id).order('created_at', { ascending: false })
+      const progIds = (progs || []).map(p => p.id)
+      let counts = {}
+      if (progIds.length > 0) {
+        const { data: allEnrollments } = await supabase.from('program_enrollments').select('program_id').in('program_id', progIds)
+        for (const e of allEnrollments || []) counts[e.program_id] = (counts[e.program_id] || 0) + 1
+      }
+      setPrograms((progs || []).map(p => ({ ...p, enrolledCount: counts[p.id] || 0 })))
+      setLoading(false)
+    }
+    load()
+  }, [profile.id])
+
+  const totalStudents = programs.reduce((sum, p) => sum + p.enrolledCount, 0)
+  const openCount = programs.filter(p => p.status === 'Open').length
+  const permanent = (profile?.sparks_earned || 0) - (profile?.sparks_spent || 0) + (profile?.sparks_purchased_total || 0)
+  const totalSparks = permanent + (profile?.active_gifts_received || 0)
+
+  if (loading) return (
+    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+      <Navbar />
+      <div className="loading-wrap"><div className="spinner" /> Loading your dashboard...</div>
+    </div>
+  )
+
+  return (
+    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+      <Navbar />
+
+      <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '1.75rem 1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.3rem', flexWrap: 'wrap' }}>
+                <h1 style={{ fontSize: 'clamp(1.4rem, 3vw, 1.75rem)', fontWeight: 900, letterSpacing: '-0.03em', color: 'var(--text)' }}>
+                  Welcome back, {profile?.full_name?.split(' ')[0]}
+                </h1>
+                <span style={{ background: 'var(--amber-light)', color: 'var(--amber-dark)', padding: '0.2rem 0.75rem', borderRadius: '999px', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                  {profile?.account_type === 'Educator' ? 'Educator' : 'Organization / NGO'}
+                </span>
+              </div>
+              <p style={{ color: 'var(--text-3)', fontSize: '0.875rem' }}>Manage your programs and track student enrollment</p>
+            </div>
+            <div style={{ display: 'flex', gap: '0.625rem', flexWrap: 'wrap' }}>
+              <a href="/programs/create" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.125rem', borderRadius: 'var(--radius-sm)', background: 'var(--brand)', color: 'white', fontSize: '0.825rem', fontWeight: 600, textDecoration: 'none', boxShadow: '0 4px 12px rgba(13,115,119,0.25)' }}>
+                <Plus size={14} /> Start a Program
+              </a>
+              <a href="/marketplace" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.125rem', borderRadius: 'var(--radius-sm)', background: 'var(--surface-3)', color: 'var(--text)', border: '1px solid var(--border)', fontSize: '0.825rem', fontWeight: 600, textDecoration: 'none' }}>
+                Browse Marketplace <ChevronRight size={14} />
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '2rem 1.5rem' }}>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+          <div style={{ background: 'linear-gradient(135deg, var(--brand) 0%, var(--brand-mid) 100%)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', color: 'white' }}>
+            <div style={{ fontSize: '0.7rem', fontWeight: 700, opacity: 0.7, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <Zap size={11} /> Sparks Balance
+            </div>
+            <div style={{ fontSize: 'clamp(2rem, 4vw, 2.5rem)', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1 }}>{totalSparks.toLocaleString()}</div>
+            <div style={{ fontSize: '0.8rem', opacity: 0.7, marginTop: '0.4rem' }}>SPK</div>
+          </div>
+
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem' }}>
+            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>Total Programs</div>
+            <div style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--text)' }}>{programs.length}</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginTop: '0.3rem' }}>{openCount} currently open</div>
+          </div>
+
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem' }}>
+            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>Total Students</div>
+            <div style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--brand)' }}>{totalStudents}</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginTop: '0.3rem' }}>across all programs</div>
+          </div>
+
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem' }}>
+            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.875rem' }}>Quick Actions</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <a href="/my-programs" style={{ fontSize: '0.85rem', color: 'var(--brand)', fontWeight: 600, textDecoration: 'none' }}>Manage Programs →</a>
+              <a href="/post-request" style={{ fontSize: '0.85rem', color: 'var(--brand)', fontWeight: 600, textDecoration: 'none' }}>Post a Work Request →</a>
+              <a href="/buy-sparks" style={{ fontSize: '0.85rem', color: 'var(--brand)', fontWeight: 600, textDecoration: 'none' }}>Buy Sparks →</a>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+          <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '0.15rem' }}>Your Programs</h2>
+              <p style={{ fontSize: '0.78rem', color: 'var(--text-3)' }}>Courses and internships you've created</p>
+            </div>
+            <a href="/my-programs" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: 'var(--brand)', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none' }}>
+              Manage all <ArrowRight size={13} />
+            </a>
+          </div>
+
+          <div style={{ padding: '1.25rem 1.5rem' }}>
+            {programs.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-3)' }}>
+                <GraduationCap size={36} style={{ margin: '0 auto 0.875rem', opacity: 0.3 }} />
+                <p style={{ fontWeight: 600, marginBottom: '0.25rem', color: 'var(--text-2)' }}>No programs yet</p>
+                <p style={{ fontSize: '0.8rem' }}>Create your first course or internship to start accepting students.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {programs.slice(0, 5).map(p => {
+                  const TypeIcon = p.program_type === 'Internship' ? Briefcase : GraduationCap
+                  return (
+                    <a key={p.id} href="/my-programs" style={{
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem',
+                      padding: '1rem 1.125rem', background: 'var(--surface-2)', borderRadius: 'var(--radius)',
+                      border: '1px solid var(--border)', textDecoration: 'none'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
+                        <TypeIcon size={16} style={{ color: 'var(--text-3)', flexShrink: 0 }} />
+                        <div>
+                          <div style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--text)' }}>{p.title}</div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-3)' }}>{p.status}</div>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--brand)', fontWeight: 700, fontSize: '0.85rem', flexShrink: 0 }}>
+                        <Users size={14} /> {p.enrolledCount}{p.capacity ? ' / ' + p.capacity : ''}
+                      </div>
+                    </a>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
