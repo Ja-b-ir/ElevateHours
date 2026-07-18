@@ -79,7 +79,10 @@ function SignupContent() {
 
         window.location.href = '/dashboard'
       } else { setError('Signup failed. Please try again.') }
-    } catch (err) { setError(err.message || JSON.stringify(err)) }
+    } catch (err) {
+      const msg = err?.message || err?.error_description || err?.details || err?.hint || err?.error || (typeof err === 'string' ? err : '') || 'Something went wrong. Please try again.'
+      setError(msg)
+    }
     finally { setLoading(false) }
   }
 
