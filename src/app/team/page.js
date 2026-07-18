@@ -10,9 +10,9 @@ const TEAM = [
     name: 'Mohammad Mabrouk',
     designation: 'Strategic Financial Advisor',
     photo: 'team/mabrouk.jpeg',
-    bio: 'Replace with a paragraph about this person — background, what they do at ElevateHours.',
-    quote: 'Replace with a short quote in their own words.',
-    socials: { linkedin: '', email: '' }
+    bio: 'Mohammad Mabrouk is an ACCA student currently pursuing his professional qualification in accounting and finance. He has completed the FIA level and is continuing his journey toward becoming a qualified finance professional. Alongside his studies, he works in education, marketing, and strategic financial advisory roles, supporting students and organizations through innovative learning and career development initiatives. He is passionate about creating impactful solutions that connect education, skills, and real-world opportunities.',
+    quote: 'My vision is to build a sustainable financial model that creates value for students, educators, and organizations. I aim to develop scalable strategies, ensure efficient resource allocation, and support the platform’s growth into a trusted ecosystem for skills, learning, and career development.',
+    socials: { linkedin: 'https://www.linkedin.com/in/mohammed-mabrouk-7b5327297/', email: 'mabrouk.3k4@gmail.com' }
   },
   {
     rank: 2,
@@ -36,9 +36,9 @@ const TEAM = [
     rank: 2,
     name: 'Mohammad Hossain',
     designation: 'Community Programme Coordinator',
-    photo: '/team/coordinator3.jpg',
-    bio: 'Replace with a paragraph about this person.',
-    quote: '',
+    photo: 'team/mosad.jpg',
+    bio: 'Mohammad Hossain has successfully completed his O Levels and is passionate about continuous learning, community development, and Islamic knowledge. He currently serves as a Community Programme Coordinator at ElevateHours, contributing to initiatives that empower students through education, skill development, and meaningful opportunities. He is also the founder of HF Clothing and aspires to create a positive impact through entrepreneurship, education, and service to the community.',
+    quote: 'I believe every student deserves opportunities to learn, contribute, and grow regardless of financial barriers. My goal is to build an inclusive, collaborative community where skills, knowledge, and time create meaningful impact, empowering students with practical experience, confidence, and pathways to future careers.',
     socials: { linkedin: '', email: '' }
   },
 ]
