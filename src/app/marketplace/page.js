@@ -104,13 +104,16 @@ function MarketplaceContent() {
   const joinProgram = async (program) => {
     setJoiningProgram(program.id)
     try {
-      if (program.capacity && program.enrolledCount >= program.capacity) {
-        alert('This program is full.')
-        setJoiningProgram(null)
-        return
-      }
       const { error } = await supabase.from('program_enrollments').insert({ program_id: program.id, student_id: user.id })
-      if (error) throw error
+      if (error) {
+        if (error.message?.includes('PROGRAM_FULL')) {
+          alert('This program just reached its capacity — no more spots available.')
+          setPrograms(prev => prev.filter(p => p.id !== program.id))
+          setJoiningProgram(null)
+          return
+        }
+        throw error
+      }
       setMyEnrollments(prev => new Set([...prev, program.id]))
       setPrograms(prev => prev.map(p => p.id === program.id ? { ...p, enrolledCount: p.enrolledCount + 1 } : p))
       await supabase.from('notifications').insert({
