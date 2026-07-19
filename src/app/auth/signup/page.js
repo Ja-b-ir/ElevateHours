@@ -94,7 +94,7 @@ function SignupContent() {
       <div style={{ flex: 1, background: 'linear-gradient(145deg, var(--brand) 0%, var(--brand-mid) 60%, var(--brand-mid) 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '3rem', color: 'white' }} className="auth-left">
         <div style={{ maxWidth: 400 }}>
           <div style={{ marginBottom: '2.5rem' }}>
-            <Logo height={30} linkTo={null} forceTheme="dark" />
+            <Logo height={40} linkTo={null} forceTheme="dark" />
           </div>
           <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', fontWeight: 800, marginBottom: '1rem', lineHeight: 1.25, letterSpacing: '-0.02em' }}>
             Start turning your skills into real opportunity.
