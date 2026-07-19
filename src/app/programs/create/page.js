@@ -9,7 +9,7 @@ export default function CreateProgram() {
   const router = useRouter()
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
-  const [form, setForm] = useState({ title: '', program_type: 'Course', description: '', capacity: '' })
+  const [form, setForm] = useState({ title: '', program_type: 'Course', description: '', capacity: '', level: 'Beginner', cost_type: 'Free', cost_amount: '' })
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -39,6 +39,9 @@ export default function CreateProgram() {
         program_type: form.program_type,
         description: form.description,
         capacity: form.capacity ? parseInt(form.capacity) : null,
+        level: form.level,
+        cost_type: form.cost_type,
+        cost_amount: form.cost_type === 'Free' ? null : (form.cost_amount ? parseFloat(form.cost_amount) : null),
         status: 'Open',
       })
       if (error) throw error
@@ -87,6 +90,45 @@ export default function CreateProgram() {
             <div className="form-group">
               <label className="form-label">Description</label>
               <textarea rows={5} placeholder="What will students learn or do? Duration, schedule, requirements..." value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} className="form-textarea" />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Level</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.6rem' }}>
+                {['Beginner', 'Intermediate', 'Advanced'].map(lvl => (
+                  <button key={lvl} type="button" onClick={() => setForm({ ...form, level: lvl })} style={{
+                    padding: '0.6rem', borderRadius: 'var(--radius-sm)', border: `2px solid ${form.level === lvl ? 'var(--brand)' : 'var(--border)'}`,
+                    background: form.level === lvl ? 'var(--brand-light)' : 'var(--surface-2)',
+                    cursor: 'pointer', fontWeight: 700, fontSize: '0.82rem', color: form.level === lvl ? 'var(--brand)' : 'var(--text)',
+                    transition: 'all var(--transition)'
+                  }}>
+                    {lvl}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Cost</label>
+              <select value={form.cost_type} onChange={e => setForm({ ...form, cost_type: e.target.value })} className="form-select" style={{ marginBottom: '0.75rem' }}>
+                <option value="Free">Free</option>
+                <option value="Per Hour">Priced — Per Hour</option>
+                <option value="Per Class">Priced — Per Class</option>
+                <option value="Per Month">Priced — Per Month</option>
+                <option value="Whole Course">Priced — Whole Course</option>
+              </select>
+              {form.cost_type !== 'Free' && (
+                <input
+                  type="number" min="0" step="0.01"
+                  placeholder={`Amount (${form.cost_type.toLowerCase()})`}
+                  value={form.cost_amount}
+                  onChange={e => setForm({ ...form, cost_amount: e.target.value })}
+                  className="form-input"
+                />
+              )}
+              <p style={{ fontSize: '0.72rem', color: 'var(--text-3)', marginTop: '0.4rem' }}>
+                This is informational only — joining through ElevateHours never costs Sparks. Any payment happens directly between you and the student.
+              </p>
             </div>
 
             <div className="form-group">
