@@ -90,9 +90,9 @@ function ProfileContent() {
       })
       const { data: skillsData } = await supabase
         .from('profile_skills_offered')
-        .select('id, skill:skills_catalog(id, skill_name, track, tier:tier_reference(tier_name))')
+        .select('skill_id, skill:skills_catalog(id, skill_name, track, tier:tier_reference(tier_name))')
         .eq('profile_id', targetId)
-      setSkills(skillsData?.map(function(s) { return { linkId: s.id, ...s.skill } }) || [])
+      setSkills(skillsData?.map(function(s) { return { linkId: s.skill_id, ...s.skill } }) || [])
       if (!viewId || viewId === user.id) {
         const { data: allSkills } = await supabase.from('skills_catalog').select('id, skill_name, track').order('skill_name')
         setSkillsCatalog(allSkills || [])
@@ -172,11 +172,11 @@ function ProfileContent() {
       const { data, error } = await supabase
         .from('profile_skills_offered')
         .insert({ profile_id: currentUser.id, skill_id: skillIdToLink })
-        .select('id, skill:skills_catalog(id, skill_name, track, tier:tier_reference(tier_name))')
+        .select('skill_id, skill:skills_catalog(id, skill_name, track, tier:tier_reference(tier_name))')
         .single()
       if (error) throw error
 
-      setSkills(prev => [...prev, { linkId: data.id, ...data.skill }])
+      setSkills(prev => [...prev, { linkId: data.skill_id, ...data.skill }])
       setAddingSkillId('')
       setCustomSkillName('')
       if (customMode) {
@@ -192,7 +192,7 @@ function ProfileContent() {
 
   const removeSkill = async (linkId) => {
     setSkills(prev => prev.filter(s => s.linkId !== linkId))
-    await supabase.from('profile_skills_offered').delete().eq('id', linkId)
+    await supabase.from('profile_skills_offered').delete().eq('profile_id', currentUser.id).eq('skill_id', linkId)
   }
 
   const deleteAccount = async () => {
