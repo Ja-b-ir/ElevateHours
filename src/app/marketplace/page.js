@@ -352,9 +352,15 @@ function MarketplaceContent() {
                 const full = p.capacity && p.enrolledCount >= p.capacity
                 return (
                   <div key={p.id} className="card" style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span className={`badge ${p.program_type === 'Internship' ? 'badge-purple' : 'badge-blue'}`} style={{ marginBottom: '0.625rem', alignSelf: 'flex-start' }}>
-                      {p.program_type}
-                    </span>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.625rem' }}>
+                      <span className={`badge ${p.program_type === 'Internship' ? 'badge-purple' : 'badge-blue'}`}>
+                        {p.program_type}
+                      </span>
+                      {p.level && <span className="badge badge-gray">{p.level}</span>}
+                      <span className={p.cost_type === 'Free' || !p.cost_type ? 'badge badge-green' : 'badge badge-amber'}>
+                        {!p.cost_type || p.cost_type === 'Free' ? 'Free' : p.cost_amount ? `$${p.cost_amount} / ${p.cost_type.replace('Per ', '').toLowerCase()}` : p.cost_type}
+                      </span>
+                    </div>
                     <h3 style={{ fontSize: '0.9rem', marginBottom: '0.5rem', color: 'var(--text)' }}>{p.title}</h3>
                     <p style={{ color: 'var(--text-2)', fontSize: '0.8rem', lineHeight: 1.6, flex: 1, marginBottom: '1rem' }}>
                       {p.description || 'No description provided.'}
