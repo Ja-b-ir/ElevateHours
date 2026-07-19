@@ -62,7 +62,13 @@ function ProfileContent() {
   const [countryError, setCountryError] = useState('')
   const [pendingRequest, setPendingRequest] = useState(null)
   const [skillsCatalog, setSkillsCatalog] = useState([])
+  const [tierList, setTierList] = useState([])
   const [addingSkillId, setAddingSkillId] = useState('')
+  const [customMode, setCustomMode] = useState(false)
+  const [customSkillName, setCustomSkillName] = useState('')
+  const [customTrack, setCustomTrack] = useState('Work')
+  const [customTierId, setCustomTierId] = useState('')
+  const [skillError, setSkillError] = useState('')
   const [skillSubmitting, setSkillSubmitting] = useState(false)
 
   useEffect(() => {
@@ -90,6 +96,9 @@ function ProfileContent() {
       if (!viewId || viewId === user.id) {
         const { data: allSkills } = await supabase.from('skills_catalog').select('id, skill_name, track').order('skill_name')
         setSkillsCatalog(allSkills || [])
+        const { data: tiers } = await supabase.from('tier_reference').select('id, tier_name').order('multiplier')
+        setTierList(tiers || [])
+        if (tiers && tiers.length > 0) setCustomTierId(tiers[0].id)
       }
       const { data: ratingsData } = await supabase
         .from('endorsements')
@@ -141,17 +150,42 @@ function ProfileContent() {
   }
 
   const addSkill = async () => {
-    if (!addingSkillId) return
+    setSkillError('')
     setSkillSubmitting(true)
     try {
-      const { data, error } = await supabase.from('profile_skills_offered').insert({
-        profile_id: currentUser.id, skill_id: addingSkillId
-      }).select('id, skill:skills_catalog(id, skill_name, track, tier:tier_reference(tier_name))').single()
+      let skillIdToLink = addingSkillId
+
+      if (customMode) {
+        if (!customSkillName.trim()) { setSkillError('Please enter a skill name'); setSkillSubmitting(false); return }
+        if (!customTierId) { setSkillError('Please select a level'); setSkillSubmitting(false); return }
+        const { data: newSkill, error: createError } = await supabase
+          .from('skills_catalog')
+          .insert({ skill_name: customSkillName.trim(), track: customTrack, tier_id: customTierId })
+          .select('id, skill_name, track, tier:tier_reference(tier_name)')
+          .single()
+        if (createError) throw createError
+        skillIdToLink = newSkill.id
+      }
+
+      if (!skillIdToLink) { setSkillError('Please choose a skill'); setSkillSubmitting(false); return }
+
+      const { data, error } = await supabase
+        .from('profile_skills_offered')
+        .insert({ profile_id: currentUser.id, skill_id: skillIdToLink })
+        .select('id, skill:skills_catalog(id, skill_name, track, tier:tier_reference(tier_name))')
+        .single()
       if (error) throw error
+
       setSkills(prev => [...prev, { linkId: data.id, ...data.skill }])
       setAddingSkillId('')
+      setCustomSkillName('')
+      if (customMode) {
+        // Refresh the catalog dropdown so the new skill is selectable/visible for consistency
+        const { data: allSkills } = await supabase.from('skills_catalog').select('id, skill_name, track').order('skill_name')
+        setSkillsCatalog(allSkills || [])
+      }
     } catch (err) {
-      console.error(err)
+      setSkillError(err.message || 'Could not add that skill. Please try again.')
     }
     setSkillSubmitting(false)
   }
@@ -573,24 +607,80 @@ function ProfileContent() {
               </div>
             )}
             {isOwnProfile && (
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <select
-                  value={addingSkillId}
-                  onChange={function(e) { setAddingSkillId(e.target.value) }}
-                  style={{ flex: 1, padding: '0.55rem 0.7rem', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.85rem', outline: 'none', background: 'var(--surface-2)', color: 'var(--text)' }}
-                >
-                  <option value="">Add a skill...</option>
-                  {skillsCatalog.filter(function(sc) { return !skills.some(function(s) { return s.id === sc.id }) }).map(function(sc) {
-                    return <option key={sc.id} value={sc.id}>{sc.skill_name} ({sc.track})</option>
-                  })}
-                </select>
-                <button
-                  onClick={addSkill}
-                  disabled={!addingSkillId || skillSubmitting}
-                  style={{ background: 'var(--brand)', color: 'white', border: 'none', borderRadius: 8, padding: '0 1rem', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', opacity: !addingSkillId || skillSubmitting ? 0.6 : 1 }}
-                >
-                  Add
-                </button>
+              <div>
+                <div style={{ display: 'flex', gap: '1rem', marginBottom: '0.75rem' }}>
+                  <button
+                    onClick={function() { setCustomMode(false); setSkillError('') }}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: '0.78rem', fontWeight: 700, color: !customMode ? 'var(--brand)' : 'var(--text-3)', borderBottom: !customMode ? '2px solid var(--brand)' : '2px solid transparent', paddingBottom: '0.3rem' }}
+                  >
+                    Choose from list
+                  </button>
+                  <button
+                    onClick={function() { setCustomMode(true); setSkillError('') }}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: '0.78rem', fontWeight: 700, color: customMode ? 'var(--brand)' : 'var(--text-3)', borderBottom: customMode ? '2px solid var(--brand)' : '2px solid transparent', paddingBottom: '0.3rem' }}
+                  >
+                    Add my own
+                  </button>
+                </div>
+
+                {!customMode ? (
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <select
+                      value={addingSkillId}
+                      onChange={function(e) { setAddingSkillId(e.target.value) }}
+                      style={{ flex: 1, padding: '0.55rem 0.7rem', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.85rem', outline: 'none', background: 'var(--surface-2)', color: 'var(--text)' }}
+                    >
+                      <option value="">Choose a skill...</option>
+                      {skillsCatalog.filter(function(sc) { return !skills.some(function(s) { return s.id === sc.id }) }).map(function(sc) {
+                        return <option key={sc.id} value={sc.id}>{sc.skill_name} ({sc.track})</option>
+                      })}
+                    </select>
+                    <button
+                      onClick={addSkill}
+                      disabled={!addingSkillId || skillSubmitting}
+                      style={{ background: 'var(--brand)', color: 'white', border: 'none', borderRadius: 8, padding: '0 1rem', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', opacity: !addingSkillId || skillSubmitting ? 0.6 : 1, whiteSpace: 'nowrap' }}
+                    >
+                      {skillSubmitting ? 'Adding...' : 'Add'}
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <input
+                      type="text"
+                      value={customSkillName}
+                      onChange={function(e) { setCustomSkillName(e.target.value) }}
+                      placeholder="Type a skill not in our list..."
+                      style={{ width: '100%', padding: '0.55rem 0.7rem', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.85rem', outline: 'none', background: 'var(--surface-2)', color: 'var(--text)', marginBottom: '0.5rem' }}
+                    />
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <select
+                        value={customTrack}
+                        onChange={function(e) { setCustomTrack(e.target.value) }}
+                        style={{ flex: 1, padding: '0.55rem 0.7rem', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.85rem', outline: 'none', background: 'var(--surface-2)', color: 'var(--text)' }}
+                      >
+                        <option value="Work">Work</option>
+                        <option value="Education">Education</option>
+                      </select>
+                      <select
+                        value={customTierId}
+                        onChange={function(e) { setCustomTierId(e.target.value) }}
+                        style={{ flex: 1, padding: '0.55rem 0.7rem', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.85rem', outline: 'none', background: 'var(--surface-2)', color: 'var(--text)' }}
+                      >
+                        {tierList.map(function(t) { return <option key={t.id} value={t.id}>{t.tier_name}</option> })}
+                      </select>
+                      <button
+                        onClick={addSkill}
+                        disabled={!customSkillName.trim() || skillSubmitting}
+                        style={{ background: 'var(--brand)', color: 'white', border: 'none', borderRadius: 8, padding: '0 1rem', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', opacity: !customSkillName.trim() || skillSubmitting ? 0.6 : 1, whiteSpace: 'nowrap' }}
+                      >
+                        {skillSubmitting ? 'Adding...' : 'Add'}
+                      </button>
+                    </div>
+                    <p style={{ fontSize: '0.7rem', color: 'var(--text-3)', marginTop: '0.4rem' }}>Pick the track and level that best fits this skill.</p>
+                  </div>
+                )}
+
+                {skillError && <div style={{ color: 'var(--red)', fontSize: '0.78rem', marginTop: '0.6rem' }}>{skillError}</div>}
               </div>
             )}
           </div>
