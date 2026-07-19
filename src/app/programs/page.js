@@ -78,6 +78,12 @@ export default function ProgramsPage() {
     setJoining(null)
   }
 
+  const formatCost = (p) => {
+    if (!p.cost_type || p.cost_type === 'Free') return 'Free'
+    if (!p.cost_amount) return p.cost_type
+    return `$${p.cost_amount} / ${p.cost_type.replace('Per ', '').toLowerCase()}`
+  }
+
   if (loading) return <div><Navbar /><div className="loading-wrap"><div className="spinner" /> Loading programs...</div></div>
 
   return (
@@ -105,10 +111,12 @@ export default function ProgramsPage() {
               const TypeIcon = p.program_type === 'Internship' ? Briefcase : GraduationCap
               return (
                 <div key={p.id} className="card" style={{ display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.625rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.625rem', flexWrap: 'wrap' }}>
                     <span className={`badge ${p.program_type === 'Internship' ? 'badge-purple' : 'badge-blue'}`}>
                       <TypeIcon size={10} style={{ marginRight: 3, verticalAlign: -1 }} />{p.program_type}
                     </span>
+                    {p.level && <span className="badge badge-gray">{p.level}</span>}
+                    <span className={p.cost_type === 'Free' || !p.cost_type ? 'badge badge-green' : 'badge badge-amber'}>{formatCost(p)}</span>
                   </div>
                   <h3 style={{ fontSize: '0.95rem', marginBottom: '0.5rem', color: 'var(--text)' }}>{p.title}</h3>
                   <p style={{ color: 'var(--text-2)', fontSize: '0.8rem', lineHeight: 1.6, flex: 1, marginBottom: '1rem' }}>
