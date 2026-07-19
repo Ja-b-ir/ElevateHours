@@ -103,6 +103,10 @@ export default function MyPrograms() {
                         <span className={`badge ${p.program_type === 'Internship' ? 'badge-purple' : 'badge-blue'}`}>
                           <TypeIcon size={10} style={{ marginRight: 3, verticalAlign: -1 }} />{p.program_type}
                         </span>
+                        {p.level && <span className="badge badge-gray">{p.level}</span>}
+                        <span className={p.cost_type === 'Free' || !p.cost_type ? 'badge badge-green' : 'badge badge-amber'}>
+                          {!p.cost_type || p.cost_type === 'Free' ? 'Free' : p.cost_amount ? `$${p.cost_amount} / ${p.cost_type.replace('Per ', '').toLowerCase()}` : p.cost_type}
+                        </span>
                         <span className={p.status === 'Open' ? 'badge badge-open' : 'badge badge-gray'}>{p.status}</span>
                       </div>
                       <p style={{ color: 'var(--text-2)', fontSize: '0.85rem', marginBottom: '0.75rem' }}>{p.description}</p>
