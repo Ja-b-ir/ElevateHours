@@ -1,160 +1,920 @@
 'use client'
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
-import { GraduationCap, Briefcase, Users, Check } from 'lucide-react'
+import { Mail, MessageCircle, MessageSquare, CheckCircle2, BarChart3, Star, Zap, Award, AlertTriangle, Globe, Clock, Flag, X } from 'lucide-react'
 
-export default function ProgramsPage() {
+const COUNTRIES = [
+  'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia',
+  'Australia', 'Austria', 'Azerbaijan', 'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium',
+  'Belize', 'Benin', 'Bhutan', 'Bolivia', 'Bosnia and Herzegovina', 'Botswana', 'Brazil', 'Brunei', 'Bulgaria',
+  'Burkina Faso', 'Burundi', 'Cabo Verde', 'Cambodia', 'Cameroon', 'Canada', 'Central African Republic', 'Chad',
+  'Chile', 'China', 'Colombia', 'Comoros', 'Congo (Republic of the)', 'Congo (DR)', 'Costa Rica', "Cote d'Ivoire",
+  'Croatia', 'Cuba', 'Cyprus', 'Czechia', 'Denmark', 'Djibouti', 'Dominica', 'Dominican Republic', 'Ecuador',
+  'Egypt', 'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Estonia', 'Eswatini', 'Ethiopia', 'Fiji', 'Finland',
+  'France', 'Gabon', 'Gambia', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Grenada', 'Guatemala', 'Guinea',
+  'Guinea-Bissau', 'Guyana', 'Haiti', 'Honduras', 'Hungary', 'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq',
+  'Ireland', 'Italy', 'Jamaica', 'Japan', 'Jordan', 'Kazakhstan', 'Kenya', 'Kiribati', 'Kuwait', 'Kyrgyzstan',
+  'Laos', 'Latvia', 'Lebanon', 'Lesotho', 'Liberia', 'Libya', 'Liechtenstein', 'Lithuania', 'Luxembourg',
+  'Madagascar', 'Malawi', 'Malaysia', 'Maldives', 'Mali', 'Malta', 'Marshall Islands', 'Mauritania', 'Mauritius',
+  'Mexico', 'Micronesia', 'Moldova', 'Monaco', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique', 'Myanmar',
+  'Namibia', 'Nauru', 'Nepal', 'Netherlands', 'New Zealand', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea',
+  'North Macedonia', 'Norway', 'Oman', 'Pakistan', 'Palau', 'Palestine', 'Panama', 'Papua New Guinea',
+  'Paraguay', 'Peru', 'Philippines', 'Poland', 'Portugal', 'Qatar', 'Romania', 'Russia', 'Rwanda',
+  'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa', 'San Marino',
+  'Sao Tome and Principe', 'Saudi Arabia', 'Senegal', 'Serbia', 'Seychelles', 'Sierra Leone', 'Singapore',
+  'Slovakia', 'Slovenia', 'Solomon Islands', 'Somalia', 'South Africa', 'South Korea', 'South Sudan', 'Spain',
+  'Sri Lanka', 'Sudan', 'Suriname', 'Sweden', 'Switzerland', 'Syria', 'Taiwan', 'Tajikistan', 'Tanzania',
+  'Thailand', 'Timor-Leste', 'Togo', 'Tonga', 'Trinidad and Tobago', 'Tunisia', 'Turkey', 'Turkmenistan',
+  'Tuvalu', 'Uganda', 'Ukraine', 'United Arab Emirates', 'United Kingdom', 'United States', 'Uruguay',
+  'Uzbekistan', 'Vanuatu', 'Vatican City', 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe'
+]
+
+const COOLDOWN_DAYS = 60
+
+function ProfileContent() {
   const router = useRouter()
-  const [user, setUser] = useState(null)
-  const [programs, setPrograms] = useState([])
-  const [myEnrollments, setMyEnrollments] = useState(new Set())
+  const searchParams = useSearchParams()
+  const viewId = searchParams.get('id')
+  const [currentUser, setCurrentUser] = useState(null)
+  const [profile, setProfile] = useState(null)
+  const [skills, setSkills] = useState([])
+  const [reviewStats, setReviewStats] = useState({ count: 0, average: 0 })
+  const [badges, setBadges] = useState([])
+  const [editing, setEditing] = useState(false)
+  const [editForm, setEditForm] = useState({})
   const [loading, setLoading] = useState(true)
-  const [joining, setJoining] = useState(null)
+  const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState('')
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showReportModal, setShowReportModal] = useState(false)
+  const [reportReason, setReportReason] = useState('')
+  const [reportDetails, setReportDetails] = useState('')
+  const [reportSubmitting, setReportSubmitting] = useState(false)
+  const [reportError, setReportError] = useState('')
+  const [reportSuccess, setReportSuccess] = useState(false)
+  const [deleteConfirmText, setDeleteConfirmText] = useState('')
+  const [deleting, setDeleting] = useState(false)
+  const [showCountryModal, setShowCountryModal] = useState(false)
+  const [newCountry, setNewCountry] = useState('')
+  const [countrySubmitting, setCountrySubmitting] = useState(false)
+  const [countryError, setCountryError] = useState('')
+  const [pendingRequest, setPendingRequest] = useState(null)
+  const [skillsCatalog, setSkillsCatalog] = useState([])
+  const [tierList, setTierList] = useState([])
+  const [addingSkillId, setAddingSkillId] = useState('')
+  const [customMode, setCustomMode] = useState(false)
+  const [customSkillName, setCustomSkillName] = useState('')
+  const [customTrack, setCustomTrack] = useState('Work')
+  const [customTierId, setCustomTierId] = useState('')
+  const [skillError, setSkillError] = useState('')
+  const [skillSubmitting, setSkillSubmitting] = useState(false)
 
   useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/auth/login'); return }
-      setUser(user)
-
-      const { data: progs } = await supabase
-        .from('programs')
-        .select('*')
-        .eq('status', 'Open')
-        .order('created_at', { ascending: false })
-
-      const creatorIds = Array.from(new Set((progs || []).map(p => p.creator_id)))
-      let creatorById = {}
-      if (creatorIds.length > 0) {
-        const { data: creators } = await supabase.from('profiles').select('id, full_name, account_type').in('id', creatorIds)
-        creatorById = Object.fromEntries((creators || []).map(c => [c.id, c]))
+      setCurrentUser(user)
+      const targetId = viewId || user.id
+      const { data: prof } = await supabase.from('profiles').select('*').eq('id', targetId).single()
+      setProfile(prof)
+      setEditForm({
+        bio: prof?.bio || '',
+        full_name: prof?.full_name || '',
+        tier_level: prof?.tier_level || 'Tier 1: Foundational',
+        whatsapp_number: prof?.whatsapp_number || '',
+        teaching_focus: prof?.teaching_focus || '',
+        institution: prof?.institution || '',
+        field_of_study: prof?.field_of_study || ''
+      })
+      const { data: skillsData } = await supabase
+        .from('profile_skills_offered')
+        .select('skill_id, skill:skills_catalog(id, skill_name, track, tier:tier_reference(tier_name))')
+        .eq('profile_id', targetId)
+      setSkills(skillsData?.map(function(s) { return { linkId: s.skill_id, ...s.skill } }) || [])
+      if (!viewId || viewId === user.id) {
+        const { data: allSkills } = await supabase.from('skills_catalog').select('id, skill_name, track').order('skill_name')
+        setSkillsCatalog(allSkills || [])
+        const { data: tiers } = await supabase.from('tier_reference').select('id, tier_name').order('multiplier')
+        setTierList(tiers || [])
+        if (tiers && tiers.length > 0) setCustomTierId(tiers[0].id)
       }
-
-      const progIds = (progs || []).map(p => p.id)
-      let enrollCounts = {}
-      if (progIds.length > 0) {
-        const { data: allEnrollments } = await supabase.from('program_enrollments').select('program_id').in('program_id', progIds)
-        for (const e of allEnrollments || []) enrollCounts[e.program_id] = (enrollCounts[e.program_id] || 0) + 1
+      const { data: ratingsData } = await supabase
+        .from('endorsements')
+        .select('rating')
+        .eq('recipient_id', targetId)
+      const ratings = (ratingsData || []).map(function(r) { return r.rating }).filter(function(r) { return r != null })
+      setReviewStats({
+        count: ratings.length,
+        average: ratings.length ? ratings.reduce(function(a, b) { return a + b }, 0) / ratings.length : 0
+      })
+      const { data: badgeData } = await supabase
+        .from('user_badges')
+        .select('*, badge:badges(badge_name, description, badge_type)')
+        .eq('profile_id', targetId)
+      setBadges(badgeData || [])
+      if (!viewId || viewId === user.id) {
+        const { data: pending } = await supabase
+          .from('country_change_requests')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('status', 'Pending')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+        setPendingRequest(pending || null)
       }
-
-      setPrograms((progs || []).map(p => ({ ...p, creator: creatorById[p.creator_id], enrolledCount: enrollCounts[p.id] || 0 })))
-
-      const { data: myEnroll } = await supabase.from('program_enrollments').select('program_id').eq('student_id', user.id)
-      setMyEnrollments(new Set((myEnroll || []).map(e => e.program_id)))
-
       setLoading(false)
     }
     init()
-  }, [])
+  }, [viewId])
 
-  const joinProgram = async (program) => {
-    setJoining(program.id)
+  const saveProfile = async () => {
+    setSaving(true)
+    const updates = {
+      bio: editForm.bio,
+      full_name: editForm.full_name || profile.full_name,
+      tier_level: editForm.tier_level || profile.tier_level,
+      whatsapp_number: editForm.whatsapp_number,
+      teaching_focus: editForm.teaching_focus,
+      institution: editForm.institution,
+      field_of_study: editForm.field_of_study,
+    }
+    await supabase.from('profiles').update(updates).eq('id', currentUser.id)
+    setProfile({ ...profile, ...updates })
+    setEditing(false)
+    setSuccess('Profile updated successfully!')
+    setTimeout(function() { setSuccess('') }, 3000)
+    setSaving(false)
+  }
+
+  const addSkill = async () => {
+    setSkillError('')
+    setSkillSubmitting(true)
     try {
-      const { error } = await supabase.from('program_enrollments').insert({ program_id: program.id, student_id: user.id })
-      if (error) {
-        if (error.message?.includes('PROGRAM_FULL')) {
-          alert('This program just reached its capacity — no more spots available.')
-          setPrograms(prev => prev.map(p => p.id === program.id ? { ...p, status: 'Closed' } : p).filter(p => p.status === 'Open'))
-          setJoining(null)
-          return
-        }
-        throw error
+      let skillIdToLink = addingSkillId
+
+      if (customMode) {
+        if (!customSkillName.trim()) { setSkillError('Please enter a skill name'); setSkillSubmitting(false); return }
+        if (!customTierId) { setSkillError('Please select a level'); setSkillSubmitting(false); return }
+        const { data: newSkill, error: createError } = await supabase
+          .from('skills_catalog')
+          .insert({ skill_name: customSkillName.trim(), track: customTrack, tier_id: customTierId })
+          .select('id, skill_name, track, tier:tier_reference(tier_name)')
+          .single()
+        if (createError) throw createError
+        skillIdToLink = newSkill.id
       }
-      setMyEnrollments(prev => new Set([...prev, program.id]))
-      setPrograms(prev => prev.map(p => p.id === program.id ? { ...p, enrolledCount: p.enrolledCount + 1 } : p))
 
-      await supabase.from('notifications').insert({
-        user_id: program.creator_id,
-        title: 'New Enrollment',
-        message: `Someone joined your program "${program.title}".`,
-        type: 'application',
-        related_id: program.id
+      if (!skillIdToLink) { setSkillError('Please choose a skill'); setSkillSubmitting(false); return }
+
+      const { data, error } = await supabase
+        .from('profile_skills_offered')
+        .insert({ profile_id: currentUser.id, skill_id: skillIdToLink })
+        .select('skill_id, skill:skills_catalog(id, skill_name, track, tier:tier_reference(tier_name))')
+        .single()
+      if (error) throw error
+
+      setSkills(prev => [...prev, { linkId: data.skill_id, ...data.skill }])
+      setAddingSkillId('')
+      setCustomSkillName('')
+      if (customMode) {
+        // Refresh the catalog dropdown so the new skill is selectable/visible for consistency
+        const { data: allSkills } = await supabase.from('skills_catalog').select('id, skill_name, track').order('skill_name')
+        setSkillsCatalog(allSkills || [])
+      }
+    } catch (err) {
+      setSkillError(err.message || 'Could not add that skill. Please try again.')
+    }
+    setSkillSubmitting(false)
+  }
+
+  const removeSkill = async (linkId) => {
+    setSkills(prev => prev.filter(s => s.linkId !== linkId))
+    await supabase.from('profile_skills_offered').delete().eq('profile_id', currentUser.id).eq('skill_id', linkId)
+  }
+
+  const deleteAccount = async () => {
+    if (deleteConfirmText !== 'Delete Permanently') return
+    setDeleting(true)
+    try {
+      await supabase.from('profiles').delete().eq('id', currentUser.id)
+      await supabase.auth.signOut()
+      window.location.href = '/'
+    } catch (err) {
+      console.error(err)
+      setDeleting(false)
+    }
+  }
+
+  const daysUntilEligible = () => {
+    if (!profile?.country_updated_at) return 0
+    const diffDays = (new Date() - new Date(profile.country_updated_at)) / 86400000
+    return Math.max(0, Math.ceil(COOLDOWN_DAYS - diffDays))
+  }
+
+  const submitReport = async () => {
+    setReportError('')
+    if (!reportReason) { setReportError('Please select a reason'); return }
+    setReportSubmitting(true)
+    try {
+      const { error } = await supabase.from('reports').insert({
+        reporter_id: currentUser.id,
+        reported_id: profile.id,
+        reason: reportReason,
+        details: reportDetails,
       })
-
-      setSuccess('Enrolled successfully!')
-      setTimeout(() => setSuccess(''), 3000)
-    } catch (err) { console.error(err) }
-    setJoining(null)
+      if (error) throw error
+      setReportSuccess(true)
+      setReportReason('')
+      setReportDetails('')
+    } catch (err) {
+      setReportError(err.message)
+    }
+    setReportSubmitting(false)
   }
 
-  const formatCost = (p) => {
-    if (!p.cost_type || p.cost_type === 'Free') return 'Free'
-    if (!p.cost_amount) return p.cost_type
-    return `$${p.cost_amount} / ${p.cost_type.replace('Per ', '').toLowerCase()}`
+  const submitCountryRequest = async () => {
+    setCountryError('')
+    if (!newCountry) { setCountryError('Please select a country'); return }
+    if (newCountry === profile.country) { setCountryError('That is already your current country'); return }
+    setCountrySubmitting(true)
+    try {
+      const { data, error } = await supabase.from('country_change_requests').insert({
+        user_id: currentUser.id,
+        current_country: profile.country || '',
+        requested_country: newCountry,
+        status: 'Pending'
+      }).select().single()
+      if (error) throw error
+      setPendingRequest(data)
+      setShowCountryModal(false)
+      setNewCountry('')
+      setSuccess('Country change request submitted for review.')
+      setTimeout(function() { setSuccess('') }, 4000)
+    } catch (err) {
+      setCountryError(err.message)
+    }
+    setCountrySubmitting(false)
   }
 
-  if (loading) return <div><Navbar /><div className="loading-wrap"><div className="spinner" /> Loading programs...</div></div>
+  const isOwnProfile = !viewId || viewId === currentUser?.id
+  const permanentBalance = (profile?.sparks_earned || 0) - (profile?.sparks_spent || 0) + (profile?.sparks_purchased_total || 0)
+  const totalBalance = permanentBalance + (profile?.active_gifts_received || 0)
+
+  const tierColor = function(tierName) {
+    if (!tierName) return { bg: 'var(--surface-3)', color: 'var(--text-2)' }
+    if (tierName.includes('1')) return { bg: 'var(--green-light)', color: 'var(--green)' }
+    if (tierName.includes('2')) return { bg: 'var(--brand-light)', color: 'var(--brand)' }
+    return { bg: 'var(--amber-light)', color: 'var(--amber-dark)' }
+  }
+
+  if (loading) return (
+    <div>
+      <Navbar />
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem', color: 'var(--text-2)' }}>Loading profile...</div>
+    </div>
+  )
+
+  if (!profile) return (
+    <div>
+      <Navbar />
+      <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text)' }}>Profile not found</div>
+    </div>
+  )
 
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <Navbar />
-      <div className="page-wrap">
-        <div className="page-header">
-          <h1 className="page-title">Programs</h1>
-          <p className="page-subtitle">Courses and internships from educators and organizations — free to join</p>
-        </div>
-
-        {success && <div className="alert alert-success"><Check size={15} /> {success}</div>}
-
-        {programs.length === 0 ? (
-          <div className="card empty-state">
-            <GraduationCap size={40} style={{ margin: '0 auto 1rem', color: 'var(--border-2)' }} />
-            <h3>No programs open right now</h3>
-            <p>Check back soon for new courses and internships.</p>
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: '2rem 1.5rem' }}>
+        {success && !editing && (
+          <div style={{ background: 'var(--green-light)', color: 'var(--green)', padding: '0.75rem 1.125rem', borderRadius: 10, fontSize: '0.875rem', fontWeight: 600, marginBottom: '1.25rem' }}>
+            {success}
           </div>
-        ) : (
-          <div className="grid-auto">
-            {programs.map(p => {
-              const enrolled = myEnrollments.has(p.id)
-              const full = p.capacity && p.enrolledCount >= p.capacity
-              const TypeIcon = p.program_type === 'Internship' ? Briefcase : GraduationCap
+        )}
+
+        {/* Profile Header Card */}
+        <div style={{ background: 'var(--surface)', borderRadius: 20, padding: '2rem', marginBottom: '1.5rem', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+              <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'linear-gradient(135deg, var(--brand), var(--brand-mid))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 900, fontSize: '1.75rem', flexShrink: 0 }}>
+                {profile.full_name?.[0]?.toUpperCase()}
+              </div>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
+                  <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text)' }}>{profile.full_name}</h1>
+                  {reviewStats.count > 0 && (
+                    <a href={'/reviews?id=' + profile.id} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'var(--text)', fontSize: '0.85rem', fontWeight: 700 }}>
+                      <Star size={14} color="var(--amber)" fill="var(--amber)" />
+                      {reviewStats.average.toFixed(1)}
+                      <span style={{ color: 'var(--text-3)', fontWeight: 500 }}>({reviewStats.count})</span>
+                    </a>
+                  )}
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <span style={{ background: profile.account_type === 'Personal' ? 'var(--brand-light)' : 'var(--amber-light)', color: profile.account_type === 'Personal' ? 'var(--brand)' : 'var(--amber-dark)', padding: '0.2rem 0.75rem', borderRadius: 999, fontSize: '0.8rem', fontWeight: 700 }}>
+                    {profile.account_type}
+                  </span>
+                  <span style={{ background: 'var(--surface-3)', color: 'var(--text-2)', padding: '0.2rem 0.75rem', borderRadius: 999, fontSize: '0.8rem', fontWeight: 600 }}>
+                    {profile.tier_level || 'Tier 1: Foundational'}
+                  </span>
+                </div>
+              </div>
+            </div>
+            {isOwnProfile && (
+              <button onClick={function() { setEditing(!editing) }} style={{ background: editing ? 'var(--surface-3)' : 'var(--brand-light)', color: 'var(--brand)', padding: '0.6rem 1.2rem', borderRadius: 8, border: '1.5px solid var(--brand)', fontWeight: 600, cursor: 'pointer', fontSize: '0.875rem' }}>
+                {editing ? 'Cancel' : 'Edit Profile'}
+              </button>
+            )}
+          </div>
+
+          {/* Stats */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
+            {[
+              { label: 'Completed', value: profile.completed_transactions || 0, icon: <CheckCircle2 size={18} /> },
+              { label: 'Impact Score', value: profile.impact_score || 0, icon: <BarChart3 size={18} /> },
+              { label: 'Trust Score', value: profile.organization_trust_score || 0, icon: <Star size={18} /> },
+              { label: 'Sparks Earned', value: (profile.sparks_earned || 0).toLocaleString(), icon: <Zap size={18} /> },
+            ].map(function(stat, i) {
               return (
-                <div key={p.id} className="card" style={{ display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.625rem', flexWrap: 'wrap' }}>
-                    <span className={`badge ${p.program_type === 'Internship' ? 'badge-purple' : 'badge-blue'}`}>
-                      <TypeIcon size={10} style={{ marginRight: 3, verticalAlign: -1 }} />{p.program_type}
-                    </span>
-                    {p.level && <span className="badge badge-gray">{p.level}</span>}
-                    <span className={p.cost_type === 'Free' || !p.cost_type ? 'badge badge-green' : 'badge badge-amber'}>{formatCost(p)}</span>
-                    {p.program_type === 'Internship' && (
-                      <span className={p.is_paid ? 'badge badge-green' : 'badge badge-gray'}>
-                        {p.is_paid ? (p.pay_amount ? `Paid — $${p.pay_amount}/${p.pay_type === 'One-time' ? 'one-time' : p.pay_type.replace('Per ', '').toLowerCase()}` : 'Paid') : 'Unpaid'}
-                      </span>
-                    )}
-                    {p.interview_required && <span className="badge badge-red">Interview Required</span>}
-                  </div>
-                  <h3 style={{ fontSize: '0.95rem', marginBottom: '0.5rem', color: 'var(--text)' }}>{p.title}</h3>
-                  <p style={{ color: 'var(--text-2)', fontSize: '0.8rem', lineHeight: 1.6, flex: 1, marginBottom: '1rem' }}>
-                    {p.description || 'No description provided.'}
-                  </p>
-                  <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', color: 'var(--text-3)', marginBottom: '1rem' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                      <Users size={11} /> {p.enrolledCount}{p.capacity ? ' / ' + p.capacity : ''} enrolled
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>by {p.creator?.full_name || 'Unknown'}</span>
-                    {enrolled ? (
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--brand-light)', color: 'var(--brand)', padding: '0.4rem 0.875rem', borderRadius: 'var(--radius-sm)', fontWeight: 700, fontSize: '0.78rem', border: '1px solid var(--brand)' }}>
-                        <Check size={11} /> Enrolled
-                      </span>
-                    ) : full ? (
-                      <span style={{ fontSize: '0.78rem', color: 'var(--text-3)', fontWeight: 600 }}>Full</span>
-                    ) : (
-                      <button onClick={() => joinProgram(p)} disabled={joining === p.id} className="btn btn-primary btn-sm">
-                        {joining === p.id ? 'Joining...' : 'Join'}
-                      </button>
-                    )}
-                  </div>
+                <div key={i} style={{ textAlign: 'center', padding: '0.75rem', background: 'var(--surface-2)', borderRadius: 10 }}>
+                  <div style={{ color: 'var(--brand)', marginBottom: '0.4rem', display: 'flex', justifyContent: 'center' }}>{stat.icon}</div>
+                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--brand)' }}>{stat.value}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-2)', fontWeight: 500 }}>{stat.label}</div>
                 </div>
               )
             })}
           </div>
+
+          {/* Contact icons for other users */}
+          {!isOwnProfile && (
+            <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem', alignItems: 'center' }}>
+              <a
+                href={'/messages/conversation?id=' + profile.id}
+                title={'Message ' + profile.full_name}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', height: 44, padding: '0 1.25rem', borderRadius: 999, background: 'var(--brand)', color: 'white', fontWeight: 700, fontSize: '0.875rem' }}
+              >
+                <MessageSquare size={16} /> Message
+              </a>
+              <a
+                href={'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(profile.email || '')}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={'Email ' + profile.full_name}
+                style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--brand-light)', color: 'var(--brand)', border: '1.5px solid var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+              >
+                <Mail size={18} />
+              </a>
+              {profile.whatsapp_number && (
+                <a
+                  href={'https://wa.me/' + profile.whatsapp_number.replace(/[^0-9]/g, '')}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={'WhatsApp ' + profile.full_name}
+                  style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--green-light)', color: 'var(--green)', border: '1.5px solid var(--green)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+                >
+                  <MessageCircle size={18} />
+                </a>
+              )}
+              <button
+                onClick={function() { setShowReportModal(true) }}
+                title={'Report ' + profile.full_name}
+                style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.35rem', background: 'none', border: 'none', color: 'var(--text-3)', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}
+              >
+                <Flag size={14} /> Report
+              </button>
+            </div>
+          )}
+
+          {/* Bio display */}
+          {!editing && profile.bio && (
+            <p style={{ color: 'var(--text-2)', lineHeight: 1.7, fontSize: '0.95rem' }}>{profile.bio}</p>
+          )}
+
+          {/* Educator: what they teach */}
+          {!editing && profile.account_type === 'Educator' && profile.teaching_focus && (
+            <div style={{ marginTop: '0.875rem', background: 'var(--brand-light)', borderRadius: 10, padding: '0.875rem 1rem' }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--brand)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>What They Teach</div>
+              <p style={{ color: 'var(--text)', fontSize: '0.875rem', lineHeight: 1.6 }}>{profile.teaching_focus}</p>
+            </div>
+          )}
+
+          {/* Student: institution / field of study */}
+          {!editing && profile.account_type === 'Personal' && (profile.institution || profile.field_of_study) && (
+            <div style={{ marginTop: '0.875rem', display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+              {profile.institution && (
+                <div>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.2rem' }}>Institution</div>
+                  <div style={{ fontSize: '0.875rem', color: 'var(--text)', fontWeight: 600 }}>{profile.institution}</div>
+                </div>
+              )}
+              {profile.field_of_study && (
+                <div>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.2rem' }}>Department / Subject</div>
+                  <div style={{ fontSize: '0.875rem', color: 'var(--text)', fontWeight: 600 }}>{profile.field_of_study}</div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Edit Form */}
+          {editing && isOwnProfile && (
+            <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
+              <h3 style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '1.25rem', color: 'var(--brand)' }}>Edit Your Profile</h3>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.4rem', color: 'var(--text)' }}>Full Name</label>
+                <input
+                  type="text"
+                  value={editForm.full_name}
+                  onChange={function(e) { setEditForm({ ...editForm, full_name: e.target.value }) }}
+                  style={{ width: '100%', padding: '0.7rem', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.95rem', outline: 'none', background: 'var(--surface-2)', color: 'var(--text)' }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.4rem', color: 'var(--text)' }}>Tier Level</label>
+                <select
+                  value={editForm.tier_level}
+                  onChange={function(e) { setEditForm({ ...editForm, tier_level: e.target.value }) }}
+                  style={{ width: '100%', padding: '0.7rem', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.95rem', background: 'var(--surface)', color: 'var(--text)', outline: 'none' }}
+                >
+                  <option value="Tier 1: Foundational">Tier 1: Foundational</option>
+                  <option value="Tier 2: Specialized">Tier 2: Specialized</option>
+                  <option value="Tier 3: Strategic">Tier 3: Strategic</option>
+                </select>
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.4rem', color: 'var(--text)' }}>WhatsApp Number</label>
+                <input
+                  type="tel"
+                  value={editForm.whatsapp_number}
+                  onChange={function(e) { setEditForm({ ...editForm, whatsapp_number: e.target.value }) }}
+                  placeholder="+880 1XXX XXXXXX"
+                  style={{ width: '100%', padding: '0.7rem', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.95rem', outline: 'none', background: 'var(--surface-2)', color: 'var(--text)' }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.4rem', color: 'var(--text)' }}>Bio</label>
+                <textarea
+                  rows={3}
+                  value={editForm.bio}
+                  onChange={function(e) { setEditForm({ ...editForm, bio: e.target.value }) }}
+                  placeholder="Tell the community about yourself..."
+                  style={{ width: '100%', padding: '0.7rem', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.95rem', resize: 'vertical', outline: 'none', background: 'var(--surface-2)', color: 'var(--text)' }}
+                />
+              </div>
+
+              {profile.account_type === 'Educator' && (
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.4rem', color: 'var(--text)' }}>What do you teach?</label>
+                  <textarea
+                    rows={2}
+                    value={editForm.teaching_focus}
+                    onChange={function(e) { setEditForm({ ...editForm, teaching_focus: e.target.value }) }}
+                    placeholder="e.g. Web development, graphic design, IELTS preparation..."
+                    style={{ width: '100%', padding: '0.7rem', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.95rem', resize: 'vertical', outline: 'none', background: 'var(--surface-2)', color: 'var(--text)' }}
+                  />
+                  <p style={{ fontSize: '0.72rem', color: 'var(--text-3)', marginTop: '0.35rem' }}>Shown to students browsing Marketplace → Find Educator.</p>
+                </div>
+              )}
+
+              {profile.account_type === 'Personal' && (
+                <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+                  <div style={{ flex: 1, minWidth: 180 }}>
+                    <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.4rem', color: 'var(--text)' }}>Institution</label>
+                    <input
+                      type="text"
+                      value={editForm.institution}
+                      onChange={function(e) { setEditForm({ ...editForm, institution: e.target.value }) }}
+                      placeholder="School / University"
+                      style={{ width: '100%', padding: '0.7rem', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.95rem', outline: 'none', background: 'var(--surface-2)', color: 'var(--text)' }}
+                    />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 180 }}>
+                    <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.4rem', color: 'var(--text)' }}>Department / Subject</label>
+                    <input
+                      type="text"
+                      value={editForm.field_of_study}
+                      onChange={function(e) { setEditForm({ ...editForm, field_of_study: e.target.value }) }}
+                      placeholder="e.g. Computer Science"
+                      style={{ width: '100%', padding: '0.7rem', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.95rem', outline: 'none', background: 'var(--surface-2)', color: 'var(--text)' }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                <button
+                  onClick={saveProfile}
+                  disabled={saving}
+                  style={{ background: 'var(--brand)', color: 'white', padding: '0.75rem 1.75rem', borderRadius: 8, border: 'none', fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1, fontSize: '0.95rem' }}
+                >
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </button>
+                <button
+                  onClick={function() { setEditing(false) }}
+                  style={{ background: 'var(--surface-3)', color: 'var(--text-2)', padding: '0.75rem 1.25rem', borderRadius: 8, border: '1.5px solid var(--border)', fontWeight: 600, cursor: 'pointer', fontSize: '0.95rem' }}
+                >
+                  Cancel
+                </button>
+                {success && (
+                  <span style={{ color: 'var(--green)', fontWeight: 600, fontSize: '0.875rem' }}>{success}</span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Country — own profile only */}
+          {isOwnProfile && !editing && (
+            <div style={{ marginTop: '1.25rem', padding: '1rem 1.25rem', background: 'var(--surface-2)', borderRadius: 12, border: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <Globe size={18} style={{ color: 'var(--text-2)' }} />
+                <div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-2)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Country</div>
+                  <div style={{ fontWeight: 700, color: 'var(--text)' }}>{profile.country || 'Not set'}</div>
+                </div>
+              </div>
+              {pendingRequest ? (
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--amber-dark)', fontSize: '0.8rem', fontWeight: 600 }}>
+                  <Clock size={14} /> Change to {pendingRequest.requested_country} pending review
+                </span>
+              ) : daysUntilEligible() > 0 ? (
+                <span style={{ color: 'var(--text-3)', fontSize: '0.8rem' }}>
+                  Next request available in {daysUntilEligible()} day{daysUntilEligible() === 1 ? '' : 's'}
+                </span>
+              ) : (
+                <button
+                  onClick={function() { setShowCountryModal(true) }}
+                  style={{ background: 'var(--brand-light)', color: 'var(--brand)', padding: '0.45rem 1rem', borderRadius: 8, border: '1.5px solid var(--brand)', fontWeight: 600, cursor: 'pointer', fontSize: '0.8rem' }}
+                >
+                  Request Country Change
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Balance — own profile only */}
+          {isOwnProfile && !editing && (
+            <div style={{ marginTop: '1.25rem', padding: '1.25rem', background: 'linear-gradient(135deg, var(--brand), var(--brand-mid))', borderRadius: 12, color: 'white' }}>
+              <div style={{ fontWeight: 700, fontSize: '0.8rem', opacity: 0.8, marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Your Balance</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+                <div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 900 }}>{permanentBalance.toLocaleString()}</div>
+                  <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>Permanent SPK</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 900 }}>{(profile.active_gifts_received || 0).toLocaleString()}</div>
+                  <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>Gifted SPK</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--amber)' }}>{totalBalance.toLocaleString()}</div>
+                  <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>Total Usable SPK</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Skills and Badges */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+          <div style={{ background: 'var(--surface)', borderRadius: 16, padding: '1.5rem', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
+            <h2 style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '1rem', color: 'var(--text)' }}>Skills Offered</h2>
+            {skills.length === 0 ? (
+              <p style={{ color: 'var(--text-2)', fontSize: '0.875rem', marginBottom: isOwnProfile ? '1rem' : 0 }}>No skills listed yet.</p>
+            ) : (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: isOwnProfile ? '1rem' : 0 }}>
+                {skills.map(function(s, i) {
+                  const tc = tierColor(s?.tier?.tier_name)
+                  return (
+                    <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', background: tc.bg, color: tc.color, padding: '0.3rem 0.5rem 0.3rem 0.75rem', borderRadius: 8, fontSize: '0.8rem', fontWeight: 600 }}>
+                      {s?.skill_name}
+                      {isOwnProfile && (
+                        <button
+                          onClick={function() { removeSkill(s.linkId) }}
+                          title="Remove"
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: tc.color, opacity: 0.6, display: 'flex', padding: 0 }}
+                        >
+                          <X size={12} />
+                        </button>
+                      )}
+                    </span>
+                  )
+                })}
+              </div>
+            )}
+            {isOwnProfile && (
+              <div>
+                <div style={{ display: 'flex', gap: '1rem', marginBottom: '0.75rem' }}>
+                  <button
+                    onClick={function() { setCustomMode(false); setSkillError('') }}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: '0.78rem', fontWeight: 700, color: !customMode ? 'var(--brand)' : 'var(--text-3)', borderBottom: !customMode ? '2px solid var(--brand)' : '2px solid transparent', paddingBottom: '0.3rem' }}
+                  >
+                    Choose from list
+                  </button>
+                  <button
+                    onClick={function() { setCustomMode(true); setSkillError('') }}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: '0.78rem', fontWeight: 700, color: customMode ? 'var(--brand)' : 'var(--text-3)', borderBottom: customMode ? '2px solid var(--brand)' : '2px solid transparent', paddingBottom: '0.3rem' }}
+                  >
+                    Add my own
+                  </button>
+                </div>
+
+                {!customMode ? (
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <select
+                      value={addingSkillId}
+                      onChange={function(e) { setAddingSkillId(e.target.value) }}
+                      style={{ flex: 1, padding: '0.55rem 0.7rem', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.85rem', outline: 'none', background: 'var(--surface-2)', color: 'var(--text)' }}
+                    >
+                      <option value="">Choose a skill...</option>
+                      {skillsCatalog.filter(function(sc) { return !skills.some(function(s) { return s.id === sc.id }) }).map(function(sc) {
+                        return <option key={sc.id} value={sc.id}>{sc.skill_name} ({sc.track})</option>
+                      })}
+                    </select>
+                    <button
+                      onClick={addSkill}
+                      disabled={!addingSkillId || skillSubmitting}
+                      style={{ background: 'var(--brand)', color: 'white', border: 'none', borderRadius: 8, padding: '0 1rem', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', opacity: !addingSkillId || skillSubmitting ? 0.6 : 1, whiteSpace: 'nowrap' }}
+                    >
+                      {skillSubmitting ? 'Adding...' : 'Add'}
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <input
+                      type="text"
+                      value={customSkillName}
+                      onChange={function(e) { setCustomSkillName(e.target.value) }}
+                      placeholder="Type a skill not in our list..."
+                      style={{ width: '100%', padding: '0.55rem 0.7rem', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.85rem', outline: 'none', background: 'var(--surface-2)', color: 'var(--text)', marginBottom: '0.5rem' }}
+                    />
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <select
+                        value={customTrack}
+                        onChange={function(e) { setCustomTrack(e.target.value) }}
+                        style={{ flex: 1, padding: '0.55rem 0.7rem', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.85rem', outline: 'none', background: 'var(--surface-2)', color: 'var(--text)' }}
+                      >
+                        <option value="Work">Work</option>
+                        <option value="Education">Education</option>
+                      </select>
+                      <select
+                        value={customTierId}
+                        onChange={function(e) { setCustomTierId(e.target.value) }}
+                        style={{ flex: 1, padding: '0.55rem 0.7rem', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.85rem', outline: 'none', background: 'var(--surface-2)', color: 'var(--text)' }}
+                      >
+                        {tierList.map(function(t) { return <option key={t.id} value={t.id}>{t.tier_name}</option> })}
+                      </select>
+                      <button
+                        onClick={addSkill}
+                        disabled={!customSkillName.trim() || skillSubmitting}
+                        style={{ background: 'var(--brand)', color: 'white', border: 'none', borderRadius: 8, padding: '0 1rem', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', opacity: !customSkillName.trim() || skillSubmitting ? 0.6 : 1, whiteSpace: 'nowrap' }}
+                      >
+                        {skillSubmitting ? 'Adding...' : 'Add'}
+                      </button>
+                    </div>
+                    <p style={{ fontSize: '0.7rem', color: 'var(--text-3)', marginTop: '0.4rem' }}>Pick the track and level that best fits this skill.</p>
+                  </div>
+                )}
+
+                {skillError && <div style={{ color: 'var(--red)', fontSize: '0.78rem', marginTop: '0.6rem' }}>{skillError}</div>}
+              </div>
+            )}
+          </div>
+
+          <div style={{ background: 'var(--surface)', borderRadius: 16, padding: '1.5rem', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
+            <h2 style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '1rem', color: 'var(--text)' }}>Badges</h2>
+            {badges.length === 0 ? (
+              <p style={{ color: 'var(--text-2)', fontSize: '0.875rem' }}>No badges earned yet. Complete transactions to unlock badges.</p>
+            ) : (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                {badges.map(function(b, i) {
+                  return (
+                    <span key={i} title={b.badge?.description} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'var(--amber-light)', color: 'var(--amber-dark)', padding: '0.3rem 0.75rem', borderRadius: 8, fontSize: '0.8rem', fontWeight: 600 }}>
+                      <Award size={13} /> {b.badge?.badge_name}
+                    </span>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Reviews summary */}
+        <div style={{ background: 'var(--surface)', borderRadius: 16, padding: '1.5rem', marginBottom: '1.5rem', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.03em', lineHeight: 1 }}>
+              {reviewStats.count > 0 ? reviewStats.average.toFixed(1) : '—'}
+            </div>
+            <div>
+              <div style={{ display: 'flex', gap: '0.15rem', marginBottom: '0.25rem' }}>
+                {[1, 2, 3, 4, 5].map(function(n) {
+                  const filled = n <= Math.round(reviewStats.average)
+                  return <Star key={n} size={16} color="var(--amber)" fill={filled ? 'var(--amber)' : 'none'} />
+                })}
+              </div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-2)' }}>
+                {reviewStats.count} review{reviewStats.count === 1 ? '' : 's'}
+              </div>
+            </div>
+          </div>
+          <a href={'/reviews?id=' + profile.id} style={{
+            display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+            background: 'var(--brand-light)', color: 'var(--brand)',
+            padding: '0.6rem 1.25rem', borderRadius: 8, fontWeight: 700, fontSize: '0.875rem',
+            border: '1.5px solid var(--brand)'
+          }}>
+            <Star size={15} /> Reviews
+          </a>
+        </div>
+
+
+        {/* Danger Zone — own profile only */}
+        {isOwnProfile && (
+          <div style={{ background: 'var(--surface)', borderRadius: 16, padding: '1.5rem', border: '1.5px solid var(--red)', boxShadow: 'var(--shadow-sm)' }}>
+            <h2 style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.4rem', color: 'var(--red)' }}>Danger Zone</h2>
+            <p style={{ color: 'var(--text-2)', fontSize: '0.875rem', marginBottom: '1rem', lineHeight: 1.6 }}>
+              Permanently delete your account and all associated data. This action cannot be undone.
+            </p>
+            <button
+              onClick={function() { setShowDeleteModal(true) }}
+              style={{ background: 'var(--red-light)', color: 'var(--red)', padding: '0.65rem 1.25rem', borderRadius: 8, border: '1.5px solid var(--red)', fontWeight: 600, cursor: 'pointer', fontSize: '0.875rem' }}
+            >
+              Delete My Account
+            </button>
+          </div>
         )}
       </div>
+
+      {/* Report Modal */}
+      {showReportModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}
+          onClick={function() { setShowReportModal(false); setReportSuccess(false); setReportError('') }}
+        >
+          <div style={{ background: 'var(--surface)', borderRadius: 20, padding: '2rem', maxWidth: 440, width: '100%' }} onClick={function(e) { e.stopPropagation() }}>
+            {reportSuccess ? (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'center', color: 'var(--green)', marginBottom: '1rem' }}><CheckCircle2 size={40} /></div>
+                <h2 style={{ fontWeight: 800, fontSize: '1.2rem', marginBottom: '0.5rem', color: 'var(--text)', textAlign: 'center' }}>Report Submitted</h2>
+                <p style={{ color: 'var(--text-2)', fontSize: '0.875rem', lineHeight: 1.6, marginBottom: '1.5rem', textAlign: 'center' }}>
+                  Thanks for helping keep the community safe. Our team will review this report.
+                </p>
+                <button
+                  onClick={function() { setShowReportModal(false); setReportSuccess(false) }}
+                  style={{ width: '100%', padding: '0.75rem', background: 'var(--brand)', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }}
+                >
+                  Done
+                </button>
+              </>
+            ) : (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'center', color: 'var(--red)', marginBottom: '1rem' }}><Flag size={36} /></div>
+                <h2 style={{ fontWeight: 800, fontSize: '1.2rem', marginBottom: '0.5rem', color: 'var(--text)', textAlign: 'center' }}>Report {profile.full_name}</h2>
+                <p style={{ color: 'var(--text-2)', fontSize: '0.875rem', lineHeight: 1.6, marginBottom: '1.5rem', textAlign: 'center' }}>
+                  Let us know what happened. Reports are reviewed by our team and kept confidential.
+                </p>
+
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.5rem', color: 'var(--text)' }}>Reason</label>
+                  <select
+                    value={reportReason}
+                    onChange={function(e) { setReportReason(e.target.value) }}
+                    style={{ width: '100%', padding: '0.7rem', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.95rem', outline: 'none', background: 'var(--surface-2)', color: 'var(--text)' }}
+                  >
+                    <option value="">Select a reason...</option>
+                    <option value="Scam or Fraud">Scam or Fraud</option>
+                    <option value="Didn't Deliver Work">Didn't Deliver Work</option>
+                    <option value="Fake Profile">Fake Profile</option>
+                    <option value="Harassment or Abuse">Harassment or Abuse</option>
+                    <option value="Inappropriate Behavior">Inappropriate Behavior</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.5rem', color: 'var(--text)' }}>Details (optional)</label>
+                  <textarea
+                    rows={4}
+                    value={reportDetails}
+                    onChange={function(e) { setReportDetails(e.target.value) }}
+                    placeholder="Describe what happened..."
+                    style={{ width: '100%', padding: '0.7rem', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.95rem', resize: 'vertical', outline: 'none', background: 'var(--surface-2)', color: 'var(--text)' }}
+                  />
+                </div>
+
+                {reportError && <div style={{ color: 'var(--red)', fontSize: '0.825rem', marginBottom: '1rem' }}>{reportError}</div>}
+
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <button
+                    onClick={function() { setShowReportModal(false) }}
+                    style={{ flex: 1, padding: '0.75rem', background: 'var(--surface-3)', color: 'var(--text-2)', border: '1.5px solid var(--border)', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={submitReport}
+                    disabled={reportSubmitting || !reportReason}
+                    style={{ flex: 1, padding: '0.75rem', background: 'var(--red)', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: reportSubmitting ? 'not-allowed' : 'pointer', opacity: reportSubmitting || !reportReason ? 0.6 : 1 }}
+                  >
+                    {reportSubmitting ? 'Submitting...' : 'Submit Report'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Country Change Request Modal */}
+      {showCountryModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
+          <div style={{ background: 'var(--surface)', borderRadius: 20, padding: '2rem', maxWidth: 440, width: '100%' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', color: 'var(--brand)', marginBottom: '1rem' }}><Globe size={36} /></div>
+            <h2 style={{ fontWeight: 800, fontSize: '1.2rem', marginBottom: '0.5rem', color: 'var(--text)', textAlign: 'center' }}>Request Country Change</h2>
+            <p style={{ color: 'var(--text-2)', fontSize: '0.875rem', lineHeight: 1.6, marginBottom: '1.5rem', textAlign: 'center' }}>
+              Your current country is <strong style={{ color: 'var(--text)' }}>{profile.country || 'Not set'}</strong>. This request will be reviewed before it takes effect, and you won't be able to request again for {COOLDOWN_DAYS} days after approval.
+            </p>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.5rem', color: 'var(--text)' }}>New Country</label>
+              <select
+                value={newCountry}
+                onChange={function(e) { setNewCountry(e.target.value) }}
+                style={{ width: '100%', padding: '0.7rem', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.95rem', outline: 'none', background: 'var(--surface-2)', color: 'var(--text)' }}
+              >
+                <option value="">Select a country...</option>
+                {COUNTRIES.map(function(c) { return <option key={c} value={c}>{c}</option> })}
+              </select>
+            </div>
+            {countryError && <div style={{ color: 'var(--red)', fontSize: '0.825rem', marginBottom: '1rem' }}>{countryError}</div>}
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <button
+                onClick={function() { setShowCountryModal(false); setNewCountry(''); setCountryError('') }}
+                style={{ flex: 1, padding: '0.75rem', background: 'var(--surface-3)', color: 'var(--text-2)', border: '1.5px solid var(--border)', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitCountryRequest}
+                disabled={countrySubmitting || !newCountry}
+                style={{ flex: 1, padding: '0.75rem', background: 'var(--brand)', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: countrySubmitting ? 'not-allowed' : 'pointer', opacity: countrySubmitting || !newCountry ? 0.6 : 1 }}
+              >
+                {countrySubmitting ? 'Submitting...' : 'Submit Request'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Account Modal */}
+      {showDeleteModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
+          <div style={{ background: 'var(--surface)', borderRadius: 20, padding: '2rem', maxWidth: 440, width: '100%' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', color: 'var(--red)', marginBottom: '1rem' }}><AlertTriangle size={40} /></div>
+            <h2 style={{ fontWeight: 800, fontSize: '1.25rem', marginBottom: '0.5rem', color: 'var(--red)', textAlign: 'center' }}>Delete Account Permanently</h2>
+            <p style={{ color: 'var(--text-2)', fontSize: '0.875rem', lineHeight: 1.6, marginBottom: '1.5rem', textAlign: 'center' }}>
+              This will permanently delete your profile, all your transactions, Sparks, badges, and endorsements. This cannot be undone.
+            </p>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.5rem', color: 'var(--text)' }}>
+                Type <strong style={{ color: 'var(--red)' }}>Delete Permanently</strong> to confirm
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={function(e) { setDeleteConfirmText(e.target.value) }}
+                placeholder="Delete Permanently"
+                style={{ width: '100%', padding: '0.7rem', border: '1.5px solid var(--red)', borderRadius: 8, fontSize: '0.95rem', outline: 'none', background: 'var(--surface-2)', color: 'var(--text)' }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <button
+                onClick={function() { setShowDeleteModal(false); setDeleteConfirmText('') }}
+                style={{ flex: 1, padding: '0.75rem', background: 'var(--surface-3)', color: 'var(--text-2)', border: '1.5px solid var(--border)', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={deleteAccount}
+                disabled={deleteConfirmText !== 'Delete Permanently' || deleting}
+                style={{ flex: 1, padding: '0.75rem', background: deleteConfirmText === 'Delete Permanently' ? 'var(--red)' : 'var(--border-2)', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: deleteConfirmText === 'Delete Permanently' ? 'pointer' : 'not-allowed', opacity: deleting ? 0.7 : 1 }}
+              >
+                {deleting ? 'Deleting...' : 'Delete Account'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+  )
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', padding: '4rem', color: 'var(--text-2)' }}>Loading...</div>}>
+      <ProfileContent />
+    </Suspense>
   )
 }
