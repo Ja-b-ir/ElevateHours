@@ -403,12 +403,15 @@ export default function Dashboard() {
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.375rem', flexWrap: 'wrap' }}>
                                 <span style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--text)' }}>{prog.title}</span>
                                 {prog.level && <span style={{ background: 'var(--surface-3)', color: 'var(--text-2)', padding: '0.15rem 0.55rem', borderRadius: '999px', fontSize: '0.68rem', fontWeight: 700 }}>{prog.level}</span>}
+                                {prog.interview_required && <span style={{ background: 'var(--red-light)', color: 'var(--red)', padding: '0.15rem 0.55rem', borderRadius: '999px', fontSize: '0.68rem', fontWeight: 700 }}>Interview Required</span>}
                               </div>
                               <p style={{ fontSize: '0.78rem', color: 'var(--text-3)', lineHeight: 1.5, marginBottom: '0.625rem' }}>
                                 {prog.description?.slice(0, 90)}{prog.description?.length > 90 ? '...' : ''}
                               </p>
                               <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>
-                                {!prog.cost_type || prog.cost_type === 'Free' ? 'Free' : prog.cost_amount ? `$${prog.cost_amount} / ${prog.cost_type.replace('Per ', '').toLowerCase()}` : prog.cost_type}
+                                {activeTab === 'Internships'
+                                  ? (prog.is_paid ? (prog.pay_amount ? `Paid — $${prog.pay_amount}/${prog.pay_type === 'One-time' ? 'one-time' : prog.pay_type?.replace('Per ', '').toLowerCase()}` : 'Paid') : 'Unpaid')
+                                  : (!prog.cost_type || prog.cost_type === 'Free' ? 'Free' : prog.cost_amount ? `$${prog.cost_amount} / ${prog.cost_type.replace('Per ', '').toLowerCase()}` : prog.cost_type)}
                               </div>
                             </div>
                             <div style={{ flexShrink: 0 }}>
