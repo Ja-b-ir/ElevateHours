@@ -98,8 +98,9 @@ function MarketplaceContent() {
         const filteredPersonal = (personalWithSkills || []).filter(p => p.skills?.some(s => s.skill?.track === 'Education'))
         setProfiles([...(educators || []), ...filteredPersonal])
       } else {
+        // Find Talent shows every Personal account, whether or not they've added skills yet
         const { data } = await supabase.from('profiles').select('*, skills:profile_skills_offered(skill:skills_catalog(skill_name, track, tier:tier_reference(tier_name)))').eq('account_type', 'Personal').neq('id', user.id)
-        setProfiles((data || []).filter(p => p.skills?.some(s => s.skill?.track === track)))
+        setProfiles(data || [])
       }
     }
   }
