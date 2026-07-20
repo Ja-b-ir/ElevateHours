@@ -25,6 +25,10 @@ export default function Dashboard() {
   const [profile, setProfile] = useState(null)
   const [workOpportunities, setWorkOpportunities] = useState([])
   const [eduOpportunities, setEduOpportunities] = useState([])
+  const [courseOpportunities, setCourseOpportunities] = useState([])
+  const [internshipOpportunities, setInternshipOpportunities] = useState([])
+  const [myEnrollments, setMyEnrollments] = useState(new Set())
+  const [joiningProgram, setJoiningProgram] = useState(null)
   const [recentActivity, setRecentActivity] = useState([])
   const [streakDays, setStreakDays] = useState({}) // { 'YYYY-MM-DD': sparksThatDay }
   const [activeTab, setActiveTab] = useState('Work')
@@ -72,6 +76,27 @@ export default function Dashboard() {
         .limit(5)
       setEduOpportunities(eduTxns || [])
 
+      const { data: courseProgs } = await supabase
+        .from('programs')
+        .select('*')
+        .eq('status', 'Open')
+        .eq('program_type', 'Course')
+        .order('created_at', { ascending: false })
+        .limit(5)
+      setCourseOpportunities(courseProgs || [])
+
+      const { data: internshipProgs } = await supabase
+        .from('programs')
+        .select('*')
+        .eq('status', 'Open')
+        .eq('program_type', 'Internship')
+        .order('created_at', { ascending: false })
+        .limit(5)
+      setInternshipOpportunities(internshipProgs || [])
+
+      const { data: myEnroll } = await supabase.from('program_enrollments').select('program_id').eq('student_id', user.id)
+      setMyEnrollments(new Set((myEnroll || []).map(e => e.program_id)))
+
       const { data: activity } = await supabase
         .from('transactions')
         .select('*, skill:skills_catalog(skill_name, track), tier:tier_reference(tier_name), receiver:profiles!transactions_receiver_id_fkey(full_name), provider:profiles!transactions_provider_id_fkey(full_name)')
@@ -118,8 +143,41 @@ export default function Dashboard() {
 
   const permanent = (profile?.sparks_earned || 0) - (profile?.sparks_spent || 0) + (profile?.sparks_purchased_total || 0)
   const total = permanent + (profile?.active_gifts_received || 0)
-  const filtered = activeTab === 'Work' ? workOpportunities : eduOpportunities
-  const viewAllHref = activeTab === 'Work' ? '/marketplace?tab=work' : '/marketplace?tab=education'
+  const OPPORTUNITY_MAP = {
+    Work: { list: workOpportunities, href: '/marketplace?tab=work' },
+    Education: { list: eduOpportunities, href: '/marketplace?tab=education' },
+    Courses: { list: courseOpportunities, href: '/marketplace?tab=courses' },
+    Internships: { list: internshipOpportunities, href: '/marketplace?tab=internships' },
+  }
+  const isProgramTab = activeTab === 'Courses' || activeTab === 'Internships'
+  const filtered = OPPORTUNITY_MAP[activeTab]?.list || []
+  const viewAllHref = OPPORTUNITY_MAP[activeTab]?.href || '/marketplace'
+
+  const joinProgram = async (program) => {
+    setJoiningProgram(program.id)
+    try {
+      const { error } = await supabase.from('program_enrollments').insert({ program_id: program.id, student_id: profile.id })
+      if (error) {
+        if (error.message?.includes('PROGRAM_FULL')) {
+          alert('This program just reached capacity — no more spots available.')
+          if (activeTab === 'Courses') setCourseOpportunities(prev => prev.filter(p => p.id !== program.id))
+          else setInternshipOpportunities(prev => prev.filter(p => p.id !== program.id))
+          setJoiningProgram(null)
+          return
+        }
+        throw error
+      }
+      setMyEnrollments(prev => new Set([...prev, program.id]))
+      await supabase.from('notifications').insert({
+        user_id: program.creator_id,
+        title: 'New Enrollment',
+        message: `${profile.full_name} joined your program "${program.title}".`,
+        type: 'application',
+        related_id: program.id
+      })
+    } catch (err) { console.error(err) }
+    setJoiningProgram(null)
+  }
 
   const statusColor = (status) => {
     const map = {
@@ -304,18 +362,18 @@ export default function Dashboard() {
                 </a>
               </div>
 
-              <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', padding: '0 1.5rem' }}>
-                {['Work', 'Education'].map(tab => (
+              <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', padding: '0 1.5rem', flexWrap: 'wrap' }}>
+                {['Work', 'Education', 'Courses', 'Internships'].map(tab => (
                   <button key={tab} onClick={() => setActiveTab(tab)} style={{
                     display: 'flex', alignItems: 'center', gap: '0.4rem',
-                    padding: '0.75rem 0', marginRight: '1.5rem',
+                    padding: '0.75rem 0', marginRight: '1.25rem',
                     background: 'none', border: 'none',
                     borderBottom: `2px solid ${activeTab === tab ? 'var(--brand)' : 'transparent'}`,
                     color: activeTab === tab ? 'var(--brand)' : 'var(--text-3)',
                     fontWeight: 600, cursor: 'pointer', fontSize: '0.825rem',
                     fontFamily: 'inherit', transition: 'all 0.15s'
                   }}>
-                    {tab === 'Work' ? <Briefcase size={13} /> : <GraduationCap size={13} />}
+                    {tab === 'Work' ? <Briefcase size={13} /> : tab === 'Internships' ? <Award size={13} /> : <GraduationCap size={13} />}
                     {tab}
                   </button>
                 ))}
@@ -325,13 +383,48 @@ export default function Dashboard() {
                 {filtered.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-3)' }}>
                     <Users size={36} style={{ margin: '0 auto 0.875rem', opacity: 0.3 }} />
-                    <p style={{ fontWeight: 600, marginBottom: '0.25rem', color: 'var(--text-2)' }}>No open {activeTab} opportunities</p>
+                    <p style={{ fontWeight: 600, marginBottom: '0.25rem', color: 'var(--text-2)' }}>No open {activeTab.toLowerCase()} right now</p>
                     <p style={{ fontSize: '0.8rem' }}>Check the marketplace or post a request.</p>
                   </div>
                 ) : (
                   <>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                      {filtered.map(txn => {
+                      {isProgramTab ? filtered.map(prog => {
+                        const enrolled = myEnrollments.has(prog.id)
+                        const full = prog.capacity && false // capacity enforcement is server-side; UI just disables after join
+                        return (
+                          <div key={prog.id} style={{
+                            padding: '1.125rem', background: 'var(--surface-2)',
+                            borderRadius: 'var(--radius)', border: '1px solid var(--border)',
+                            display: 'flex', justifyContent: 'space-between',
+                            alignItems: 'flex-start', gap: '1rem'
+                          }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.375rem', flexWrap: 'wrap' }}>
+                                <span style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--text)' }}>{prog.title}</span>
+                                {prog.level && <span style={{ background: 'var(--surface-3)', color: 'var(--text-2)', padding: '0.15rem 0.55rem', borderRadius: '999px', fontSize: '0.68rem', fontWeight: 700 }}>{prog.level}</span>}
+                              </div>
+                              <p style={{ fontSize: '0.78rem', color: 'var(--text-3)', lineHeight: 1.5, marginBottom: '0.625rem' }}>
+                                {prog.description?.slice(0, 90)}{prog.description?.length > 90 ? '...' : ''}
+                              </p>
+                              <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>
+                                {!prog.cost_type || prog.cost_type === 'Free' ? 'Free' : prog.cost_amount ? `$${prog.cost_amount} / ${prog.cost_type.replace('Per ', '').toLowerCase()}` : prog.cost_type}
+                              </div>
+                            </div>
+                            <div style={{ flexShrink: 0 }}>
+                              {enrolled ? (
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--brand-light)', color: 'var(--brand)', padding: '0.4rem 0.75rem', borderRadius: 'var(--radius-sm)', fontWeight: 700, fontSize: '0.75rem' }}>
+                                  <Check size={11} /> Enrolled
+                                </span>
+                              ) : (
+                                <button onClick={() => joinProgram(prog)} disabled={joiningProgram === prog.id} className="btn btn-primary btn-sm">
+                                  {joiningProgram === prog.id ? 'Joining...' : 'Join'}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      }) : filtered.map(txn => {
                         const tc = tierColor(txn.tier?.tier_name)
                         return (
                           <div key={txn.id} style={{
@@ -360,7 +453,7 @@ export default function Dashboard() {
                             </div>
                             <div style={{ textAlign: 'right', flexShrink: 0 }}>
                               <div style={{ fontWeight: 900, fontSize: '1rem', color: 'var(--amber)', letterSpacing: '-0.02em' }}>
-                                ⚡ {txn.total_sparks_transferred || 0}
+                                <Zap size={14} style={{ verticalAlign: -2, marginRight: 2 }} />{txn.total_sparks_transferred || 0}
                               </div>
                               <div style={{ fontSize: '0.68rem', color: 'var(--text-3)', marginTop: '0.1rem' }}>SPK</div>
                             </div>
@@ -375,7 +468,7 @@ export default function Dashboard() {
                       border: '1.5px solid var(--border)', background: 'var(--surface-2)',
                       color: 'var(--text)', fontWeight: 600, fontSize: '0.825rem', textDecoration: 'none'
                     }}>
-                      View All {activeTab} Opportunities <ArrowRight size={14} />
+                      View All {activeTab}{isProgramTab ? '' : ' Opportunities'} <ArrowRight size={14} />
                     </a>
                   </>
                 )}
