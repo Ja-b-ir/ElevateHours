@@ -367,6 +367,12 @@ function MarketplaceContent() {
                       <span className={p.cost_type === 'Free' || !p.cost_type ? 'badge badge-green' : 'badge badge-amber'}>
                         {!p.cost_type || p.cost_type === 'Free' ? 'Free' : p.cost_amount ? `$${p.cost_amount} / ${p.cost_type.replace('Per ', '').toLowerCase()}` : p.cost_type}
                       </span>
+                      {p.program_type === 'Internship' && (
+                        <span className={p.is_paid ? 'badge badge-green' : 'badge badge-gray'}>
+                          {p.is_paid ? (p.pay_amount ? `Paid — $${p.pay_amount}/${p.pay_type === 'One-time' ? 'one-time' : p.pay_type.replace('Per ', '').toLowerCase()}` : 'Paid') : 'Unpaid'}
+                        </span>
+                      )}
+                      {p.interview_required && <span className="badge badge-red">Interview Required</span>}
                     </div>
                     <h3 style={{ fontSize: '0.9rem', marginBottom: '0.5rem', color: 'var(--text)' }}>{p.title}</h3>
                     <p style={{ color: 'var(--text-2)', fontSize: '0.8rem', lineHeight: 1.6, flex: 1, marginBottom: '1rem' }}>
