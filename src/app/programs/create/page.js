@@ -9,7 +9,7 @@ export default function CreateProgram() {
   const router = useRouter()
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
-  const [form, setForm] = useState({ title: '', program_type: 'Course', description: '', capacity: '', level: 'Beginner', cost_type: 'Free', cost_amount: '' })
+  const [form, setForm] = useState({ title: '', program_type: 'Course', description: '', capacity: '', level: 'Beginner', cost_type: 'Free', cost_amount: '', is_paid: false, pay_type: 'Per Month', pay_amount: '', interview_required: false })
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -42,6 +42,10 @@ export default function CreateProgram() {
         level: form.level,
         cost_type: form.cost_type,
         cost_amount: form.cost_type === 'Free' ? null : (form.cost_amount ? parseFloat(form.cost_amount) : null),
+        is_paid: form.program_type === 'Internship' ? form.is_paid : false,
+        pay_type: form.program_type === 'Internship' && form.is_paid ? form.pay_type : null,
+        pay_amount: form.program_type === 'Internship' && form.is_paid && form.pay_amount ? parseFloat(form.pay_amount) : null,
+        interview_required: form.program_type === 'Internship' ? form.interview_required : false,
         status: 'Open',
       })
       if (error) throw error
@@ -130,6 +134,68 @@ export default function CreateProgram() {
                 This is informational only — joining through ElevateHours never costs Sparks. Any payment happens directly between you and the student.
               </p>
             </div>
+
+            {form.program_type === 'Internship' && (
+              <>
+                <div className="form-group">
+                  <label className="form-label">Compensation</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: form.is_paid ? '0.75rem' : 0 }}>
+                    <button type="button" onClick={() => setForm({ ...form, is_paid: false })} style={{
+                      padding: '0.75rem', borderRadius: 'var(--radius)', border: `2px solid ${!form.is_paid ? 'var(--brand)' : 'var(--border)'}`,
+                      background: !form.is_paid ? 'var(--brand-light)' : 'var(--surface-2)', cursor: 'pointer',
+                      fontWeight: 700, fontSize: '0.85rem', color: !form.is_paid ? 'var(--brand)' : 'var(--text)'
+                    }}>
+                      Unpaid
+                    </button>
+                    <button type="button" onClick={() => setForm({ ...form, is_paid: true })} style={{
+                      padding: '0.75rem', borderRadius: 'var(--radius)', border: `2px solid ${form.is_paid ? 'var(--brand)' : 'var(--border)'}`,
+                      background: form.is_paid ? 'var(--brand-light)' : 'var(--surface-2)', cursor: 'pointer',
+                      fontWeight: 700, fontSize: '0.85rem', color: form.is_paid ? 'var(--brand)' : 'var(--text)'
+                    }}>
+                      Paid
+                    </button>
+                  </div>
+                  {form.is_paid && (
+                    <div style={{ display: 'flex', gap: '0.75rem' }}>
+                      <select value={form.pay_type} onChange={e => setForm({ ...form, pay_type: e.target.value })} className="form-select" style={{ flex: 1 }}>
+                        <option value="Per Hour">Per Hour</option>
+                        <option value="Per Month">Per Month</option>
+                        <option value="One-time">One-time</option>
+                      </select>
+                      <input
+                        type="number" min="0" step="0.01" placeholder="Amount"
+                        value={form.pay_amount}
+                        onChange={e => setForm({ ...form, pay_amount: e.target.value })}
+                        className="form-input" style={{ flex: 1 }}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Interview Process</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                    <button type="button" onClick={() => setForm({ ...form, interview_required: false })} style={{
+                      padding: '0.75rem', borderRadius: 'var(--radius)', border: `2px solid ${!form.interview_required ? 'var(--brand)' : 'var(--border)'}`,
+                      background: !form.interview_required ? 'var(--brand-light)' : 'var(--surface-2)', cursor: 'pointer',
+                      fontWeight: 700, fontSize: '0.85rem', color: !form.interview_required ? 'var(--brand)' : 'var(--text)'
+                    }}>
+                      No Interview
+                    </button>
+                    <button type="button" onClick={() => setForm({ ...form, interview_required: true })} style={{
+                      padding: '0.75rem', borderRadius: 'var(--radius)', border: `2px solid ${form.interview_required ? 'var(--brand)' : 'var(--border)'}`,
+                      background: form.interview_required ? 'var(--brand-light)' : 'var(--surface-2)', cursor: 'pointer',
+                      fontWeight: 700, fontSize: '0.85rem', color: form.interview_required ? 'var(--brand)' : 'var(--text)'
+                    }}>
+                      Interview Required
+                    </button>
+                  </div>
+                  <p style={{ fontSize: '0.72rem', color: 'var(--text-3)', marginTop: '0.4rem' }}>
+                    If required, students will see an "Interview Required" badge on Marketplace.
+                  </p>
+                </div>
+              </>
+            )}
 
             <div className="form-group">
               <label className="form-label">Capacity (optional)</label>
