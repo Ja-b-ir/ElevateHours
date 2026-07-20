@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
-import { GraduationCap, Briefcase, Users, Plus, X } from 'lucide-react'
+import { GraduationCap, Briefcase, Users, Plus, X, MessageSquare } from 'lucide-react'
 
 export default function MyPrograms() {
   const router = useRouter()
@@ -57,6 +57,18 @@ export default function MyPrograms() {
     const newStatus = program.status === 'Open' ? 'Closed' : 'Open'
     await supabase.from('programs').update({ status: newStatus }).eq('id', program.id)
     setPrograms(prev => prev.map(p => p.id === program.id ? { ...p, status: newStatus } : p))
+  }
+
+  const toggleGroupChat = async (program) => {
+    const next = !program.group_chat_enabled
+    await supabase.from('programs').update({ group_chat_enabled: next }).eq('id', program.id)
+    setPrograms(prev => prev.map(p => p.id === program.id ? { ...p, group_chat_enabled: next } : p))
+  }
+
+  const toggleStudentsSend = async (program) => {
+    const next = !program.chat_students_can_send
+    await supabase.from('programs').update({ chat_students_can_send: next }).eq('id', program.id)
+    setPrograms(prev => prev.map(p => p.id === program.id ? { ...p, chat_students_can_send: next } : p))
   }
 
   const deleteProgram = async (programId) => {
@@ -120,7 +132,10 @@ export default function MyPrograms() {
                         <Users size={14} /> {p.enrolledCount}{p.capacity ? ' / ' + p.capacity : ''} enrolled — {isExpanded ? 'hide' : 'view'} students
                       </button>
                     </div>
-                    <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0, flexWrap: 'wrap' }}>
+                      <a href={'/programs/chat?id=' + p.id} className="btn btn-primary btn-sm">
+                        <MessageSquare size={13} /> Open Chat
+                      </a>
                       <button onClick={() => toggleStatus(p)} className="btn btn-secondary btn-sm">
                         {p.status === 'Open' ? 'Close' : 'Reopen'}
                       </button>
@@ -128,6 +143,42 @@ export default function MyPrograms() {
                         Delete
                       </button>
                     </div>
+                  </div>
+
+                  <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+                      <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-2)' }}>Group Chat</span>
+                      <button
+                        onClick={() => toggleGroupChat(p)}
+                        style={{
+                          width: 40, height: 22, borderRadius: 999, border: 'none', cursor: 'pointer',
+                          background: p.group_chat_enabled ? 'var(--brand)' : 'var(--surface-3)', position: 'relative', transition: 'all var(--transition)'
+                        }}
+                      >
+                        <div style={{
+                          width: 16, height: 16, borderRadius: '50%', background: 'white', position: 'absolute', top: 3,
+                          left: p.group_chat_enabled ? 21 : 3, transition: 'all var(--transition)'
+                        }} />
+                      </button>
+                    </div>
+                    {p.group_chat_enabled && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-2)' }}>Students Can Send Messages</span>
+                        <button
+                          onClick={() => toggleStudentsSend(p)}
+                          style={{
+                            width: 40, height: 22, borderRadius: 999, border: 'none', cursor: 'pointer',
+                            background: p.chat_students_can_send ? 'var(--brand)' : 'var(--surface-3)', position: 'relative', transition: 'all var(--transition)'
+                          }}
+                        >
+                          <div style={{
+                            width: 16, height: 16, borderRadius: '50%', background: 'white', position: 'absolute', top: 3,
+                            left: p.chat_students_can_send ? 21 : 3, transition: 'all var(--transition)'
+                          }} />
+                        </button>
+                        <span style={{ fontSize: '0.72rem', color: 'var(--text-3)' }}>{p.chat_students_can_send ? 'Everyone can post' : 'Announcements only'}</span>
+                      </div>
+                    )}
                   </div>
 
                   {isExpanded && (
