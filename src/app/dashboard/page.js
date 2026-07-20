@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
 import {
   TrendingUp, Users, Clock, Zap, ArrowRight, Briefcase,
-  GraduationCap, Plus, BarChart3, Award, Target, ChevronRight, Gift, Flame
+  GraduationCap, Plus, BarChart3, Award, Target, ChevronRight, Gift, Flame, Check
 } from 'lucide-react'
 
 const TIERS = [
