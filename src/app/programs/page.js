@@ -138,9 +138,14 @@ export default function ProgramsPage() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>by {p.creator?.full_name || 'Unknown'}</span>
                     {enrolled ? (
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--brand-light)', color: 'var(--brand)', padding: '0.4rem 0.875rem', borderRadius: 'var(--radius-sm)', fontWeight: 700, fontSize: '0.78rem', border: '1px solid var(--brand)' }}>
-                        <Check size={11} /> Enrolled
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        {p.group_chat_enabled && (
+                          <a href={'/programs/chat?id=' + p.id} style={{ fontSize: '0.78rem', color: 'var(--brand)', fontWeight: 700, textDecoration: 'underline' }}>Chat</a>
+                        )}
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--brand-light)', color: 'var(--brand)', padding: '0.4rem 0.875rem', borderRadius: 'var(--radius-sm)', fontWeight: 700, fontSize: '0.78rem', border: '1px solid var(--brand)' }}>
+                          <Check size={11} /> Enrolled
+                        </span>
+                      </div>
                     ) : full ? (
                       <span style={{ fontSize: '0.78rem', color: 'var(--text-3)', fontWeight: 600 }}>Full</span>
                     ) : (
