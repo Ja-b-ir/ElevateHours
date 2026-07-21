@@ -61,13 +61,15 @@ export default function MyPrograms() {
 
   const toggleGroupChat = async (program) => {
     const next = !program.group_chat_enabled
-    await supabase.from('programs').update({ group_chat_enabled: next }).eq('id', program.id)
+    const { error } = await supabase.from('programs').update({ group_chat_enabled: next }).eq('id', program.id)
+    if (error) { alert('Could not update group chat setting: ' + error.message); return }
     setPrograms(prev => prev.map(p => p.id === program.id ? { ...p, group_chat_enabled: next } : p))
   }
 
   const toggleStudentsSend = async (program) => {
     const next = !program.chat_students_can_send
-    await supabase.from('programs').update({ chat_students_can_send: next }).eq('id', program.id)
+    const { error } = await supabase.from('programs').update({ chat_students_can_send: next }).eq('id', program.id)
+    if (error) { alert('Could not update setting: ' + error.message); return }
     setPrograms(prev => prev.map(p => p.id === program.id ? { ...p, chat_students_can_send: next } : p))
   }
 
