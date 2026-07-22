@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import Logo from '@/components/Logo'
 import {
   LayoutDashboard, Store, PlusCircle, ClipboardList, ArrowLeftRight,
-  Heart, Zap, User, Award, Bell, Sun, Moon, Menu, X, LogOut, ChevronDown, MessageSquare, Bookmark
+  Heart, Zap, User, Award, Bell, Sun, Moon, Menu, X, LogOut, ChevronDown, MessageSquare, Bookmark, Users
 } from 'lucide-react'
 
 export default function Navbar() {
@@ -209,6 +209,15 @@ export default function Navbar() {
                   {unreadMessages > 9 ? '9+' : unreadMessages}
                 </span>
               )}
+            </a>
+
+            <a href="/group-chats" title="Group Chats" style={{
+              width: 36, height: 36, borderRadius: 'var(--radius-sm)', flexShrink: 0,
+              background: 'var(--surface-3)', border: '1px solid var(--border)',
+              color: 'var(--text-2)', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', textDecoration: 'none'
+            }}>
+              <Users size={15} />
             </a>
 
             <div className="eh-desktop-nav" style={{ position: 'relative' }} ref={dropdownRef}>
