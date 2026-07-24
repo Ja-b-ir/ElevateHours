@@ -83,7 +83,24 @@ export default function ProgramsPage() {
   const formatCost = (p) => {
     if (!p.cost_type || p.cost_type === 'Free') return 'Free'
     if (!p.cost_amount) return p.cost_type
-    return `$${p.cost_amount} / ${p.cost_type.replace('Per ', '').toLowerCase()}`
+    const unit = p.cost_payment_method === 'Sparks' ? 'SPK' : (p.cost_currency || 'USD')
+    return `${p.cost_amount} ${unit} / ${p.cost_type.replace('Per ', '').toLowerCase()}`
+  }
+
+  const formatPay = (p) => {
+    if (!p.is_paid) return 'Unpaid'
+    if (!p.pay_amount) return 'Paid'
+    const unit = p.pay_payment_method === 'Sparks' ? 'SPK' : (p.pay_currency || 'USD')
+    const period = p.pay_type === 'One-time' ? 'one-time' : p.pay_type?.replace('Per ', '').toLowerCase()
+    return `Paid — ${p.pay_amount} ${unit}/${period}`
+  }
+
+  const formatDuration = (p) => {
+    if (!p.start_date && !p.end_date) return null
+    const fmt = (d) => new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+    if (p.start_date && p.end_date) return `${fmt(p.start_date)} – ${fmt(p.end_date)}`
+    if (p.start_date) return `Starts ${fmt(p.start_date)}`
+    return `Ends ${fmt(p.end_date)}`
   }
 
   if (loading) return <div><Navbar /><div className="loading-wrap"><div className="spinner" /> Loading programs...</div></div>
@@ -120,12 +137,13 @@ export default function ProgramsPage() {
                     {p.level && <span className="badge badge-gray">{p.level}</span>}
                     <span className={p.cost_type === 'Free' || !p.cost_type ? 'badge badge-green' : 'badge badge-amber'}>{formatCost(p)}</span>
                     {p.program_type === 'Internship' && (
-                      <span className={p.is_paid ? 'badge badge-green' : 'badge badge-gray'}>
-                        {p.is_paid ? (p.pay_amount ? `Paid — $${p.pay_amount}/${p.pay_type === 'One-time' ? 'one-time' : p.pay_type.replace('Per ', '').toLowerCase()}` : 'Paid') : 'Unpaid'}
-                      </span>
+                      <span className={p.is_paid ? 'badge badge-green' : 'badge badge-gray'}>{formatPay(p)}</span>
                     )}
                     {p.interview_required && <span className="badge badge-red">Interview Required</span>}
                   </div>
+                  {formatDuration(p) && (
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-3)', marginBottom: '0.5rem' }}>{formatDuration(p)}</div>
+                  )}
                   <h3 style={{ fontSize: '0.95rem', marginBottom: '0.5rem', color: 'var(--text)' }}>{p.title}</h3>
                   <p style={{ color: 'var(--text-2)', fontSize: '0.8rem', lineHeight: 1.6, flex: 1, marginBottom: '1rem' }}>
                     {p.description || 'No description provided.'}
