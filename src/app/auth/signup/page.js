@@ -64,18 +64,6 @@ function SignupContent() {
         })
         if (profileError) throw profileError
 
-        await supabase.from('notifications').insert({
-          user_id: data.user.id,
-          title: 'Welcome to ElevateHours!',
-          message: form.account_type === 'Educator'
-            ? "Complete your profile — add what you teach, your bio, and your skills so students can find you."
-            : form.account_type === 'Organization'
-            ? "Complete your profile — add your bio and details so the community knows who you are."
-            : "Complete your profile — add your bio, skills, institution, and photo so others can find and trust you.",
-          type: 'general',
-          related_id: data.user.id,
-        })
-
         if (referrerId) {
           const { data: referrerProfile } = await supabase.from('profiles').select('sparks_earned').eq('id', referrerId).single()
           await supabase.from('profiles').update({
