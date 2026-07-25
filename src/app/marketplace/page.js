@@ -365,15 +365,23 @@ function MarketplaceContent() {
                       </span>
                       {p.level && <span className="badge badge-gray">{p.level}</span>}
                       <span className={p.cost_type === 'Free' || !p.cost_type ? 'badge badge-green' : 'badge badge-amber'}>
-                        {!p.cost_type || p.cost_type === 'Free' ? 'Free' : p.cost_amount ? `$${p.cost_amount} / ${p.cost_type.replace('Per ', '').toLowerCase()}` : p.cost_type}
+                        {!p.cost_type || p.cost_type === 'Free' ? 'Free' : p.cost_amount ? `${p.cost_amount} ${p.cost_payment_method === 'Sparks' ? 'SPK' : (p.cost_currency || 'USD')} / ${p.cost_type.replace('Per ', '').toLowerCase()}` : p.cost_type}
                       </span>
                       {p.program_type === 'Internship' && (
                         <span className={p.is_paid ? 'badge badge-green' : 'badge badge-gray'}>
-                          {p.is_paid ? (p.pay_amount ? `Paid — $${p.pay_amount}/${p.pay_type === 'One-time' ? 'one-time' : p.pay_type.replace('Per ', '').toLowerCase()}` : 'Paid') : 'Unpaid'}
+                          {p.is_paid ? (p.pay_amount ? `Paid — ${p.pay_amount} ${p.pay_payment_method === 'Sparks' ? 'SPK' : (p.pay_currency || 'USD')}/${p.pay_type === 'One-time' ? 'one-time' : p.pay_type?.replace('Per ', '').toLowerCase()}` : 'Paid') : 'Unpaid'}
                         </span>
                       )}
                       {p.interview_required && <span className="badge badge-red">Interview Required</span>}
                     </div>
+                    {(p.start_date || p.end_date) && (
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-3)', marginBottom: '0.5rem' }}>
+                        {p.start_date && p.end_date
+                          ? `${new Date(p.start_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} – ${new Date(p.end_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`
+                          : p.start_date ? `Starts ${new Date(p.start_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`
+                          : `Ends ${new Date(p.end_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`}
+                      </div>
+                    )}
                     <h3 style={{ fontSize: '0.9rem', marginBottom: '0.5rem', color: 'var(--text)' }}>{p.title}</h3>
                     <p style={{ color: 'var(--text-2)', fontSize: '0.8rem', lineHeight: 1.6, flex: 1, marginBottom: '1rem' }}>
                       {p.description || 'No description provided.'}
@@ -386,9 +394,14 @@ function MarketplaceContent() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <a href={'/profile?id=' + p.creator_id} style={{ fontSize: '0.75rem', color: 'var(--text-3)', textDecoration: 'underline' }}>by {p.creator?.full_name || 'Unknown'}</a>
                       {enrolled ? (
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--brand-light)', color: 'var(--brand)', padding: '0.4rem 0.875rem', borderRadius: 'var(--radius-sm)', fontWeight: 700, fontSize: '0.78rem', border: '1px solid var(--brand)' }}>
-                          <Check size={11} /> Enrolled
-                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          {p.group_chat_enabled && (
+                            <a href={'/programs/chat?id=' + p.id} style={{ fontSize: '0.75rem', color: 'var(--brand)', fontWeight: 700, textDecoration: 'underline' }}>Chat</a>
+                          )}
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--brand-light)', color: 'var(--brand)', padding: '0.4rem 0.875rem', borderRadius: 'var(--radius-sm)', fontWeight: 700, fontSize: '0.78rem', border: '1px solid var(--brand)' }}>
+                            <Check size={11} /> Enrolled
+                          </span>
+                        </div>
                       ) : full ? (
                         <span style={{ fontSize: '0.78rem', color: 'var(--text-3)', fontWeight: 600 }}>Full</span>
                       ) : (
