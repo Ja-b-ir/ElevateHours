@@ -408,17 +408,32 @@ export default function Dashboard() {
                               <p style={{ fontSize: '0.78rem', color: 'var(--text-3)', lineHeight: 1.5, marginBottom: '0.625rem' }}>
                                 {prog.description?.slice(0, 90)}{prog.description?.length > 90 ? '...' : ''}
                               </p>
-                              <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>
-                                {activeTab === 'Internships'
-                                  ? (prog.is_paid ? (prog.pay_amount ? `Paid — $${prog.pay_amount}/${prog.pay_type === 'One-time' ? 'one-time' : prog.pay_type?.replace('Per ', '').toLowerCase()}` : 'Paid') : 'Unpaid')
-                                  : (!prog.cost_type || prog.cost_type === 'Free' ? 'Free' : prog.cost_amount ? `$${prog.cost_amount} / ${prog.cost_type.replace('Per ', '').toLowerCase()}` : prog.cost_type)}
+                              <div style={{ fontSize: '0.75rem', color: 'var(--text-3)', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                                {activeTab === 'Internships' ? (
+                                  !prog.is_paid ? 'Unpaid' : !prog.pay_amount ? 'Paid' : (
+                                    prog.pay_payment_method === 'Sparks'
+                                      ? <>Paid — {prog.pay_amount} <Zap size={10} style={{ display: 'inline' }} fill="currentColor" /> / {prog.pay_type === 'One-time' ? 'one-time' : prog.pay_type?.replace('Per ', '').toLowerCase()}</>
+                                      : `Paid — ${prog.pay_amount} ${prog.pay_currency || 'USD'}/${prog.pay_type === 'One-time' ? 'one-time' : prog.pay_type?.replace('Per ', '').toLowerCase()}`
+                                  )
+                                ) : (
+                                  !prog.cost_type || prog.cost_type === 'Free' ? 'Free' : !prog.cost_amount ? prog.cost_type : (
+                                    prog.cost_payment_method === 'Sparks'
+                                      ? <>{prog.cost_amount} <Zap size={10} style={{ display: 'inline' }} fill="currentColor" /> / {prog.cost_type.replace('Per ', '').toLowerCase()}</>
+                                      : `${prog.cost_amount} ${prog.cost_currency || 'USD'} / ${prog.cost_type.replace('Per ', '').toLowerCase()}`
+                                  )
+                                )}
                               </div>
                             </div>
-                            <div style={{ flexShrink: 0 }}>
+                            <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                               {enrolled ? (
-                                <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--brand-light)', color: 'var(--brand)', padding: '0.4rem 0.75rem', borderRadius: 'var(--radius-sm)', fontWeight: 700, fontSize: '0.75rem' }}>
-                                  <Check size={11} /> Enrolled
-                                </span>
+                                <>
+                                  {prog.group_chat_enabled && (
+                                    <a href={'/programs/chat?id=' + prog.id} style={{ fontSize: '0.72rem', color: 'var(--brand)', fontWeight: 700, textDecoration: 'underline' }}>Chat</a>
+                                  )}
+                                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--brand-light)', color: 'var(--brand)', padding: '0.4rem 0.75rem', borderRadius: 'var(--radius-sm)', fontWeight: 700, fontSize: '0.75rem' }}>
+                                    <Check size={11} /> Enrolled
+                                  </span>
+                                </>
                               ) : (
                                 <button onClick={() => joinProgram(prog)} disabled={joiningProgram === prog.id} className="btn btn-primary btn-sm">
                                   {joiningProgram === prog.id ? 'Joining...' : 'Join'}
