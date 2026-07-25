@@ -64,6 +64,18 @@ function SignupContent() {
         })
         if (profileError) throw profileError
 
+        await supabase.from('notifications').insert({
+          user_id: data.user.id,
+          title: 'Welcome to ElevateHours!',
+          message: form.account_type === 'Educator'
+            ? "Complete your profile — add what you teach, your bio, and your skills so students can find you."
+            : form.account_type === 'Organization'
+            ? "Complete your profile — add your bio and details so the community knows who you are."
+            : "Complete your profile — add your bio, skills, institution, and photo so others can find and trust you.",
+          type: 'general',
+          related_id: data.user.id,
+        })
+
         if (referrerId) {
           const { data: referrerProfile } = await supabase.from('profiles').select('sparks_earned').eq('id', referrerId).single()
           await supabase.from('profiles').update({
@@ -94,7 +106,7 @@ function SignupContent() {
       <div style={{ flex: 1, background: 'linear-gradient(145deg, var(--brand) 0%, var(--brand-mid) 60%, var(--brand-mid) 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '3rem', color: 'white' }} className="auth-left">
         <div style={{ maxWidth: 400 }}>
           <div style={{ marginBottom: '2.5rem' }}>
-            <Logo height={40} linkTo={null} forceTheme="dark" />
+            <Logo height={30} linkTo={null} forceTheme="dark" />
           </div>
           <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', fontWeight: 800, marginBottom: '1rem', lineHeight: 1.25, letterSpacing: '-0.02em' }}>
             Start turning your skills into real opportunity.
