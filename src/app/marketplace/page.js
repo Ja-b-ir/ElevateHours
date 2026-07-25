@@ -365,11 +365,19 @@ function MarketplaceContent() {
                       </span>
                       {p.level && <span className="badge badge-gray">{p.level}</span>}
                       <span className={p.cost_type === 'Free' || !p.cost_type ? 'badge badge-green' : 'badge badge-amber'}>
-                        {!p.cost_type || p.cost_type === 'Free' ? 'Free' : p.cost_amount ? `${p.cost_amount} ${p.cost_payment_method === 'Sparks' ? 'SPK' : (p.cost_currency || 'USD')} / ${p.cost_type.replace('Per ', '').toLowerCase()}` : p.cost_type}
+                        {!p.cost_type || p.cost_type === 'Free' ? 'Free' : p.cost_amount ? (
+                          p.cost_payment_method === 'Sparks'
+                            ? <>{p.cost_amount} <Zap size={10} style={{ display: 'inline', verticalAlign: -1 }} fill="currentColor" /> / {p.cost_type.replace('Per ', '').toLowerCase()}</>
+                            : `${p.cost_amount} ${p.cost_currency || 'USD'} / ${p.cost_type.replace('Per ', '').toLowerCase()}`
+                        ) : p.cost_type}
                       </span>
                       {p.program_type === 'Internship' && (
                         <span className={p.is_paid ? 'badge badge-green' : 'badge badge-gray'}>
-                          {p.is_paid ? (p.pay_amount ? `Paid — ${p.pay_amount} ${p.pay_payment_method === 'Sparks' ? 'SPK' : (p.pay_currency || 'USD')}/${p.pay_type === 'One-time' ? 'one-time' : p.pay_type?.replace('Per ', '').toLowerCase()}` : 'Paid') : 'Unpaid'}
+                          {!p.is_paid ? 'Unpaid' : !p.pay_amount ? 'Paid' : (
+                            p.pay_payment_method === 'Sparks'
+                              ? <>Paid — {p.pay_amount} <Zap size={10} style={{ display: 'inline', verticalAlign: -1 }} fill="currentColor" /> / {p.pay_type === 'One-time' ? 'one-time' : p.pay_type?.replace('Per ', '').toLowerCase()}</>
+                              : `Paid — ${p.pay_amount} ${p.pay_currency || 'USD'}/${p.pay_type === 'One-time' ? 'one-time' : p.pay_type?.replace('Per ', '').toLowerCase()}`
+                          )}
                         </span>
                       )}
                       {p.interview_required && <span className="badge badge-red">Interview Required</span>}
