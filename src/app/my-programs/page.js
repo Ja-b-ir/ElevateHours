@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
-import { GraduationCap, Briefcase, Users, Plus, X, MessageSquare } from 'lucide-react'
+import { GraduationCap, Briefcase, Users, Plus, X, MessageSquare, Zap } from 'lucide-react'
 
 export default function MyPrograms() {
   const router = useRouter()
@@ -119,16 +119,32 @@ export default function MyPrograms() {
                         </span>
                         {p.level && <span className="badge badge-gray">{p.level}</span>}
                         <span className={p.cost_type === 'Free' || !p.cost_type ? 'badge badge-green' : 'badge badge-amber'}>
-                          {!p.cost_type || p.cost_type === 'Free' ? 'Free' : p.cost_amount ? `$${p.cost_amount} / ${p.cost_type.replace('Per ', '').toLowerCase()}` : p.cost_type}
+                          {!p.cost_type || p.cost_type === 'Free' ? 'Free' : p.cost_amount ? (
+                            p.cost_payment_method === 'Sparks'
+                              ? <>{p.cost_amount} <Zap size={10} style={{ display: 'inline', verticalAlign: -1 }} fill="currentColor" /> / {p.cost_type.replace('Per ', '').toLowerCase()}</>
+                              : `${p.cost_amount} ${p.cost_currency || 'USD'} / ${p.cost_type.replace('Per ', '').toLowerCase()}`
+                          ) : p.cost_type}
                         </span>
                         {p.program_type === 'Internship' && (
                           <span className={p.is_paid ? 'badge badge-green' : 'badge badge-gray'}>
-                            {p.is_paid ? (p.pay_amount ? `Paid — $${p.pay_amount}/${p.pay_type === 'One-time' ? 'one-time' : p.pay_type.replace('Per ', '').toLowerCase()}` : 'Paid') : 'Unpaid'}
+                            {!p.is_paid ? 'Unpaid' : !p.pay_amount ? 'Paid' : (
+                              p.pay_payment_method === 'Sparks'
+                                ? <>Paid — {p.pay_amount} <Zap size={10} style={{ display: 'inline', verticalAlign: -1 }} fill="currentColor" /> / {p.pay_type === 'One-time' ? 'one-time' : p.pay_type?.replace('Per ', '').toLowerCase()}</>
+                                : `Paid — ${p.pay_amount} ${p.pay_currency || 'USD'}/${p.pay_type === 'One-time' ? 'one-time' : p.pay_type?.replace('Per ', '').toLowerCase()}`
+                            )}
                           </span>
                         )}
                         {p.interview_required && <span className="badge badge-red">Interview Required</span>}
                         <span className={p.status === 'Open' ? 'badge badge-open' : 'badge badge-gray'}>{p.status}</span>
                       </div>
+                      {(p.start_date || p.end_date) && (
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-3)', marginBottom: '0.5rem' }}>
+                          {p.start_date && p.end_date
+                            ? `${new Date(p.start_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} – ${new Date(p.end_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`
+                            : p.start_date ? `Starts ${new Date(p.start_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`
+                            : `Ends ${new Date(p.end_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`}
+                        </div>
+                      )}
                       <p style={{ color: 'var(--text-2)', fontSize: '0.85rem', marginBottom: '0.75rem' }}>{p.description}</p>
                       <button onClick={() => toggleExpand(p.id)} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'none', border: 'none', color: 'var(--brand)', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', padding: 0 }}>
                         <Users size={14} /> {p.enrolledCount}{p.capacity ? ' / ' + p.capacity : ''} enrolled — {isExpanded ? 'hide' : 'view'} students
