@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
 import {
   TrendingUp, Users, Clock, Zap, ArrowRight, Briefcase,
-  GraduationCap, Plus, BarChart3, Award, Target, ChevronRight, Gift, Flame, Check
+  GraduationCap, Plus, BarChart3, Award, Target, ChevronRight, Gift, Flame, Check, User, X
 } from 'lucide-react'
 
 const TIERS = [
@@ -143,6 +143,11 @@ export default function Dashboard() {
 
   const permanent = (profile?.sparks_earned || 0) - (profile?.sparks_spent || 0) + (profile?.sparks_purchased_total || 0)
   const total = permanent + (profile?.active_gifts_received || 0)
+  const dismissWelcomeBanner = async () => {
+    setProfile(prev => ({ ...prev, welcome_banner_dismissed: true }))
+    await supabase.from('profiles').update({ welcome_banner_dismissed: true }).eq('id', profile.id)
+  }
+
   const OPPORTUNITY_MAP = {
     Work: { list: workOpportunities, href: '/marketplace?tab=work' },
     Education: { list: eduOpportunities, href: '/marketplace?tab=education' },
@@ -262,6 +267,32 @@ export default function Dashboard() {
       </div>
 
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '2rem 1.5rem' }}>
+
+        {!profile?.welcome_banner_dismissed && (
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem',
+            background: 'var(--brand-light)', border: '1px solid var(--brand)', borderRadius: 'var(--radius-lg)',
+            padding: '1rem 1.25rem', marginBottom: '1.5rem', flexWrap: 'wrap'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <User size={16} style={{ color: 'white' }} />
+              </div>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--text)' }}>Welcome to ElevateHours!</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-2)' }}>Complete your profile — add your bio, skills, and institution so others can find and trust you.</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
+              <a href="/profile" style={{ background: 'var(--brand)', color: 'white', padding: '0.5rem 1rem', borderRadius: 'var(--radius-sm)', fontSize: '0.8rem', fontWeight: 700, textDecoration: 'none' }}>
+                Complete Profile
+              </a>
+              <button onClick={dismissWelcomeBanner} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', display: 'flex', padding: 0 }} title="Dismiss">
+                <X size={18} />
+              </button>
+            </div>
+          </div>
+        )}
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
 
@@ -571,6 +602,12 @@ export default function Dashboard() {
 function OrgDashboard({ profile }) {
   const [programs, setPrograms] = useState([])
   const [loading, setLoading] = useState(true)
+  const [bannerDismissed, setBannerDismissed] = useState(profile?.welcome_banner_dismissed)
+
+  const dismissWelcomeBanner = async () => {
+    setBannerDismissed(true)
+    await supabase.from('profiles').update({ welcome_banner_dismissed: true }).eq('id', profile.id)
+  }
 
   useEffect(() => {
     const load = async () => {
@@ -630,6 +667,36 @@ function OrgDashboard({ profile }) {
       </div>
 
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '2rem 1.5rem' }}>
+
+        {!bannerDismissed && (
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem',
+            background: 'var(--brand-light)', border: '1px solid var(--brand)', borderRadius: 'var(--radius-lg)',
+            padding: '1rem 1.25rem', marginBottom: '1.5rem', flexWrap: 'wrap'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <User size={16} style={{ color: 'white' }} />
+              </div>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--text)' }}>Welcome to ElevateHours!</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-2)' }}>
+                  {profile?.account_type === 'Educator'
+                    ? 'Complete your profile — add what you teach, your bio, and your skills so students can find you.'
+                    : 'Complete your profile — add your bio and details so the community knows who you are.'}
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
+              <a href="/profile" style={{ background: 'var(--brand)', color: 'white', padding: '0.5rem 1rem', borderRadius: 'var(--radius-sm)', fontSize: '0.8rem', fontWeight: 700, textDecoration: 'none' }}>
+                Complete Profile
+              </a>
+              <button onClick={dismissWelcomeBanner} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', display: 'flex', padding: 0 }} title="Dismiss">
+                <X size={18} />
+              </button>
+            </div>
+          </div>
+        )}
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
           <div style={{ background: 'linear-gradient(135deg, var(--brand) 0%, var(--brand-mid) 100%)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', color: 'white' }}>
