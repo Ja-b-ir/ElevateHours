@@ -190,16 +190,23 @@ function ReportsTab() {
 // ---------- Users ----------
 function UsersTab() {
   const [search, setSearch] = useState('')
-  const [results, setResults] = useState([])
-  const [searching, setSearching] = useState(false)
-  const [selected, setSelected] = useState(null)
+  const [allUsers, setAllUsers] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [expanded, setExpanded] = useState(null)
+  const [detailsById, setDetailsById] = useState({})
 
-  const runSearch = async () => {
-    if (!search.trim()) return
-    setSearching(true)
-    const { data } = await supabase.from('profiles').select('*').ilike('full_name', `%${search}%`).limit(20)
-    setResults(data || [])
-    setSearching(false)
+  useEffect(() => { loadUsers() }, [])
+
+  const loadUsers = async () => {
+    setLoading(true)
+    const { data } = await supabase.from('profiles').select('*').order('full_name')
+    setAllUsers(data || [])
+    setLoading(false)
+  }
+
+  const currentBalance = (u) => {
+    const permanent = (u.sparks_earned || 0) - (u.sparks_spent || 0) + (u.sparks_purchased_total || 0)
+    return permanent + (u.active_gifts_received || 0)
   }
 
   const toggleBan = async (user) => {
@@ -211,7 +218,7 @@ function UsersTab() {
     const next = !user.is_banned
     const { error } = await supabase.from('profiles').update({ is_banned: next, ban_reason: next ? reason : null }).eq('id', user.id)
     if (error) { alert('Failed: ' + error.message); return }
-    setResults(prev => prev.map(u => u.id === user.id ? { ...u, is_banned: next, ban_reason: next ? reason : null } : u))
+    setAllUsers(prev => prev.map(u => u.id === user.id ? { ...u, is_banned: next, ban_reason: next ? reason : null } : u))
   }
 
   const deleteProfile = async (user) => {
@@ -226,48 +233,135 @@ function UsersTab() {
     await supabase.from('program_enrollments').delete().eq('student_id', user.id)
     await supabase.from('messages').delete().or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
     await supabase.from('notifications').delete().eq('user_id', user.id)
+    await supabase.from('funding_requests').delete().eq('requester_id', user.id)
+    await supabase.from('gifts').delete().eq('donor_id', user.id)
     await supabase.from('profiles').delete().eq('id', user.id)
-    setResults(prev => prev.filter(u => u.id !== user.id))
+    setAllUsers(prev => prev.filter(u => u.id !== user.id))
   }
+
+  const toggleExpand = async (user) => {
+    if (expanded === user.id) { setExpanded(null); return }
+    setExpanded(user.id)
+    if (detailsById[user.id]) return
+
+    // Jobs/education this person is asking for (requests they posted)
+    const { data: posted } = await supabase.from('transactions').select('track').eq('receiver_id', user.id)
+    const postedWork = (posted || []).filter(t => t.track === 'Work').length
+    const postedEdu = (posted || []).filter(t => t.track === 'Education').length
+
+    // Jobs/education this person is providing (accepted/completed as provider)
+    const { data: providing } = await supabase.from('transactions').select('track').eq('provider_id', user.id)
+    const providingWork = (providing || []).filter(t => t.track === 'Work').length
+    const providingEdu = (providing || []).filter(t => t.track === 'Education').length
+
+    // Funding requests they've asked for
+    const { data: fundingReqs, count: fundingCount } = await supabase.from('funding_requests').select('id', { count: 'exact' }).eq('requester_id', user.id)
+
+    // Gift Sparks they've received (via funding request gifts from others)
+    const reqIds = (fundingReqs || []).map(r => r.id)
+    let giftsReceivedCount = 0
+    if (reqIds.length > 0) {
+      const { count } = await supabase.from('gifts').select('id', { count: 'exact', head: true }).in('funding_request_id', reqIds)
+      giftsReceivedCount = count || 0
+    }
+
+    setDetailsById(prev => ({
+      ...prev,
+      [user.id]: { postedWork, postedEdu, providingWork, providingEdu, fundingCount: fundingCount || 0, giftsReceivedCount }
+    }))
+  }
+
+  const filtered = search.trim()
+    ? allUsers.filter(u => u.full_name?.toLowerCase().includes(search.toLowerCase()) || u.email?.toLowerCase().includes(search.toLowerCase()))
+    : allUsers
+
+  if (loading) return <div className="loading-wrap"><div className="spinner" /> Loading users...</div>
 
   return (
     <div>
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
-        <div style={{ position: 'relative', flex: 1 }}>
-          <Search size={14} style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)' }} />
-          <input
-            type="text" placeholder="Search by name..." value={search}
-            onChange={e => setSearch(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && runSearch()}
-            className="form-input" style={{ paddingLeft: '2.5rem' }}
-          />
-        </div>
-        <button onClick={runSearch} disabled={searching} className="btn btn-primary">{searching ? 'Searching...' : 'Search'}</button>
+      <div style={{ position: 'relative', marginBottom: '1.5rem' }}>
+        <Search size={14} style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)' }} />
+        <input
+          type="text" placeholder="Filter by name or email..." value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="form-input" style={{ paddingLeft: '2.5rem' }}
+        />
       </div>
 
-      {results.length === 0 ? (
-        <div className="card empty-state"><Users size={40} style={{ margin: '0 auto 1rem', color: 'var(--border-2)' }} /><h3>Search for a user</h3><p>Type a name above to find and manage accounts.</p></div>
+      <p style={{ fontSize: '0.78rem', color: 'var(--text-3)', marginBottom: '1rem' }}>{filtered.length} user{filtered.length === 1 ? '' : 's'}</p>
+
+      {filtered.length === 0 ? (
+        <div className="card empty-state"><Users size={40} style={{ margin: '0 auto 1rem', color: 'var(--border-2)' }} /><h3>No users found</h3></div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {results.map(u => (
-            <div key={u.id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
-                <div className="avatar avatar-sm">{u.full_name?.[0]?.toUpperCase()}</div>
-                <div>
-                  <a href={'/profile?id=' + u.id} style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)' }}>{u.full_name}</a>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>
-                    {u.account_type} · {u.email} {u.is_banned && <span style={{ color: 'var(--red)', fontWeight: 700 }}>· BANNED{u.ban_reason ? ': ' + u.ban_reason : ''}</span>}
+          {filtered.map(u => {
+            const isExpanded = expanded === u.id
+            const d = detailsById[u.id]
+            return (
+              <div key={u.id} className="card">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
+                    <div className="avatar avatar-sm">{u.full_name?.[0]?.toUpperCase()}</div>
+                    <div>
+                      <a href={'/profile?id=' + u.id} style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)' }}>{u.full_name}</a>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>
+                        {u.account_type} · {u.email} {u.is_banned && <span style={{ color: 'var(--red)', fontWeight: 700 }}>· BANNED{u.ban_reason ? ': ' + u.ban_reason : ''}</span>}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <button onClick={() => toggleExpand(u)} className="btn btn-secondary btn-sm">{isExpanded ? 'Hide' : 'View'} Stats</button>
+                    <button onClick={() => toggleBan(u)} className={`btn btn-sm ${u.is_banned ? 'btn-success' : 'btn-danger'}`}>
+                      <Ban size={13} /> {u.is_banned ? 'Unban' : 'Ban'}
+                    </button>
+                    <button onClick={() => deleteProfile(u)} className="btn btn-danger btn-sm"><Trash2 size={13} /> Delete</button>
                   </div>
                 </div>
+
+                {isExpanded && (
+                  <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border)' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
+                      {[
+                        { label: 'Current Balance', value: currentBalance(u) },
+                        { label: 'Earned (lifetime)', value: u.sparks_earned || 0 },
+                        { label: 'Spent', value: u.sparks_spent || 0 },
+                        { label: 'Purchased', value: u.sparks_purchased_total || 0 },
+                        { label: 'Gifted (active)', value: u.active_gifts_received || 0 },
+                      ].map((s, i) => (
+                        <div key={i} style={{ background: 'var(--surface-2)', borderRadius: 'var(--radius-sm)', padding: '0.75rem' }}>
+                          <div style={{ fontSize: '0.68rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.25rem' }}>{s.label}</div>
+                          <div style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text)' }}>{s.value.toLocaleString()} SPK</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {!d ? (
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-3)' }}>Loading activity...</div>
+                    ) : (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem' }}>
+                        <div style={{ background: 'var(--surface-2)', borderRadius: 'var(--radius-sm)', padding: '0.75rem' }}>
+                          <div style={{ fontSize: '0.68rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.25rem' }}>Requests Posted</div>
+                          <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)' }}>{d.postedWork} Work · {d.postedEdu} Education</div>
+                        </div>
+                        <div style={{ background: 'var(--surface-2)', borderRadius: 'var(--radius-sm)', padding: '0.75rem' }}>
+                          <div style={{ fontSize: '0.68rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.25rem' }}>Providing</div>
+                          <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)' }}>{d.providingWork} Work · {d.providingEdu} Education</div>
+                        </div>
+                        <div style={{ background: 'var(--surface-2)', borderRadius: 'var(--radius-sm)', padding: '0.75rem' }}>
+                          <div style={{ fontSize: '0.68rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.25rem' }}>Funding Requests Asked</div>
+                          <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)' }}>{d.fundingCount}</div>
+                        </div>
+                        <div style={{ background: 'var(--surface-2)', borderRadius: 'var(--radius-sm)', padding: '0.75rem' }}>
+                          <div style={{ fontSize: '0.68rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.25rem' }}>Times Gifted Sparks</div>
+                          <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)' }}>{d.giftsReceivedCount}</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button onClick={() => toggleBan(u)} className={`btn btn-sm ${u.is_banned ? 'btn-success' : 'btn-danger'}`}>
-                  <Ban size={13} /> {u.is_banned ? 'Unban' : 'Ban'}
-                </button>
-                <button onClick={() => deleteProfile(u)} className="btn btn-danger btn-sm"><Trash2 size={13} /> Delete</button>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>
