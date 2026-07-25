@@ -85,6 +85,24 @@ function ProgramChatContent() {
     return () => { supabase.removeChannel(channel) }
   }, [programId, accessDenied])
 
+  // Live-updates the send permission the instant the educator flips the toggle —
+  // no refresh needed, matching WhatsApp-style admin-only mode switching.
+  useEffect(() => {
+    if (!programId || accessDenied || isCreator) return
+    const settingsChannel = supabase
+      .channel('program-settings-' + programId)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'programs', filter: `id=eq.${programId}` }, (payload) => {
+        setProgram(payload.new)
+        if (!payload.new.group_chat_enabled) {
+          setAccessDenied(true)
+        } else {
+          setCanSend(!!payload.new.chat_students_can_send)
+        }
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(settingsChannel) }
+  }, [programId, accessDenied, isCreator])
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
