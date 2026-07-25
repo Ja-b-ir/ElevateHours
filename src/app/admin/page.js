@@ -209,7 +209,8 @@ function UsersTab() {
       if (reason === null) return
     }
     const next = !user.is_banned
-    await supabase.from('profiles').update({ is_banned: next, ban_reason: next ? reason : null }).eq('id', user.id)
+    const { error } = await supabase.from('profiles').update({ is_banned: next, ban_reason: next ? reason : null }).eq('id', user.id)
+    if (error) { alert('Failed: ' + error.message); return }
     setResults(prev => prev.map(u => u.id === user.id ? { ...u, is_banned: next, ban_reason: next ? reason : null } : u))
   }
 
@@ -282,25 +283,35 @@ function SparksTab() {
   const [bulkRunning, setBulkRunning] = useState(false)
   const [message, setMessage] = useState('')
 
+  const currentBalance = (u) => {
+    const permanent = (u.sparks_earned || 0) - (u.sparks_spent || 0) + (u.sparks_purchased_total || 0)
+    return permanent + (u.active_gifts_received || 0)
+  }
+
   const runSearch = async () => {
     if (!search.trim()) return
-    const { data } = await supabase.from('profiles').select('id, full_name, email, sparks_earned').ilike('full_name', `%${search}%`).limit(20)
+    const { data, error } = await supabase.from('profiles').select('id, full_name, email, sparks_earned, sparks_spent, sparks_purchased_total, active_gifts_received').ilike('full_name', `%${search}%`).limit(20)
+    if (error) { alert('Search failed: ' + error.message); return }
     setResults(data || [])
   }
 
   const adjustSparks = async (user, delta) => {
     if (!amount || isNaN(parseInt(amount))) { alert('Enter a valid amount first'); return }
     const change = delta * Math.abs(parseInt(amount))
-    const newValue = Math.max(0, (user.sparks_earned || 0) + change)
-    await supabase.from('profiles').update({ sparks_earned: newValue }).eq('id', user.id)
+    // Adjusts sparks_purchased_total (a clean top-up bucket) rather than sparks_earned,
+    // so admin gifts don't distort work-based tier progress.
+    const newPurchased = Math.max(0, (user.sparks_purchased_total || 0) + change)
+    const { error } = await supabase.from('profiles').update({ sparks_purchased_total: newPurchased }).eq('id', user.id)
+    if (error) { alert('Update failed: ' + error.message); return }
     await supabase.from('notifications').insert({
       user_id: user.id,
       title: change > 0 ? 'Sparks Added' : 'Sparks Adjusted',
       message: change > 0 ? `An admin gifted you ${Math.abs(change)} SPK.` : `An admin removed ${Math.abs(change)} SPK from your balance.`,
       type: 'gift',
     })
-    setResults(prev => prev.map(u => u.id === user.id ? { ...u, sparks_earned: newValue } : u))
-    setMessage(`Updated ${user.full_name}'s balance to ${newValue.toLocaleString()} SPK.`)
+    const updatedUser = { ...user, sparks_purchased_total: newPurchased }
+    setResults(prev => prev.map(u => u.id === user.id ? updatedUser : u))
+    setMessage(`Updated ${user.full_name}'s balance to ${currentBalance(updatedUser).toLocaleString()} SPK.`)
     setTimeout(() => setMessage(''), 3000)
   }
 
@@ -310,17 +321,21 @@ function SparksTab() {
     if (!confirmed) return
     setBulkRunning(true)
     try {
-      const { data: allUsers } = await supabase.from('profiles').select('id, sparks_earned')
+      const { data: allUsers } = await supabase.from('profiles').select('id, sparks_purchased_total')
       const amt = parseInt(bulkAmount)
+      let failCount = 0
       for (const u of allUsers || []) {
-        await supabase.from('profiles').update({ sparks_earned: (u.sparks_earned || 0) + amt }).eq('id', u.id)
+        const { error } = await supabase.from('profiles').update({ sparks_purchased_total: (u.sparks_purchased_total || 0) + amt }).eq('id', u.id)
+        if (error) { failCount++; continue }
         await supabase.from('notifications').insert({ user_id: u.id, title: 'Sparks Gift!', message: `You received ${amt} SPK from ElevateHours.`, type: 'gift' })
       }
-      setMessage(`Gifted ${amt} SPK to ${(allUsers || []).length} users.`)
+      setMessage(failCount > 0
+        ? `Gifted ${amt} SPK to ${(allUsers || []).length - failCount} users. ${failCount} failed — check admin RLS policy is applied.`
+        : `Gifted ${amt} SPK to ${(allUsers || []).length} users.`)
     } catch (err) { console.error(err) }
     setBulkRunning(false)
     setBulkAmount('')
-    setTimeout(() => setMessage(''), 4000)
+    setTimeout(() => setMessage(''), 5000)
   }
 
   return (
@@ -351,7 +366,7 @@ function SparksTab() {
           <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', background: 'var(--surface-2)', borderRadius: 'var(--radius-sm)', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
             <div>
               <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text)' }}>{u.full_name}</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>Current: {(u.sparks_earned || 0).toLocaleString()} SPK</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>Current usable balance: {currentBalance(u).toLocaleString()} SPK</div>
             </div>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button onClick={() => adjustSparks(u, 1)} className="btn btn-success btn-sm">+ Add</button>
