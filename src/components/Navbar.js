@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import Logo from '@/components/Logo'
 import {
   LayoutDashboard, Store, PlusCircle, ClipboardList, ArrowLeftRight,
-  Heart, Zap, User, Award, Bell, Sun, Moon, Menu, X, LogOut, ChevronDown, MessageSquare, Bookmark, Users
+  Heart, Zap, User, Award, Bell, Sun, Moon, Menu, X, LogOut, ChevronDown, MessageSquare, Bookmark, Users, Shield
 } from 'lucide-react'
 
 export default function Navbar() {
@@ -16,6 +16,8 @@ export default function Navbar() {
   const [profile, setProfile] = useState(null)
   const [unreadCount, setUnreadCount] = useState(0)
   const [pendingApps, setPendingApps] = useState(0)
+  const [announcement, setAnnouncement] = useState(null)
+  const [announcementDismissed, setAnnouncementDismissed] = useState(false)
   const [unreadMessages, setUnreadMessages] = useState(0)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [theme, setTheme] = useState('light')
@@ -37,11 +39,34 @@ export default function Navbar() {
   }
 
   useEffect(() => {
+    const fetchAnnouncement = async () => {
+      const { data } = await supabase.from('announcements').select('*').eq('is_active', true).order('created_at', { ascending: false }).limit(1).maybeSingle()
+      if (data) {
+        const dismissedId = sessionStorage.getItem('eh-announcement-dismissed')
+        setAnnouncement(data)
+        setAnnouncementDismissed(dismissedId === data.id)
+      }
+    }
+    fetchAnnouncement()
+  }, [])
+
+  const dismissAnnouncement = () => {
+    if (announcement) sessionStorage.setItem('eh-announcement-dismissed', announcement.id)
+    setAnnouncementDismissed(true)
+  }
+
+  useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
       if (user) {
-        const { data: prof } = await supabase.from('profiles').select('full_name, account_type').eq('id', user.id).single()
+        const { data: prof } = await supabase.from('profiles').select('full_name, account_type, is_banned, ban_reason, is_admin').eq('id', user.id).single()
+        if (prof?.is_banned) {
+          await supabase.auth.signOut()
+          alert('Your account has been suspended.' + (prof.ban_reason ? ' Reason: ' + prof.ban_reason : ''))
+          window.location.href = '/'
+          return
+        }
         setProfile(prof)
         fetchUnread(user.id)
         fetchPendingApps(user.id)
@@ -118,10 +143,28 @@ export default function Navbar() {
     { href: '/saved', label: 'Saved', icon: Bookmark },
     { href: '/badges', label: 'Badges', icon: Award },
     { href: '/notifications', label: 'Notifications', icon: Bell },
+    ...(profile?.is_admin ? [{ href: '/admin', label: 'Admin Panel', icon: Shield }] : []),
   ]
 
   return (
     <>
+      {announcement && !announcementDismissed && (
+        <div style={{
+          background: 'var(--brand)', color: 'white', padding: '0.6rem 1.25rem',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem',
+          fontSize: '0.82rem', fontWeight: 600, flexWrap: 'wrap'
+        }}>
+          <span>
+            <strong>{announcement.title}</strong> — {announcement.message}
+            {announcement.link_url && (
+              <a href={announcement.link_url} style={{ color: 'white', textDecoration: 'underline', marginLeft: '0.5rem', fontWeight: 700 }}>Learn more</a>
+            )}
+          </span>
+          <button onClick={dismissAnnouncement} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', display: 'flex', flexShrink: 0 }}>
+            <X size={15} />
+          </button>
+        </div>
+      )}
       <nav className="eh-navbar" style={{
         background: 'var(--surface)',
         borderBottom: '1px solid var(--border)',
@@ -132,7 +175,7 @@ export default function Navbar() {
         <div className="eh-navbar-inner" style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem', display: 'flex', flexWrap: 'nowrap', alignItems: 'center', height: 68, gap: '0.25rem' }}>
 
           <div className="eh-logo" style={{ marginRight: '1rem', flexShrink: 0 }}>
-            <Logo height={50} linkTo="/dashboard" />
+            <Logo height={40} linkTo="/dashboard" />
           </div>
 
           <div className="eh-desktop-nav" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.125rem', flex: 1, overflow: 'hidden' }}>
