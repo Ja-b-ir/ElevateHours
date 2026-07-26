@@ -373,7 +373,9 @@ function SparksTab() {
   const [search, setSearch] = useState('')
   const [results, setResults] = useState([])
   const [amount, setAmount] = useState('')
+  const [note, setNote] = useState('')
   const [bulkAmount, setBulkAmount] = useState('')
+  const [bulkNote, setBulkNote] = useState('')
   const [bulkRunning, setBulkRunning] = useState(false)
   const [message, setMessage] = useState('')
 
@@ -397,10 +399,11 @@ function SparksTab() {
     const newPurchased = Math.max(0, (user.sparks_purchased_total || 0) + change)
     const { error } = await supabase.from('profiles').update({ sparks_purchased_total: newPurchased }).eq('id', user.id)
     if (error) { alert('Update failed: ' + error.message); return }
+    const baseMsg = change > 0 ? `An admin gifted you ${Math.abs(change)} SPK.` : `An admin removed ${Math.abs(change)} SPK from your balance.`
     await supabase.from('notifications').insert({
       user_id: user.id,
       title: change > 0 ? 'Sparks Added' : 'Sparks Adjusted',
-      message: change > 0 ? `An admin gifted you ${Math.abs(change)} SPK.` : `An admin removed ${Math.abs(change)} SPK from your balance.`,
+      message: note.trim() ? `${baseMsg} Note: "${note.trim()}"` : baseMsg,
       type: 'gift',
     })
     const updatedUser = { ...user, sparks_purchased_total: newPurchased }
@@ -417,11 +420,13 @@ function SparksTab() {
     try {
       const { data: allUsers } = await supabase.from('profiles').select('id, sparks_purchased_total')
       const amt = parseInt(bulkAmount)
+      const baseMsg = `You received ${amt} SPK from ElevateHours.`
+      const fullMsg = bulkNote.trim() ? `${baseMsg} Note: "${bulkNote.trim()}"` : baseMsg
       let failCount = 0
       for (const u of allUsers || []) {
         const { error } = await supabase.from('profiles').update({ sparks_purchased_total: (u.sparks_purchased_total || 0) + amt }).eq('id', u.id)
         if (error) { failCount++; continue }
-        await supabase.from('notifications').insert({ user_id: u.id, title: 'Sparks Gift!', message: `You received ${amt} SPK from ElevateHours.`, type: 'gift' })
+        await supabase.from('notifications').insert({ user_id: u.id, title: 'Sparks Gift!', message: fullMsg, type: 'gift' })
       }
       setMessage(failCount > 0
         ? `Gifted ${amt} SPK to ${(allUsers || []).length - failCount} users. ${failCount} failed — check admin RLS policy is applied.`
@@ -429,6 +434,7 @@ function SparksTab() {
     } catch (err) { console.error(err) }
     setBulkRunning(false)
     setBulkAmount('')
+    setBulkNote('')
     setTimeout(() => setMessage(''), 5000)
   }
 
@@ -439,22 +445,24 @@ function SparksTab() {
       <div className="card" style={{ marginBottom: '1.5rem' }}>
         <h3 style={{ marginBottom: '0.375rem' }}>Gift Sparks to Everyone</h3>
         <p style={{ color: 'var(--text-2)', fontSize: '0.825rem', marginBottom: '1rem' }}>Adds this amount to every user's Sparks balance at once.</p>
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <input type="number" placeholder="Amount" value={bulkAmount} onChange={e => setBulkAmount(e.target.value)} className="form-input" style={{ maxWidth: 200 }} />
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <input type="number" placeholder="Amount" value={bulkAmount} onChange={e => setBulkAmount(e.target.value)} className="form-input" style={{ maxWidth: 160 }} />
+          <input type="text" placeholder="Note (optional) — e.g. 'Platform anniversary gift'" value={bulkNote} onChange={e => setBulkNote(e.target.value)} className="form-input" style={{ flex: 1, minWidth: 220 }} />
           <button onClick={giftEveryone} disabled={bulkRunning} className="btn btn-primary"><Gift size={14} /> {bulkRunning ? 'Sending...' : 'Gift to All Users'}</button>
         </div>
       </div>
 
       <div className="card">
         <h3 style={{ marginBottom: '0.375rem' }}>Adjust an Individual's Sparks</h3>
-        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', marginTop: '1rem' }}>
-          <div style={{ position: 'relative', flex: 1 }}>
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem', marginTop: '1rem', flexWrap: 'wrap' }}>
+          <div style={{ position: 'relative', flex: 1, minWidth: 180 }}>
             <Search size={14} style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)' }} />
             <input type="text" placeholder="Search by name..." value={search} onChange={e => setSearch(e.target.value)} onKeyDown={e => e.key === 'Enter' && runSearch()} className="form-input" style={{ paddingLeft: '2.5rem' }} />
           </div>
           <input type="number" placeholder="Amount" value={amount} onChange={e => setAmount(e.target.value)} className="form-input" style={{ maxWidth: 140 }} />
           <button onClick={runSearch} className="btn btn-secondary">Search</button>
         </div>
+        <input type="text" placeholder="Note (optional) — reason shown to the user" value={note} onChange={e => setNote(e.target.value)} className="form-input" style={{ marginBottom: '1rem' }} />
 
         {results.map(u => (
           <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', background: 'var(--surface-2)', borderRadius: 'var(--radius-sm)', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
