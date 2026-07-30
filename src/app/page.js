@@ -232,7 +232,12 @@ export default function LandingPage() {
   }}
 >
   {/* SDG Alignment */}
-  <div style={{ marginBottom: '3rem' }}>
+  <div
+    style={{
+      marginBottom: '3rem',
+      textAlign: 'center',
+    }}
+  >
     <div
       style={{
         display: 'inline-block',
@@ -267,11 +272,12 @@ export default function LandingPage() {
         color: 'var(--text-2)',
         lineHeight: 1.85,
         marginBottom: '1.5rem',
+        maxWidth: '800px',
+        marginLeft: 'auto',
+        marginRight: 'auto',
       }}
     >
-      ElevateHours is designed with the United Nations Sustainable Development
-      Goals at its core. Every feature, every policy, and every decision is
-      guided by a commitment to meaningful, measurable social impact.
+      ElevateHours is designed with the United Nations Sustainable Development Goals at its core. Every feature, every policy, and every decision is guided by a commitment to meaningful, measurable social impact.
     </p>
 
     <div
@@ -279,6 +285,7 @@ export default function LandingPage() {
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
         gap: '1rem',
+        textAlign: 'left',
       }}
     >
       {[
@@ -345,6 +352,7 @@ export default function LandingPage() {
               color: 'var(--text-2)',
               fontSize: '0.82rem',
               lineHeight: 1.6,
+              margin: 0,
             }}
           >
             {item.desc}
