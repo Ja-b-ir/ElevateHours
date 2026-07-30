@@ -217,7 +217,6 @@ export default function FounderPage() {
                 </p>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
                   {[
-                    { sdg: 'SDG 1', title: 'No Poverty', desc: 'Creating income pathways for students and talent through skill-based micro-jobs without cash barriers.', color: 'var(--red)' },
                     { sdg: 'SDG 4', title: 'Quality Education', desc: 'Connecting learners with educators and mentors across all skill tiers, making knowledge accessible.', color: 'var(--red)' },
                     { sdg: 'SDG 8', title: 'Decent Work & Growth', desc: 'Building verified portfolios, experience letters, and skill credentials that open real employment doors.', color: 'var(--amber)' },
                     { sdg: 'SDG 10', title: 'Reduced Inequalities', desc: 'Leveling the playing field by removing financial barriers between talent and opportunity.', color: 'var(--brand-mid)' },
