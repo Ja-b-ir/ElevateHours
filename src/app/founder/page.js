@@ -54,8 +54,8 @@ export default function FounderPage() {
           overflow: 'hidden'
         }}>
           {[
-            { label: 'Role', value: 'Founder & CEO' },
-            { label: 'Organization', value: 'CodeScriptors IT Solutions' },
+            { label: 'Role', value: 'Managing Director & Founder' },
+            { label: 'Organization', value: 'CodeScriptors' },
             { label: 'Based In', value: 'Dhaka, Bangladesh' },
             { label: 'Focus', value: 'Skill-Based Impact' },
           ].map((f, i) => (
@@ -120,7 +120,7 @@ export default function FounderPage() {
                     background: '#1877F2', color: 'white', padding: '0.65rem 1rem',
                     borderRadius: 10, fontWeight: 600, fontSize: '0.875rem', textDecoration: 'none'
                   }}>
-                    <span style={{ fontSize: '1.1rem' }}>f</span> CodeScriptors IT Solutions
+                    <span style={{ fontSize: '1.1rem' }}>f</span> CodeScriptors
                   </a>
                 </div>
 
