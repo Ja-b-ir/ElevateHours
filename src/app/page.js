@@ -221,6 +221,44 @@ export default function LandingPage() {
         </div>
       </section>
 
+{/* SDG Alignment */}
+              <div style={{ marginBottom: '3rem' }}>
+                <div style={{
+                  display: 'inline-block', background: 'var(--green-light)', color: 'var(--green)',
+                  padding: '0.3rem 0.9rem', borderRadius: 999,
+                  fontSize: '0.8rem', fontWeight: 700, marginBottom: '1rem',
+                  letterSpacing: '0.05em', textTransform: 'uppercase'
+                }}>
+                  SDG Alignment
+                </div>
+                <h2 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '1.25rem', letterSpacing: '-0.02em', color: 'var(--text)' }}>
+                  Built for Global Impact
+                </h2>
+                <p style={{ color: 'var(--text-2)', lineHeight: 1.85, marginBottom: '1.5rem' }}>
+                  ElevateHours is designed with the United Nations Sustainable Development Goals at its core. Every feature, every policy, and every decision is guided by a commitment to meaningful, measurable social impact.
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+                  {[
+                    { sdg: 'SDG 4', title: 'Quality Education', desc: 'Connecting learners with educators and mentors across all skill tiers, making knowledge accessible.', color: 'var(--red)' },
+                    { sdg: 'SDG 8', title: 'Decent Work & Growth', desc: 'Building verified portfolios, experience letters, and skill credentials that open real employment doors.', color: 'var(--amber)' },
+                    { sdg: 'SDG 10', title: 'Reduced Inequalities', desc: 'Leveling the playing field by removing financial barriers between talent and opportunity.', color: 'var(--brand-mid)' },
+                    { sdg: 'SDG 17', title: 'Partnerships for Goals', desc: 'Actively building collaborations with organizations, NGOs, and institutions to expand community value.', color: 'var(--brand)' },
+                  ].map((item, i) => (
+                    <div key={i} style={{
+                      background: 'var(--surface-2)', borderRadius: 14, padding: '1.25rem',
+                      border: '1px solid var(--border)',
+                      borderTop: `4px solid ${item.color}`
+                    }}>
+                      <div style={{ fontWeight: 800, fontSize: '0.8rem', color: item.color, marginBottom: '0.3rem', letterSpacing: '0.05em' }}>
+                        {item.sdg}
+                      </div>
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.5rem', color: 'var(--text)' }}>{item.title}</div>
+                      <p style={{ color: 'var(--text-2)', fontSize: '0.82rem', lineHeight: 1.6 }}>{item.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
       {/* CTA */}
       <section style={{ padding: '5rem 1.5rem', background: 'var(--surface)' }}>
         <div style={{ maxWidth: 640, margin: '0 auto', textAlign: 'center' }}>
@@ -249,7 +287,7 @@ export default function LandingPage() {
               </div>
               <p style={{ color: 'var(--text-3)', fontSize: '0.825rem', lineHeight: 1.65, marginBottom: '0.75rem' }}>Turn Your Skills Into Impact</p>
               <div style={{ color: 'var(--text-3)', fontSize: '0.75rem' }}>
-                Built by <a href="https://www.facebook.com/codescriptors/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--brand)', fontWeight: 600 }}>CodeScriptors IT Solutions</a>
+                Built by <a href="https://www.facebook.com/codescriptors/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--brand)', fontWeight: 600 }}>CodeScriptors</a>
               </div>
             </div>
             <div>
@@ -275,7 +313,7 @@ export default function LandingPage() {
           <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
             <div style={{ color: 'var(--text-3)', fontSize: '0.78rem' }}>2025 ElevateHours. All rights reserved.</div>
             <div style={{ color: 'var(--text-3)', fontSize: '0.78rem' }}>
-              A <a href="https://www.facebook.com/codescriptors/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--brand)', fontWeight: 600 }}>CodeScriptors IT Solutions</a> product
+              A <a href="https://www.facebook.com/codescriptors/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--brand)', fontWeight: 600 }}>CodeScriptors</a> product
             </div>
           </div>
         </div>
