@@ -111,6 +111,9 @@ export default function LoginPage() {
               {!loading && <ChevronRight size={15} />}
             </button>
           </form>
+                <a href="/auth/forgot-password" style={{ color: 'var(--brand)', fontSize: '0.8rem', fontWeight: 600 }}>
+  Forgot password?
+</a>
         </div>
 
         <p style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.75rem', color: 'var(--text-3)' }}>
@@ -120,7 +123,3 @@ export default function LoginPage() {
     </div>
   )
 }
-
-<a href="/auth/forgot-password" style={{ color: 'var(--brand)', fontSize: '0.8rem', fontWeight: 600 }}>
-  Forgot password?
-</a>
