@@ -1,4 +1,5 @@
 import './globals.css'
+import CookieConsent from "@/components/CookieConsent";
 
 export const metadata = {
   title: 'ElevateHours — Turn Your Skills Into Impact',
