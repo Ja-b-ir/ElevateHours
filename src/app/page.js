@@ -414,12 +414,16 @@ export default function LandingPage() {
               <p style={{ color: 'var(--text-3)', fontSize: '0.8rem', lineHeight: 1.65 }}>Powered by community, verified by platform, built for impact.</p>
             </div>
           </div>
-          <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
-            <div style={{ color: 'var(--text-3)', fontSize: '0.78rem' }}>2025 ElevateHours. All rights reserved.</div>
-            <div style={{ color: 'var(--text-3)', fontSize: '0.78rem' }}>
-              A <a href="https://www.facebook.com/codescriptors/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--brand)', fontWeight: 600 }}>CodeScriptors</a> product
-            </div>
-          </div>
+          <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+  <div style={{ color: 'var(--text-3)', fontSize: '0.78rem' }}>2025 ElevateHours. All rights reserved.</div>
+  <div style={{ display: 'flex', gap: '1rem' }}>
+    <a href="/terms" style={{ color: 'var(--text-3)', fontSize: '0.78rem' }}>Terms of Service</a>
+    <a href="/privacy" style={{ color: 'var(--text-3)', fontSize: '0.78rem' }}>Privacy Policy</a>
+  </div>
+  <div style={{ color: 'var(--text-3)', fontSize: '0.78rem' }}>
+    A <a href="https://www.facebook.com/codescriptors/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--brand)', fontWeight: 600 }}>CodeScriptors</a> product
+  </div>
+</div>
         </div>
       </footer>
 
