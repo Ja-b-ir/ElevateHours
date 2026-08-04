@@ -1,8 +1,65 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Logo from '@/components/Logo'
 import { Sun, Moon, ArrowRight, Check, ChevronRight } from 'lucide-react'
+
+function AnimatedNumber({ value }) {
+  const ref = useRef(null)
+  const [display, setDisplay] = useState('0')
+
+  useEffect(() => {
+    const match = value.match(/^([\d,]+)(\+?)$/)
+    if (!match) {
+      setDisplay(value)
+      return
+    }
+    const target = parseInt(match[1].replace(/,/g, ''), 10)
+    const suffix = match[2]
+    const el = ref.current
+    if (!el) return
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (prefersReducedMotion) {
+      setDisplay(target.toLocaleString() + suffix)
+      return
+    }
+
+    const animate = () => {
+      const duration = 1200
+      const start = performance.now()
+      const step = (now) => {
+        const progress = Math.min((now - start) / duration, 1)
+        const eased = 1 - Math.pow(1 - progress, 3)
+        const current = Math.round(target * eased)
+        setDisplay(current.toLocaleString() + suffix)
+        if (progress < 1) requestAnimationFrame(step)
+      }
+      requestAnimationFrame(step)
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          animate()
+          observer.unobserve(entry.target)
+        }
+      })
+    }, { threshold: 0.5 })
+
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [value])
+
+  return (
+    <div
+      ref={ref}
+      style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', fontWeight: 900, letterSpacing: '-0.03em', color: 'var(--brand)', marginBottom: '0.3rem' }}
+    >
+      {display}
+    </div>
+  )
+}
 
 export default function LandingPage() {
   const [tiers, setTiers] = useState([])
@@ -18,6 +75,20 @@ export default function LandingPage() {
     const initial = stored || preferred
     setTheme(initial)
     document.documentElement.setAttribute('data-theme', initial)
+  }, [])
+
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('reveal-visible')
+          observer.unobserve(entry.target)
+        }
+      })
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' })
+
+    document.querySelectorAll('.reveal').forEach((el) => observer.observe(el))
+    return () => observer.disconnect()
   }, [])
 
   const toggleTheme = () => {
@@ -39,19 +110,19 @@ export default function LandingPage() {
             <Logo height={50} linkTo="/" />
           </div>
           <div className="eh-land-actions" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexShrink: 0 }}>
-            <button onClick={toggleTheme} style={{ width: 36, height: 36, borderRadius: 'var(--radius-sm)', background: 'var(--surface-3)', border: '1px solid var(--border)', color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+            <button onClick={toggleTheme} className="eh-btn" style={{ width: 36, height: 36, borderRadius: 'var(--radius-sm)', background: 'var(--surface-3)', border: '1px solid var(--border)', color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
               {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
             </button>
-            <a href="/auth/login" className="eh-land-signin" style={{ color: 'var(--text-2)', fontWeight: 600, fontSize: '0.875rem', padding: '0.45rem 0.875rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--surface-2)', whiteSpace: 'nowrap' }}>Sign in</a>
-            <a href="/auth/signup" style={{ color: 'white', fontWeight: 600, fontSize: '0.875rem', padding: '0.45rem 1rem', borderRadius: 'var(--radius-sm)', background: 'var(--brand)', whiteSpace: 'nowrap' }}>Get Started</a>
+            <a href="/auth/login" className="eh-land-signin eh-btn" style={{ color: 'var(--text-2)', fontWeight: 600, fontSize: '0.875rem', padding: '0.45rem 0.875rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--surface-2)', whiteSpace: 'nowrap' }}>Sign in</a>
+            <a href="/auth/signup" className="eh-btn" style={{ color: 'white', fontWeight: 600, fontSize: '0.875rem', padding: '0.45rem 1rem', borderRadius: 'var(--radius-sm)', background: 'var(--brand)', whiteSpace: 'nowrap' }}>Get Started</a>
           </div>
         </div>
       </nav>
 
       {/* Hero */}
       <section style={{ padding: 'clamp(4rem, 10vw, 8rem) 1.5rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(13,115,119,0.12), transparent)', pointerEvents: 'none' }} />
-        <div style={{ maxWidth: 780, margin: '0 auto', position: 'relative' }}>
+        <div className="eh-hero-orb" style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(13,115,119,0.12), transparent)', pointerEvents: 'none' }} />
+        <div className="reveal" style={{ maxWidth: 780, margin: '0 auto', position: 'relative' }}>
           <h1 style={{ fontSize: 'clamp(2.2rem, 6vw, 3.75rem)', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: '1.5rem', color: 'var(--text)' }}>
             Your Skills Have More<br />
             <span style={{ color: 'var(--brand)' }}>Value Than You Think.</span>
@@ -60,10 +131,10 @@ export default function LandingPage() {
             ElevateHours is a cashless marketplace where students, freelancers, and organizations trade skills and knowledge — powered by Sparks, a community currency that turns your time into real opportunity.
           </p>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <a href="/auth/signup" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--brand)', color: 'white', padding: '0.875rem 2rem', borderRadius: 'var(--radius)', fontWeight: 700, fontSize: '0.95rem', boxShadow: 'var(--shadow-brand)' }}>
+            <a href="/auth/signup" className="eh-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--brand)', color: 'white', padding: '0.875rem 2rem', borderRadius: 'var(--radius)', fontWeight: 700, fontSize: '0.95rem', boxShadow: 'var(--shadow-brand)' }}>
               Start Earning Sparks <ArrowRight size={16} />
             </a>
-            <a href="/auth/signup" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--surface)', color: 'var(--text)', padding: '0.875rem 2rem', borderRadius: 'var(--radius)', fontWeight: 700, fontSize: '0.95rem', border: '1.5px solid var(--border)' }}>
+            <a href="/auth/signup" className="eh-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--surface)', color: 'var(--text)', padding: '0.875rem 2rem', borderRadius: 'var(--radius)', fontWeight: 700, fontSize: '0.95rem', border: '1.5px solid var(--border)' }}>
               Post a Request
             </a>
           </div>
@@ -79,10 +150,10 @@ export default function LandingPage() {
 
       {/* Stats */}
       <section style={{ padding: '0 1.5rem 5rem' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1px', background: 'var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1px solid var(--border)' }}>
+        <div className="reveal" style={{ maxWidth: 900, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1px', background: 'var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1px solid var(--border)' }}>
           {[{ num: '500+', label: 'Hours Contributed' }, { num: '10,000+', label: 'Sparks in Circulation' }, { num: '50+', label: 'Organizations' }, { num: '220+', label: 'Skills Available' }].map((s, i) => (
             <div key={i} style={{ padding: '2rem', background: 'var(--surface)', textAlign: 'center' }}>
-              <div style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', fontWeight: 900, letterSpacing: '-0.03em', color: 'var(--brand)', marginBottom: '0.3rem' }}>{s.num}</div>
+              <AnimatedNumber value={s.num} />
               <div style={{ fontSize: '0.825rem', color: 'var(--text-3)', fontWeight: 500 }}>{s.label}</div>
             </div>
           ))}
@@ -91,7 +162,7 @@ export default function LandingPage() {
 
       {/* How it works */}
       <section style={{ padding: '5rem 1.5rem', background: 'var(--surface)' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <div className="reveal" style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
             <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>How It Works</div>
             <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em' }}>Three steps to start trading</h2>
@@ -102,7 +173,7 @@ export default function LandingPage() {
               { n: '02', title: 'Find or Post a Request', desc: 'Browse Work and Education opportunities. Post requests for skills you need. Match with the right person.' },
               { n: '03', title: 'Complete and Earn', desc: 'Deliver the work, confirm completion, earn Sparks. Build your verified portfolio, badges, and endorsements.' }
             ].map((step, i) => (
-              <div key={i} style={{ position: 'relative', padding: '2rem', background: 'var(--surface-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)' }}>
+              <div key={i} className="eh-hover-lift" style={{ position: 'relative', padding: '2rem', background: 'var(--surface-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)' }}>
                 <div style={{ fontSize: '3rem', fontWeight: 900, color: 'var(--border-2)', position: 'absolute', top: '1.25rem', right: '1.5rem', lineHeight: 1 }}>{step.n}</div>
                 <div style={{ width: 40, height: 40, borderRadius: 'var(--radius-sm)', background: 'var(--brand-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
                   <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'var(--brand)' }} />
@@ -117,7 +188,7 @@ export default function LandingPage() {
 
       {/* Tier System */}
       <section style={{ padding: '5rem 1.5rem' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <div className="reveal" style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
             <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Spark Economy</div>
             <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '0.75rem' }}>The Tier System</h2>
@@ -125,7 +196,7 @@ export default function LandingPage() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
             {tiers.map((tier, i) => (
-              <div key={tier.id} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderTop: `4px solid ${tierAccent[i]}`, borderRadius: 'var(--radius-lg)', padding: '2rem' }}>
+              <div key={tier.id} className="eh-hover-lift" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderTop: `4px solid ${tierAccent[i]}`, borderRadius: 'var(--radius-lg)', padding: '2rem' }}>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', background: 'var(--surface-3)', padding: '0.25rem 0.75rem', borderRadius: 'var(--radius-full)', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-2)', marginBottom: '1.25rem' }}>
                   {tier.multiplier}x MULTIPLIER
                 </div>
@@ -149,7 +220,7 @@ export default function LandingPage() {
 
       {/* What you earn */}
       <section style={{ padding: '5rem 1.5rem', background: 'var(--surface)' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <div className="reveal" style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
             <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Real Value</div>
             <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em' }}>Sparks unlock real career value</h2>
@@ -163,7 +234,7 @@ export default function LandingPage() {
               { title: 'Impact Score', desc: 'Your community contribution tracked publicly as your Impact Score.' },
               { title: 'Alumni Network', desc: 'Reach 5,000 SPK to join the exclusive Alumni Network with premium access.' },
             ].map((item, i) => (
-              <div key={i} style={{ background: 'var(--surface)', padding: '1.75rem' }}>
+              <div key={i} className="eh-hover-lift" style={{ background: 'var(--surface)', padding: '1.75rem' }}>
                 <div style={{ width: 32, height: 32, borderRadius: 'var(--radius-sm)', background: 'var(--brand-light)', marginBottom: '1rem' }} />
                 <h3 style={{ fontSize: '0.9rem', marginBottom: '0.4rem' }}>{item.title}</h3>
                 <p style={{ color: 'var(--text-2)', fontSize: '0.8rem', lineHeight: 1.65 }}>{item.desc}</p>
@@ -175,7 +246,7 @@ export default function LandingPage() {
 
       {/* Team & Founder */}
       <section style={{ padding: '5rem 1.5rem', background: 'var(--brand-light)' }}>
-        <div style={{ maxWidth: 640, margin: '0 auto', textAlign: 'center' }}>
+        <div className="reveal" style={{ maxWidth: 640, margin: '0 auto', textAlign: 'center' }}>
           <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Who We Are</div>
           <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '1rem' }}>
             The people behind ElevateHours
@@ -184,10 +255,10 @@ export default function LandingPage() {
             Built by a small team that believes skills and time are worth as much as money. Get to know the founder and the people making it happen.
           </p>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <a href="/founder" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--brand)', color: 'white', padding: '0.875rem 2rem', borderRadius: 'var(--radius)', fontWeight: 700, fontSize: '0.95rem', boxShadow: 'var(--shadow-brand)' }}>
+            <a href="/founder" className="eh-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--brand)', color: 'white', padding: '0.875rem 2rem', borderRadius: 'var(--radius)', fontWeight: 700, fontSize: '0.95rem', boxShadow: 'var(--shadow-brand)' }}>
               Meet Our Founder <ArrowRight size={16} />
             </a>
-            <a href="/team" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--surface)', color: 'var(--text)', padding: '0.875rem 2rem', borderRadius: 'var(--radius)', fontWeight: 700, fontSize: '0.95rem', border: '1.5px solid var(--border)' }}>
+            <a href="/team" className="eh-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--surface)', color: 'var(--text)', padding: '0.875rem 2rem', borderRadius: 'var(--radius)', fontWeight: 700, fontSize: '0.95rem', border: '1.5px solid var(--border)' }}>
               Our Team Members
             </a>
           </div>
@@ -196,7 +267,7 @@ export default function LandingPage() {
 
       {/* Testimonials */}
       <section style={{ padding: '5rem 1.5rem' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <div className="reveal" style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
             <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em' }}>What our community says</h2>
           </div>
@@ -206,7 +277,7 @@ export default function LandingPage() {
               { quote: 'As a non-profit with zero budget, ElevateHours was a lifeline. We got our website built and gave back by teaching sessions.', name: 'Omar S.', role: 'NGO Director' },
               { quote: 'I started with data entry at Tier 1. Now I offer full stack development at Tier 3. My Impact Score speaks for itself.', name: 'Priya M.', role: 'Full Stack Developer' },
             ].map((t, i) => (
-              <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.75rem' }}>
+              <div key={i} className="eh-hover-lift" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.75rem' }}>
                 <div style={{ width: 24, height: 24, borderRadius: 'var(--radius-sm)', background: 'var(--brand)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <div style={{ width: 8, height: 6, border: '2px solid white', borderBottom: 'none', borderRadius: '3px 3px 0 0' }} />
                 </div>
@@ -233,6 +304,7 @@ export default function LandingPage() {
 >
   {/* SDG Alignment */}
   <div
+    className="reveal"
     style={{
       marginBottom: '3rem',
       textAlign: 'center',
@@ -316,6 +388,7 @@ export default function LandingPage() {
       ].map((item, i) => (
         <div
           key={i}
+          className="eh-hover-lift"
           style={{
             background: 'var(--surface-2)',
             borderRadius: 14,
@@ -365,16 +438,16 @@ export default function LandingPage() {
 
       {/* CTA */}
       <section style={{ padding: '5rem 1.5rem', background: 'var(--surface)' }}>
-        <div style={{ maxWidth: 640, margin: '0 auto', textAlign: 'center' }}>
+        <div className="reveal" style={{ maxWidth: 640, margin: '0 auto', textAlign: 'center' }}>
           <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', fontWeight: 900, letterSpacing: '-0.03em', marginBottom: '1rem' }}>Ready to elevate your hours?</h2>
           <p style={{ color: 'var(--text-2)', fontSize: '1rem', marginBottom: '2.5rem', lineHeight: 1.7 }}>
             Join thousands of skilled individuals and organizations already trading on ElevateHours. Your first Spark is waiting.
           </p>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <a href="/auth/signup" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--brand)', color: 'white', padding: '0.9rem 2rem', borderRadius: 'var(--radius)', fontWeight: 700, boxShadow: 'var(--shadow-brand)' }}>
+            <a href="/auth/signup" className="eh-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--brand)', color: 'white', padding: '0.9rem 2rem', borderRadius: 'var(--radius)', fontWeight: 700, boxShadow: 'var(--shadow-brand)' }}>
               Join as Individual <ChevronRight size={16} />
             </a>
-            <a href="/auth/signup" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--surface-3)', color: 'var(--text)', padding: '0.9rem 2rem', borderRadius: 'var(--radius)', fontWeight: 700, border: '1.5px solid var(--border)' }}>
+            <a href="/auth/signup" className="eh-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--surface-3)', color: 'var(--text)', padding: '0.9rem 2rem', borderRadius: 'var(--radius)', fontWeight: 700, border: '1.5px solid var(--border)' }}>
               Join as Organization
             </a>
           </div>
@@ -439,6 +512,56 @@ export default function LandingPage() {
           .eh-land-actions { gap: 0.25rem !important; }
           .eh-land-signin { padding: 0.35rem 0.5rem !important; font-size: 0.72rem !important; }
           .eh-land-logo .site-logo-img { height: 24px !important; }
+        }
+
+        .reveal {
+          opacity: 0;
+          transform: translateY(24px);
+          transition: opacity 0.7s ease, transform 0.7s ease;
+          will-change: opacity, transform;
+        }
+        .reveal-visible {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        .eh-hover-lift {
+          transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .eh-hover-lift:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+        }
+
+        .eh-btn {
+          transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+        }
+        .eh-btn:hover {
+          transform: translateY(-2px);
+          opacity: 0.95;
+        }
+
+        @keyframes eh-float-orb {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(-12px, 12px) scale(1.04); }
+        }
+        .eh-hero-orb {
+          animation: eh-float-orb 10s ease-in-out infinite;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .reveal {
+            opacity: 1 !important;
+            transform: none !important;
+            transition: none !important;
+          }
+          .eh-hover-lift, .eh-btn, .eh-hero-orb {
+            animation: none !important;
+            transition: none !important;
+          }
+          .eh-hover-lift:hover, .eh-btn:hover {
+            transform: none !important;
+          }
         }
       `}</style>
     </div>
