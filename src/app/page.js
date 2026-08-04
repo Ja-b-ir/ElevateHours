@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Logo from '@/components/Logo'
 import { Sun, Moon, ArrowRight, Check, ChevronRight } from 'lucide-react'
+import HeroCanvas from '@/components/HeroCanvas'
 
 function AnimatedNumber({ value }) {
   const ref = useRef(null)
@@ -128,7 +129,8 @@ export default function LandingPage() {
           <div className="eh-blob eh-blob-3" />
           <div className="eh-grid-overlay" />
         </div>
-        <div className="reveal" style={{ maxWidth: 780, margin: '0 auto', position: 'relative', zIndex: 1 }}>
+        <HeroCanvas />
+        <div className="reveal reveal-up" style={{ maxWidth: 780, margin: '0 auto', position: 'relative', zIndex: 1 }}>
           <h1 style={{ fontSize: 'clamp(2.2rem, 6vw, 3.75rem)', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: '1.5rem', color: 'var(--text)' }}>
             Your Skills Have More<br />
             <span style={{ color: 'var(--brand)' }}>Value Than You Think.</span>
@@ -156,7 +158,7 @@ export default function LandingPage() {
 
       {/* Stats */}
       <section style={{ padding: '0 1.5rem 5rem' }}>
-        <div className="reveal" style={{ maxWidth: 900, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1px', background: 'var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1px solid var(--border)' }}>
+        <div className="reveal reveal-scale" style={{ maxWidth: 900, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1px', background: 'var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1px solid var(--border)' }}>
           {[{ num: '500+', label: 'Hours Contributed' }, { num: '10,000+', label: 'Sparks in Circulation' }, { num: '50+', label: 'Organizations' }, { num: '220+', label: 'Skills Available' }].map((s, i) => (
             <div key={i} style={{ padding: '2rem', background: 'var(--surface)', textAlign: 'center' }}>
               <AnimatedNumber value={s.num} />
@@ -168,7 +170,7 @@ export default function LandingPage() {
 
       {/* How it works */}
       <section style={{ padding: '5rem 1.5rem', background: 'var(--surface)' }}>
-        <div className="reveal" style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <div className="reveal reveal-left" style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
             <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>How It Works</div>
             <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em' }}>Three steps to start trading</h2>
@@ -194,7 +196,7 @@ export default function LandingPage() {
 
       {/* Tier System */}
       <section style={{ padding: '5rem 1.5rem' }}>
-        <div className="reveal" style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <div className="reveal reveal-right" style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
             <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Spark Economy</div>
             <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '0.75rem' }}>The Tier System</h2>
@@ -226,7 +228,7 @@ export default function LandingPage() {
 
       {/* What you earn */}
       <section style={{ padding: '5rem 1.5rem', background: 'var(--surface)' }}>
-        <div className="reveal" style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <div className="reveal reveal-blur" style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
             <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Real Value</div>
             <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em' }}>Sparks unlock real career value</h2>
@@ -252,7 +254,7 @@ export default function LandingPage() {
 
       {/* Team & Founder */}
       <section style={{ padding: '5rem 1.5rem', background: 'var(--brand-light)' }}>
-        <div className="reveal" style={{ maxWidth: 640, margin: '0 auto', textAlign: 'center' }}>
+        <div className="reveal reveal-down" style={{ maxWidth: 640, margin: '0 auto', textAlign: 'center' }}>
           <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Who We Are</div>
           <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '1rem' }}>
             The people behind ElevateHours
@@ -273,7 +275,7 @@ export default function LandingPage() {
 
       {/* Testimonials */}
       <section style={{ padding: '5rem 1.5rem' }}>
-        <div className="reveal" style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <div className="reveal reveal-fade" style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
             <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em' }}>What our community says</h2>
           </div>
@@ -310,7 +312,7 @@ export default function LandingPage() {
 >
   {/* SDG Alignment */}
   <div
-    className="reveal"
+    className="reveal reveal-rotate"
     style={{
       marginBottom: '3rem',
       textAlign: 'center',
@@ -444,7 +446,7 @@ export default function LandingPage() {
 
       {/* CTA */}
       <section style={{ padding: '5rem 1.5rem', background: 'var(--surface)' }}>
-        <div className="reveal" style={{ maxWidth: 640, margin: '0 auto', textAlign: 'center' }}>
+        <div className="reveal reveal-up" style={{ maxWidth: 640, margin: '0 auto', textAlign: 'center' }}>
           <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', fontWeight: 900, letterSpacing: '-0.03em', marginBottom: '1rem' }}>Ready to elevate your hours?</h2>
           <p style={{ color: 'var(--text-2)', fontSize: '1rem', marginBottom: '2.5rem', lineHeight: 1.7 }}>
             Join thousands of skilled individuals and organizations already trading on ElevateHours. Your first Spark is waiting.
@@ -522,14 +524,23 @@ export default function LandingPage() {
 
         .reveal {
           opacity: 0;
-          transform: translateY(24px);
-          transition: opacity 0.7s ease, transform 0.7s ease;
-          will-change: opacity, transform;
+          transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), filter 0.8s ease;
+          will-change: opacity, transform, filter;
         }
-        .reveal-visible {
+        .reveal.reveal-visible {
           opacity: 1;
-          transform: translateY(0);
+          transform: none;
+          filter: none;
         }
+
+        .reveal-up { transform: translateY(28px); }
+        .reveal-down { transform: translateY(-28px); }
+        .reveal-left { transform: translateX(-44px); }
+        .reveal-right { transform: translateX(44px); }
+        .reveal-scale { transform: scale(0.92); }
+        .reveal-fade { transform: none; transition: opacity 1s ease; }
+        .reveal-blur { transform: translateY(16px); filter: blur(10px); }
+        .reveal-rotate { transform: rotate(-2.5deg) translateY(22px); }
 
         .eh-hover-lift {
           transition: transform 0.25s ease, box-shadow 0.25s ease;
@@ -616,9 +627,12 @@ export default function LandingPage() {
         }
 
         @media (prefers-reduced-motion: reduce) {
-          .reveal {
+          .reveal,
+          .reveal-up, .reveal-down, .reveal-left, .reveal-right,
+          .reveal-scale, .reveal-fade, .reveal-blur, .reveal-rotate {
             opacity: 1 !important;
             transform: none !important;
+            filter: none !important;
             transition: none !important;
           }
           .eh-hover-lift, .eh-btn, .eh-blob {
