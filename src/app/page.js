@@ -121,8 +121,14 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section style={{ padding: 'clamp(4rem, 10vw, 8rem) 1.5rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-        <div className="eh-hero-orb" style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(13,115,119,0.12), transparent)', pointerEvents: 'none' }} />
-        <div className="reveal" style={{ maxWidth: 780, margin: '0 auto', position: 'relative' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(13,115,119,0.12), transparent)', pointerEvents: 'none', zIndex: 0 }} />
+        <div className="eh-hero-bg" aria-hidden="true">
+          <div className="eh-blob eh-blob-1" />
+          <div className="eh-blob eh-blob-2" />
+          <div className="eh-blob eh-blob-3" />
+          <div className="eh-grid-overlay" />
+        </div>
+        <div className="reveal" style={{ maxWidth: 780, margin: '0 auto', position: 'relative', zIndex: 1 }}>
           <h1 style={{ fontSize: 'clamp(2.2rem, 6vw, 3.75rem)', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: '1.5rem', color: 'var(--text)' }}>
             Your Skills Have More<br />
             <span style={{ color: 'var(--brand)' }}>Value Than You Think.</span>
@@ -541,12 +547,72 @@ export default function LandingPage() {
           opacity: 0.95;
         }
 
-        @keyframes eh-float-orb {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          50% { transform: translate(-12px, 12px) scale(1.04); }
+        .eh-hero-bg {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+          z-index: 0;
         }
-        .eh-hero-orb {
-          animation: eh-float-orb 10s ease-in-out infinite;
+        .eh-blob {
+          position: absolute;
+          border-radius: 50%;
+          filter: blur(70px);
+          opacity: 0.32;
+          will-change: transform;
+          transform: translateZ(0);
+        }
+        .eh-blob-1 {
+          width: 420px;
+          height: 420px;
+          background: var(--brand);
+          top: -140px;
+          left: 6%;
+          animation: eh-blob-float-1 16s ease-in-out infinite;
+        }
+        .eh-blob-2 {
+          width: 340px;
+          height: 340px;
+          background: var(--green);
+          top: 20px;
+          right: 6%;
+          animation: eh-blob-float-2 20s ease-in-out infinite;
+        }
+        .eh-blob-3 {
+          width: 280px;
+          height: 280px;
+          background: var(--amber);
+          bottom: -140px;
+          left: 42%;
+          animation: eh-blob-float-3 18s ease-in-out infinite;
+        }
+        @keyframes eh-blob-float-1 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(40px, 30px) scale(1.15); }
+        }
+        @keyframes eh-blob-float-2 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(-30px, 40px) scale(1.1); }
+        }
+        @keyframes eh-blob-float-3 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(20px, -30px) scale(1.2); }
+        }
+
+        .eh-grid-overlay {
+          position: absolute;
+          inset: 0;
+          background-image: radial-gradient(var(--border-2) 1px, transparent 1px);
+          background-size: 28px 28px;
+          opacity: 0.35;
+          mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, black 40%, transparent 90%);
+          -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, black 40%, transparent 90%);
+        }
+
+        @media (max-width: 640px) {
+          .eh-grid-overlay { display: none; }
+          .eh-blob-3 { display: none; }
+          .eh-blob { filter: blur(50px); }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -555,7 +621,7 @@ export default function LandingPage() {
             transform: none !important;
             transition: none !important;
           }
-          .eh-hover-lift, .eh-btn, .eh-hero-orb {
+          .eh-hover-lift, .eh-btn, .eh-blob {
             animation: none !important;
             transition: none !important;
           }
