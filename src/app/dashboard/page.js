@@ -106,7 +106,6 @@ export default function Dashboard() {
         .limit(5)
       setRecentActivity(activity || [])
 
-      <BlogPromoCard />
 
       // Activity streak: every day this user completed work as the provider
       const { data: completed } = await supabase
@@ -298,6 +297,7 @@ export default function Dashboard() {
         )}
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+          <BlogPromoCard />
 
           <div style={{
             background: 'linear-gradient(135deg, var(--brand) 0%, var(--brand-mid) 100%)',
