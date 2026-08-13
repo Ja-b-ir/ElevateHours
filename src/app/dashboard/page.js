@@ -297,7 +297,6 @@ export default function Dashboard() {
         )}
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
-          <BlogPromoCard />
 
           <div style={{
             background: 'linear-gradient(135deg, var(--brand) 0%, var(--brand-mid) 100%)',
@@ -316,6 +315,7 @@ export default function Dashboard() {
               <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>SPK &nbsp;·&nbsp; ≈ ${(total * 0.10).toFixed(2)} USD</div>
             </div>
           </div>
+                <BlogPromoCard />
 
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'var(--brand)', borderRadius: '16px 16px 0 0' }} />
