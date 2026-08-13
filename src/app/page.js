@@ -168,7 +168,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-
+      
       {/* How it works */}
       <section style={{ padding: '5rem 1.5rem', background: 'var(--surface)' }}>
         <div className="reveal reveal-left" style={{ maxWidth: 1100, margin: '0 auto' }}>
@@ -301,7 +301,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Partner / Trust Strip */}
+{/* Partner / Trust Strip */}
       <section style={{ padding: '0 0 5rem' }}>
         <div className="reveal reveal-fade" style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem' }}>
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
@@ -309,7 +309,7 @@ export default function LandingPage() {
           </div>
           <div className="eh-marquee">
             <div className="eh-marquee-track">
-              {[...Array(2)].flatMap(() => [
+              {[...Array(4)].flatMap(() => [
                 { name: 'Coco Delizioso', light: '/partners/choco white.png', dark: '/partners/choco dark.png' },
                 { name: 'Engineers', light: '/partners/engineers white.png', dark: '/partners/engineers dark.png' },
                 { name: 'Nobodik News', light: '/partners/nobodik white.png', dark: '/partners/nobodik dark.png' },
@@ -320,7 +320,7 @@ export default function LandingPage() {
                   <img
                     src={theme === 'dark' ? partner.dark : partner.light}
                     alt={partner.name}
-                    style={{ height: 32, width: 'auto', display: 'block' }}
+                    style={{ maxHeight: '100%', maxWidth: '100%', width: 'auto', height: 'auto', objectFit: 'contain' }}
                   />
                 </div>
               ))}
@@ -328,6 +328,7 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
 
 {/* Centered Container */}
 <div
@@ -663,14 +664,17 @@ export default function LandingPage() {
         .eh-marquee-track {
           display: flex;
           width: max-content;
-          gap: 3rem;
-          animation: eh-marquee-scroll 28s linear infinite;
+          gap: 2.5rem;
+          animation: eh-marquee-scroll 30s linear infinite;
           will-change: transform;
         }
         .eh-marquee-item {
           flex-shrink: 0;
+          width: 220px;
+          height: 76px;
           display: flex;
           align-items: center;
+          justify-content: center;
           opacity: 0.65;
           transition: opacity 0.25s ease, transform 0.25s ease;
         }
@@ -680,7 +684,11 @@ export default function LandingPage() {
         }
         @keyframes eh-marquee-scroll {
           from { transform: translateX(0); }
-          to { transform: translateX(-50%); }
+          to { transform: translateX(-25%); }
+        }
+
+        @media (max-width: 640px) {
+          .eh-marquee-item { width: 160px; height: 56px; }
         }
 
         @media (prefers-reduced-motion: reduce) {
