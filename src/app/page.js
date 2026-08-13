@@ -168,6 +168,34 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Partner / Trust Strip */}
+      <section style={{ padding: '0 0 5rem' }}>
+        <div className="reveal reveal-fade" style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem' }}>
+          <div style={{ textAlign: 'center', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1.75rem' }}>
+            Trusted by students, educators, and organizations across Bangladesh
+          </div>
+          <div className="eh-marquee">
+            <div className="eh-marquee-track">
+              {[...Array(2)].flatMap(() => [
+                { name: 'Coco Delizioso', light: '/partners/choco_white.png', dark: '/partners/choco_dark.png' },
+                { name: 'Engineers', light: '/partners/engineers_white.png', dark: '/partners/engineers_dark.png' },
+                { name: 'Nobodik News', light: '/partners/nobodik_white.png', dark: '/partners/nobodik_dark.png' },
+                { name: 'Venfyy', light: '/partners/venfyy_white.png', dark: '/partners/venfyy_dark.png' },
+                { name: 'Tea Bondhu', light: '/partners/tea_white.png', dark: '/partners/tea_dark.png' },
+              ]).map((partner, i) => (
+                <div key={i} className="eh-marquee-item">
+                  <img
+                    src={theme === 'dark' ? partner.dark : partner.light}
+                    alt={partner.name}
+                    style={{ height: 32, width: 'auto', display: 'block' }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* How it works */}
       <section style={{ padding: '5rem 1.5rem', background: 'var(--surface)' }}>
         <div className="reveal reveal-left" style={{ maxWidth: 1100, margin: '0 auto' }}>
@@ -496,7 +524,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
-  <div style={{ color: 'var(--text-3)', fontSize: '0.78rem' }}>2026 ElevateHours. All rights reserved.</div>
+  <div style={{ color: 'var(--text-3)', fontSize: '0.78rem' }}>2025 ElevateHours. All rights reserved.</div>
   <div style={{ display: 'flex', gap: '1rem' }}>
     <a href="/terms" style={{ color: 'var(--text-3)', fontSize: '0.78rem' }}>Terms of Service</a>
     <a href="/privacy" style={{ color: 'var(--text-3)', fontSize: '0.78rem' }}>Privacy Policy</a>
@@ -624,6 +652,42 @@ export default function LandingPage() {
           .eh-grid-overlay { display: none; }
           .eh-blob-3 { display: none; }
           .eh-blob { filter: blur(50px); }
+        }
+
+        .eh-marquee {
+          overflow: hidden;
+          -webkit-mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+          mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+        }
+        .eh-marquee-track {
+          display: flex;
+          width: max-content;
+          gap: 3rem;
+          animation: eh-marquee-scroll 28s linear infinite;
+          will-change: transform;
+        }
+        .eh-marquee-item {
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          opacity: 0.65;
+          transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+        .eh-marquee-item:hover {
+          opacity: 1;
+          transform: translateY(-2px);
+        }
+        @keyframes eh-marquee-scroll {
+          from { transform: translateX(0); }
+          to { transform: translateX(-50%); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .eh-marquee-track {
+            animation: none !important;
+            flex-wrap: wrap;
+            justify-content: center;
+          }
         }
 
         @media (prefers-reduced-motion: reduce) {
