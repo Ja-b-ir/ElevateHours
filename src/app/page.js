@@ -168,33 +168,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Partner / Trust Strip */}
-      <section style={{ padding: '0 0 5rem' }}>
-        <div className="reveal reveal-fade" style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem' }}>
-          <div style={{ textAlign: 'center', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1.75rem' }}>
-            Trusted by students, educators, and organizations across Bangladesh
-          </div>
-          <div className="eh-marquee">
-            <div className="eh-marquee-track">
-              {[...Array(2)].flatMap(() => [
-                { name: 'Coco Delizioso', light: '/partners/choco_white.png', dark: '/partners/choco_dark.png' },
-                { name: 'Engineers', light: '/partners/engineers_white.png', dark: '/partners/engineers_dark.png' },
-                { name: 'Nobodik News', light: '/partners/nobodik_white.png', dark: '/partners/nobodik_dark.png' },
-                { name: 'Venfyy', light: '/partners/venfyy_white.png', dark: '/partners/venfyy_dark.png' },
-                { name: 'Tea Bondhu', light: '/partners/tea_white.png', dark: '/partners/tea_dark.png' },
-              ]).map((partner, i) => (
-                <div key={i} className="eh-marquee-item">
-                  <img
-                    src={theme === 'dark' ? partner.dark : partner.light}
-                    alt={partner.name}
-                    style={{ height: 32, width: 'auto', display: 'block' }}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* How it works */}
       <section style={{ padding: '5rem 1.5rem', background: 'var(--surface)' }}>
@@ -324,6 +297,34 @@ export default function LandingPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Partner / Trust Strip */}
+      <section style={{ padding: '0 0 5rem' }}>
+        <div className="reveal reveal-fade" style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem' }}>
+          <div style={{ textAlign: 'center', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1.75rem' }}>
+            Trusted by students, educators, and organizations across Bangladesh
+          </div>
+          <div className="eh-marquee">
+            <div className="eh-marquee-track">
+              {[...Array(2)].flatMap(() => [
+                { name: 'Coco Delizioso', light: '/partners/choco_white.png', dark: '/partners/choco_dark.png' },
+                { name: 'Engineers', light: '/partners/engineers_white.png', dark: '/partners/engineers_dark.png' },
+                { name: 'Nobodik News', light: '/partners/nobodik_white.png', dark: '/partners/nobodik_dark.png' },
+                { name: 'Venfyy', light: '/partners/venfyy_white.png', dark: '/partners/venfyy_dark.png' },
+                { name: 'Tea Bondhu', light: '/partners/tea_white.png', dark: '/partners/tea_dark.png' },
+              ]).map((partner, i) => (
+                <div key={i} className="eh-marquee-item">
+                  <img
+                    src={theme === 'dark' ? partner.dark : partner.light}
+                    alt={partner.name}
+                    style={{ height: 32, width: 'auto', display: 'block' }}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
