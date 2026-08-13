@@ -304,8 +304,8 @@ export default function LandingPage() {
       {/* Partner / Trust Strip */}
       <section style={{ padding: '0 0 5rem' }}>
         <div className="reveal reveal-fade" style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem' }}>
-          <div style={{ textAlign: 'center', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1.75rem' }}>
-            Our Trusted Partners
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em' }}>Our Trusted Partners</h2>
           </div>
           <div className="eh-marquee">
             <div className="eh-marquee-track">
