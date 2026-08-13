@@ -1,4 +1,5 @@
 'use client'
+import BlogPromoCard from '@/components/BlogPromoCard'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
@@ -104,6 +105,8 @@ export default function Dashboard() {
         .order('created_at', { ascending: false })
         .limit(5)
       setRecentActivity(activity || [])
+
+      <BlogPromoCard />
 
       // Activity streak: every day this user completed work as the provider
       const { data: completed } = await supabase
