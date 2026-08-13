@@ -111,6 +111,7 @@ export default function LandingPage() {
             <Logo height={50} linkTo="/" />
           </div>
           <div className="eh-land-actions" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexShrink: 0 }}>
+            <a href="/blog" style={{ color: 'var(--text-2)', fontWeight: 600, fontSize: '0.875rem', padding: '0.45rem 0.75rem', whiteSpace: 'nowrap' }}>Blog</a>
             <button onClick={toggleTheme} className="eh-btn" style={{ width: 36, height: 36, borderRadius: 'var(--radius-sm)', background: 'var(--surface-3)', border: '1px solid var(--border)', color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
               {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
             </button>
@@ -169,6 +170,7 @@ export default function LandingPage() {
       </section>
 
       
+
       {/* How it works */}
       <section style={{ padding: '5rem 1.5rem', background: 'var(--surface)' }}>
         <div className="reveal reveal-left" style={{ maxWidth: 1100, margin: '0 auto' }}>
@@ -328,7 +330,6 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
 
 {/* Centered Container */}
 <div
