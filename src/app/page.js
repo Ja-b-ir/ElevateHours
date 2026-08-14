@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import Logo from '@/components/Logo'
 import { Sun, Moon, ArrowRight, Check, ChevronRight } from 'lucide-react'
 import HeroCanvas from '@/components/HeroCanvas'
+import LoadingScreen from '@/components/LoadingScreen'
 
 function AnimatedNumber({ value }) {
   const ref = useRef(null)
@@ -65,9 +66,15 @@ function AnimatedNumber({ value }) {
 export default function LandingPage() {
   const [tiers, setTiers] = useState([])
   const [theme, setTheme] = useState('light')
+  const [tiersLoaded, setTiersLoaded] = useState(false)
+  const [themeLoaded, setThemeLoaded] = useState(false)
+  const pageLoading = !tiersLoaded || !themeLoaded
 
   useEffect(() => {
-    supabase.from('tier_reference').select('*').order('multiplier').then(({ data }) => { if (data) setTiers(data) })
+    supabase.from('tier_reference').select('*').order('multiplier').then(({ data }) => {
+      if (data) setTiers(data)
+      setTiersLoaded(true)
+    })
   }, [])
 
   useEffect(() => {
@@ -76,9 +83,11 @@ export default function LandingPage() {
     const initial = stored || preferred
     setTheme(initial)
     document.documentElement.setAttribute('data-theme', initial)
+    setThemeLoaded(true)
   }, [])
 
   useEffect(() => {
+    if (pageLoading) return
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
@@ -90,7 +99,7 @@ export default function LandingPage() {
 
     document.querySelectorAll('.reveal').forEach((el) => observer.observe(el))
     return () => observer.disconnect()
-  }, [])
+  }, [pageLoading])
 
   const toggleTheme = () => {
     const next = theme === 'light' ? 'dark' : 'light'
@@ -100,6 +109,14 @@ export default function LandingPage() {
   }
 
   const tierAccent = ['var(--green)', 'var(--brand)', 'var(--amber)']
+
+  if (pageLoading) {
+    return (
+      <div style={{ background: 'var(--bg)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <LoadingScreen text="Loading ElevateHours..." />
+      </div>
+    )
+  }
 
   return (
     <div style={{ fontFamily: 'Inter, -apple-system, sans-serif', background: 'var(--bg)', color: 'var(--text)', minHeight: '100vh' }}>
@@ -169,7 +186,33 @@ export default function LandingPage() {
         </div>
       </section>
 
-      
+      {/* Partner / Trust Strip */}
+      <section style={{ padding: '0 0 5rem' }}>
+        <div className="reveal reveal-fade" style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem' }}>
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em' }}>Our Trusted Partners</h2>
+          </div>
+          <div className="eh-marquee">
+            <div className="eh-marquee-track">
+              {[...Array(4)].flatMap(() => [
+                { name: 'Coco Delizioso', light: '/partners/choco-white.png', dark: '/partners/choco-dark.png' },
+                { name: 'Engineers', light: '/partners/engineers-white.png', dark: '/partners/engineers-dark.png' },
+                { name: 'Nobodik News', light: '/partners/nobodik-white.png', dark: '/partners/nobodik-dark.png' },
+                { name: 'Venfyy', light: '/partners/venfyy-white.png', dark: '/partners/venfyy-dark.png' },
+                { name: 'Tea Bondhu', light: '/partners/tea-white.png', dark: '/partners/tea-dark.png' },
+              ]).map((partner, i) => (
+                <div key={i} className="eh-marquee-item">
+                  <img
+                    src={theme === 'dark' ? partner.dark : partner.light}
+                    alt={partner.name}
+                    style={{ maxHeight: '100%', maxWidth: '100%', width: 'auto', height: 'auto', objectFit: 'contain' }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* How it works */}
       <section style={{ padding: '5rem 1.5rem', background: 'var(--surface)' }}>
@@ -299,34 +342,6 @@ export default function LandingPage() {
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-{/* Partner / Trust Strip */}
-      <section style={{ padding: '0 0 5rem' }}>
-        <div className="reveal reveal-fade" style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem' }}>
-          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em' }}>Our Trusted Partners</h2>
-          </div>
-          <div className="eh-marquee">
-            <div className="eh-marquee-track">
-              {[...Array(4)].flatMap(() => [
-                { name: 'Coco Delizioso', light: '/partners/choco white.png', dark: '/partners/choco dark.png' },
-                { name: 'Engineers', light: '/partners/engineers white.png', dark: '/partners/engineers dark.png' },
-                { name: 'Nobodik News', light: '/partners/nobodik white.png', dark: '/partners/nobodik dark.png' },
-                { name: 'Venfyy', light: '/partners/venfyy white.png', dark: '/partners/venfyy dark.png' },
-                { name: 'Tea Bondhu', light: '/partners/tea white.png', dark: '/partners/tea dark.png' },
-              ]).map((partner, i) => (
-                <div key={i} className="eh-marquee-item">
-                  <img
-                    src={theme === 'dark' ? partner.dark : partner.light}
-                    alt={partner.name}
-                    style={{ maxHeight: '100%', maxWidth: '100%', width: 'auto', height: 'auto', objectFit: 'contain' }}
-                  />
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </section>
