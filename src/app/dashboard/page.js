@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
+import LoadingScreen from '@/components/LoadingScreen'
 import {
   TrendingUp, Users, Clock, Zap, ArrowRight, Briefcase,
   GraduationCap, Plus, BarChart3, Award, Target, ChevronRight, Gift, Flame, Check, User, X
@@ -129,11 +130,7 @@ export default function Dashboard() {
   if (loading) return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <Navbar />
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '0.75rem', color: 'var(--text-3)' }}>
-        <div style={{ width: 20, height: 20, border: '2px solid var(--border)', borderTopColor: 'var(--brand)', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
-        Loading your dashboard...
-      </div>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <LoadingScreen text="Loading your dashboard..." />
     </div>
   )
 
@@ -635,7 +632,7 @@ function OrgDashboard({ profile }) {
   if (loading) return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <Navbar />
-      <div className="loading-wrap"><div className="spinner" /> Loading your dashboard...</div>
+      <LoadingScreen text="Loading your dashboard..." />
     </div>
   )
 
