@@ -1,5 +1,6 @@
 'use client'
 import { X } from 'lucide-react'
+import { sanitizeHtml } from '@/lib/sanitizeHtml'
 
 export default function BlogModal({ blog, onClose }) {
   if (!blog) return null
@@ -39,9 +40,21 @@ export default function BlogModal({ blog, onClose }) {
           By {blog.author_name}
         </div>
 
-        <div style={{ flex: 1, overflowY: 'auto', color: 'var(--text-2)', fontSize: '0.9rem', lineHeight: 1.75, whiteSpace: 'pre-wrap' }}>
-          {blog.content}
-        </div>
+        <div
+          className="eh-blog-content"
+          style={{ flex: 1, overflowY: 'auto', color: 'var(--text-2)', fontSize: '0.9rem', lineHeight: 1.75 }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(blog.content) }}
+        />
+
+        <style>{`
+          .eh-blog-content ul, .eh-blog-content ol {
+            padding-left: 1.5rem;
+            margin: 0.5rem 0;
+          }
+          .eh-blog-content p {
+            margin: 0 0 0.75rem 0;
+          }
+        `}</style>
       </div>
     </div>
   )
