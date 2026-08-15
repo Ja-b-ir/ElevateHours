@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import Logo from '@/components/Logo'
 import BlogModal from '@/components/BlogModal'
+import { htmlToPlainText } from '@/lib/sanitizeHtml'
 import { ArrowRight } from 'lucide-react'
 
 export default function BlogPage() {
@@ -62,7 +63,7 @@ export default function BlogPage() {
                   color: 'var(--text-2)', fontSize: '0.85rem', lineHeight: 1.6, marginBottom: '1rem',
                   display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden'
                 }}>
-                  {blog.content}
+                  {htmlToPlainText(blog.content)}
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.78rem', color: 'var(--text-3)' }}>
                   <span>By {blog.author_name}</span>
