@@ -1,9 +1,19 @@
 'use client'
-import { useRef } from 'react'
+import { useRef, useEffect } from 'react'
 import { Bold, Italic, Underline, List, ListOrdered } from 'lucide-react'
 
-export default function RichTextEditor({ value, onChange, placeholder }) {
+export default function RichTextEditor({ initialHtml = '', onChange, placeholder }) {
   const editorRef = useRef(null)
+
+  // Runs once per mount. The parent forces a remount (via a changing `key` prop)
+  // whenever it needs to load different content in — new post, edit an existing
+  // post, or reset after publishing — rather than fighting contentEditable's DOM.
+  useEffect(() => {
+    if (editorRef.current) {
+      editorRef.current.innerHTML = initialHtml || ''
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleInput = () => {
     onChange(editorRef.current?.innerHTML || '')
