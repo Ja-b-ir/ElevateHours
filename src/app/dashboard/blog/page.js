@@ -2,12 +2,15 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Trash2, Send } from 'lucide-react'
+import RichTextEditor from '@/components/RichTextEditor'
+import { sanitizeHtml, countWords, htmlToPlainText } from '@/lib/sanitizeHtml'
 
-const MAX_CHARS = 500
+const MAX_WORDS = 1000
 
 export default function DashboardBlogPage() {
   const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
+  const [contentHtml, setContentHtml] = useState('')
+  const [editorKey, setEditorKey] = useState(0)
   const [posting, setPosting] = useState(false)
   const [error, setError] = useState('')
   const [myBlogs, setMyBlogs] = useState([])
@@ -27,29 +30,36 @@ export default function DashboardBlogPage() {
     if (data) setMyBlogs(data)
   }
 
+  const wordCount = countWords(contentHtml)
+  const overLimit = wordCount > MAX_WORDS
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
-    if (!title.trim() || !content.trim()) { setError('Title and content are required'); return }
-    if (content.length > MAX_CHARS) { setError(`Content must be under ${MAX_CHARS} characters`); return }
+
+    const plainText = htmlToPlainText(contentHtml).trim()
+    if (!title.trim() || !plainText) { setError('Title and content are required'); return }
+    if (overLimit) { setError(`Content must be under ${MAX_WORDS} words`); return }
 
     setPosting(true)
     const { data: userData } = await supabase.auth.getUser()
     const user = userData?.user
     const authorName = user?.user_metadata?.full_name || user?.email || 'Anonymous'
+    const cleanHtml = sanitizeHtml(contentHtml)
 
     const { error: insertError } = await supabase.from('blogs').insert({
       author_id: user.id,
       author_name: authorName,
       title: title.trim(),
-      content: content.trim(),
+      content: cleanHtml,
     })
 
     if (insertError) {
       setError(insertError.message)
     } else {
       setTitle('')
-      setContent('')
+      setContentHtml('')
+      setEditorKey((k) => k + 1) // remount editor to clear its contentEditable DOM
       loadMyBlogs(user.id)
     }
     setPosting(false)
@@ -75,21 +85,23 @@ export default function DashboardBlogPage() {
             placeholder="Give your post a title" className="form-input" maxLength={120}
           />
         </div>
+
         <div className="form-group">
           <label className="form-label">Content</label>
-          <textarea
-            value={content} onChange={(e) => setContent(e.target.value)}
-            placeholder="Write your microblog..." className="form-input"
-            rows={6} style={{ resize: 'vertical', fontFamily: 'inherit' }}
+          <RichTextEditor
+            key={editorKey}
+            value={contentHtml}
+            onChange={setContentHtml}
+            placeholder="Write your microblog..."
           />
-          <div style={{ textAlign: 'right', fontSize: '0.75rem', color: content.length > MAX_CHARS ? 'var(--red)' : 'var(--text-3)', marginTop: '0.3rem' }}>
-            {content.length}/{MAX_CHARS}
+          <div style={{ textAlign: 'right', fontSize: '0.75rem', color: overLimit ? 'var(--red)' : 'var(--text-3)', marginTop: '0.3rem' }}>
+            {wordCount}/{MAX_WORDS} words
           </div>
         </div>
 
         {error && <div className="alert alert-error">{error}</div>}
 
-        <button type="submit" disabled={posting} className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+        <button type="submit" disabled={posting || overLimit} className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
           {posting ? 'Posting...' : <>Publish <Send size={14} /></>}
         </button>
       </form>
