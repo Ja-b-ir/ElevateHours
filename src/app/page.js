@@ -179,7 +179,7 @@ export default function LandingPage() {
             <MessageCircle size={14} style={{ color: 'var(--green)' }} />
             <div style={{ textAlign: 'left' }}>
               <div style={{ fontWeight: 700, fontSize: '0.78rem', color: 'var(--text)' }}>Session confirmed</div>
-              <div style={{ fontSize: '0.62rem', color: 'var(--text-3)' }}>with Sabrina.</div>
+              <div style={{ fontSize: '0.62rem', color: 'var(--text-3)' }}>with Priya M.</div>
             </div>
           </div>
         </div>
@@ -224,11 +224,11 @@ export default function LandingPage() {
 
         <div className="reveal reveal-up" style={{ maxWidth: 780, margin: '0 auto', position: 'relative', zIndex: 1 }}>
           <h1 style={{ fontSize: 'clamp(2.2rem, 6vw, 3.75rem)', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: '1.5rem', color: 'var(--text)' }}>
-            Your Time Has More<br />
+            Your Skills Have More<br />
             <span className="eh-hero-gradient-text">Value Than You Think.</span>
           </h1>
           <p style={{ fontSize: 'clamp(1rem, 2vw, 1.15rem)', color: 'var(--text-2)', maxWidth: 580, margin: '0 auto 2.5rem', lineHeight: 1.75 }}>
-            ElevateHours is a community time-banking platform where students, freelancers, and organizations earn, share, and grow together — powered by Sparks, a community currency that turns your time into real opportunity.
+            ElevateHours is a cashless marketplace where students, freelancers, and organizations trade skills and knowledge — powered by Sparks, a community currency that turns your time into real opportunity.
           </p>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             <a href="/auth/signup" className="eh-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--brand)', color: 'white', padding: '0.875rem 2rem', borderRadius: 'var(--radius)', fontWeight: 700, fontSize: '0.95rem', boxShadow: 'var(--shadow-brand)' }}>
@@ -249,8 +249,11 @@ export default function LandingPage() {
       </section>
 
       {/* Stats */}
-      <section style={{ padding: '0 1.5rem 5rem' }}>
-        <div className="reveal reveal-scale" style={{ maxWidth: 900, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1px', background: 'var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1px solid var(--border)' }}>
+      <section style={{ padding: '0 1.5rem 5rem', position: 'relative', overflow: 'hidden' }}>
+        <div className="eh-section-decor" aria-hidden="true">
+          <div className="eh-section-blob" style={{ top: -80, right: '6%', background: 'var(--amber)' }} />
+        </div>
+        <div className="reveal reveal-scale" style={{ maxWidth: 900, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1px', background: 'var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1px solid var(--border)', position: 'relative' }}>
           {[{ num: '500+', label: 'Hours Contributed' }, { num: '10,000+', label: 'Sparks in Circulation' }, { num: '50+', label: 'Organizations' }, { num: '220+', label: 'Skills Available' }].map((s, i) => (
             <div key={i} style={{ padding: '2rem', background: 'var(--surface)', textAlign: 'center' }}>
               <AnimatedNumber value={s.num} />
@@ -260,81 +263,48 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Partner / Trust Strip */}
-      <section style={{ padding: '0 0 5rem' }}>
-        <div className="reveal reveal-fade" style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem' }}>
-          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em' }}>Our Trusted Partners</h2>
-          </div>
-          <div className="eh-marquee">
-            <div className="eh-marquee-track">
-              {[...Array(4)].flatMap(() => [
-                { name: 'Coco Delizioso', light: '/partners/choco white.png', dark: '/partners/choco dark.png' },
-                { name: 'Engineers', light: '/partners/engineers white.png', dark: '/partners/engineers dark.png' },
-                { name: 'Nobodik News', light: '/partners/nobodik white.png', dark: '/partners/nobodik dark.png' },
-                { name: 'Venfyy', light: '/partners/venfyy white.png', dark: '/partners/venfyy dark.png' },
-                { name: 'Tea Bondhu', light: '/partners/tea white.png', dark: '/partners/tea dark.png' },
-              ]).map((partner, i) => (
-                <div key={i} className="eh-marquee-item">
-                  <img
-                    src={theme === 'dark' ? partner.dark : partner.light}
-                    alt={partner.name}
-                    style={{ maxHeight: '100%', maxWidth: '100%', width: 'auto', height: 'auto', objectFit: 'contain' }}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
+      {/* Skill Marquee - two rows scrolling opposite directions, text-only */}
+      <section style={{ padding: '0 0 5rem', overflow: 'hidden', position: 'relative' }}>
+        <div className="eh-section-decor" aria-hidden="true">
+          <div className="eh-section-blob" style={{ top: -60, left: '10%', background: 'var(--brand)' }} />
         </div>
-      </section>
-
-      {/* Skill Marquee - two rows scrolling opposite directions */}
-      <section style={{ padding: '0 0 5rem', overflow: 'hidden' }}>
-        <div className="reveal reveal-fade" style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem' }}>
+        <div className="reveal reveal-fade" style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem', position: 'relative' }}>
           <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em' }}>Explore What's Being Traded</h2>
+            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em' }}>Explore What's Being <span className="eh-gradient-text">Traded</span></h2>
           </div>
         </div>
 
         <div className="eh-skill-marquee">
           <div className="eh-skill-track eh-skill-track-1">
-            {[...Array(4)].flatMap(() => [
-              { name: 'Web Development', rate: '45 SPK/hr', icon: Code, accent: 'var(--brand)' },
-              { name: 'Graphic Design', rate: '38 SPK/hr', icon: Palette, accent: 'var(--green)' },
-              { name: 'Math Tutoring', rate: '30 SPK/hr', icon: GraduationCap, accent: 'var(--amber)' },
-              { name: 'Video Editing', rate: '42 SPK/hr', icon: Film, accent: 'var(--brand)' },
-              { name: 'Content Writing', rate: '28 SPK/hr', icon: PenLine, accent: 'var(--green)' },
+            {[...Array(6)].flatMap(() => [
+              { name: 'Web Development', rate: '45 SPK / hr' },
+              { name: 'Graphic Design', rate: '38 SPK / hr' },
+              { name: 'Math Tutoring', rate: '30 SPK / hr' },
+              { name: 'Video Editing', rate: '42 SPK / hr' },
+              { name: 'Content Writing', rate: '28 SPK / hr' },
             ]).map((skill, i) => (
-              <div key={i} className="eh-skill-card">
-                <div className="eh-skill-icon" style={{ background: skill.accent }}>
-                  <skill.icon size={16} color="white" />
-                </div>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text)' }}>{skill.name}</div>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--text-3)' }}>{skill.rate}</div>
-                </div>
+              <div key={i} className="eh-skill-text-item">
+                <span className="eh-skill-name">{skill.name}</span>
+                <span className="eh-skill-dot" style={{ background: 'var(--brand)' }} />
+                <span className="eh-skill-rate">{skill.rate}</span>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="eh-skill-marquee" style={{ marginTop: '1rem' }}>
+        <div className="eh-skill-marquee" style={{ marginTop: '0.75rem' }}>
           <div className="eh-skill-track eh-skill-track-2">
-            {[...Array(4)].flatMap(() => [
-              { name: 'Data Entry', rate: '20 SPK/hr', icon: BarChart3, accent: 'var(--amber)' },
-              { name: 'UI/UX Design', rate: '48 SPK/hr', icon: Palette, accent: 'var(--brand)' },
-              { name: 'Language Tutoring', rate: '32 SPK/hr', icon: GraduationCap, accent: 'var(--green)' },
-              { name: 'Backend Development', rate: '50 SPK/hr', icon: Code, accent: 'var(--amber)' },
-              { name: 'Video Production', rate: '40 SPK/hr', icon: Film, accent: 'var(--brand)' },
+            {[...Array(6)].flatMap(() => [
+              { name: 'Data Entry', rate: '20 SPK / hr' },
+              { name: 'UI/UX Design', rate: '48 SPK / hr' },
+              { name: 'Language Tutoring', rate: '32 SPK / hr' },
+              { name: 'Backend Development', rate: '50 SPK / hr' },
+              { name: 'Video Production', rate: '40 SPK / hr' },
             ]).map((skill, i) => (
-              <div key={i} className="eh-skill-card">
-                <div className="eh-skill-icon" style={{ background: skill.accent }}>
-                  <skill.icon size={16} color="white" />
-                </div>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text)' }}>{skill.name}</div>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--text-3)' }}>{skill.rate}</div>
-                </div>
+              <div key={i} className="eh-skill-text-item eh-skill-text-item-muted">
+                <span className="eh-skill-name">{skill.name}</span>
+                <span className="eh-skill-dot" style={{ background: 'var(--green)' }} />
+                <span className="eh-skill-rate">{skill.rate}</span>
               </div>
             ))}
           </div>
@@ -342,11 +312,14 @@ export default function LandingPage() {
       </section>
 
       {/* How it works */}
-      <section style={{ padding: '5rem 1.5rem', background: 'var(--surface)' }}>
-        <div className="reveal reveal-left" style={{ maxWidth: 1100, margin: '0 auto' }}>
+      <section style={{ padding: '5rem 1.5rem', background: 'var(--surface)', position: 'relative', overflow: 'hidden' }}>
+        <div className="eh-section-decor" aria-hidden="true">
+          <div className="eh-section-blob" style={{ bottom: -90, left: '4%', background: 'var(--green)' }} />
+        </div>
+        <div className="reveal reveal-left" style={{ maxWidth: 1100, margin: '0 auto', position: 'relative' }}>
           <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
             <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>How It Works</div>
-            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em' }}>Three steps to start trading</h2>
+            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em' }}>Three steps to start <span className="eh-gradient-text">trading</span></h2>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
             {[
@@ -368,11 +341,14 @@ export default function LandingPage() {
       </section>
 
       {/* Tier System */}
-      <section style={{ padding: '5rem 1.5rem' }}>
-        <div className="reveal reveal-right" style={{ maxWidth: 1100, margin: '0 auto' }}>
+      <section style={{ padding: '5rem 1.5rem', position: 'relative', overflow: 'hidden' }}>
+        <div className="eh-section-decor" aria-hidden="true">
+          <div className="eh-section-blob" style={{ top: -70, right: '8%', background: 'var(--brand)' }} />
+        </div>
+        <div className="reveal reveal-right" style={{ maxWidth: 1100, margin: '0 auto', position: 'relative' }}>
           <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
             <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Spark Economy</div>
-            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '0.75rem' }}>The Tier System</h2>
+            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '0.75rem' }}>The <span className="eh-gradient-text">Tier System</span></h2>
             <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', maxWidth: 480, margin: '0 auto' }}>Not all skills are equal — and neither are the rewards. Earn more for higher-tier expertise.</p>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
@@ -400,18 +376,21 @@ export default function LandingPage() {
       </section>
 
       {/* What you earn */}
-      <section style={{ padding: '5rem 1.5rem', background: 'var(--surface)' }}>
-        <div className="reveal reveal-blur" style={{ maxWidth: 1100, margin: '0 auto' }}>
+      <section style={{ padding: '5rem 1.5rem', background: 'var(--surface)', position: 'relative', overflow: 'hidden' }}>
+        <div className="eh-section-decor" aria-hidden="true">
+          <div className="eh-section-blob" style={{ bottom: -80, right: '10%', background: 'var(--amber)' }} />
+        </div>
+        <div className="reveal reveal-blur" style={{ maxWidth: 1100, margin: '0 auto', position: 'relative' }}>
           <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
             <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Real Value</div>
-            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em' }}>Sparks unlock real career value</h2>
+            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em' }}>Sparks unlock real <span className="eh-gradient-text">career value</span></h2>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1px', background: 'var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1px solid var(--border)' }}>
             {[
               { title: 'Verified Certificates', desc: 'Official certificates for every completed engagement, validated by both parties.' },
               { title: 'Experience Letters', desc: 'Formal experience letters recognized by universities, employers, and grant committees.' },
               { title: 'Skill Badges', desc: 'Digital badges as you accumulate Sparks in specific skills. Share on LinkedIn.' },
-              { title: 'Endorsed Portfolio', desc: 'Every engagement adds a verified entry — real work, real people, real proof.' },
+              { title: 'Endorsed Portfolio', desc: 'Every transaction adds a verified entry — real work, real clients, real proof.' },
               { title: 'Impact Score', desc: 'Your community contribution tracked publicly as your Impact Score.' },
               { title: 'Alumni Network', desc: 'Reach 5,000 SPK to join the exclusive Alumni Network with premium access.' },
             ].map((item, i) => (
@@ -426,11 +405,14 @@ export default function LandingPage() {
       </section>
 
       {/* Team & Founder */}
-      <section style={{ padding: '5rem 1.5rem', background: 'var(--brand-light)' }}>
-        <div className="reveal reveal-down" style={{ maxWidth: 640, margin: '0 auto', textAlign: 'center' }}>
+      <section style={{ padding: '5rem 1.5rem', background: 'var(--brand-light)', position: 'relative', overflow: 'hidden' }}>
+        <div className="eh-section-decor" aria-hidden="true">
+          <div className="eh-section-blob" style={{ top: -60, left: '12%', background: 'var(--brand)' }} />
+        </div>
+        <div className="reveal reveal-down" style={{ maxWidth: 640, margin: '0 auto', textAlign: 'center', position: 'relative' }}>
           <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Who We Are</div>
           <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '1rem' }}>
-            The people behind ElevateHours
+            The people behind <span className="eh-gradient-text">ElevateHours</span>
           </h2>
           <p style={{ color: 'var(--text-2)', fontSize: '0.95rem', lineHeight: 1.75, marginBottom: '2.25rem' }}>
             Built by a small team that believes skills and time are worth as much as money. Get to know the founder and the people making it happen.
@@ -447,16 +429,19 @@ export default function LandingPage() {
       </section>
 
       {/* Testimonials */}
-      <section style={{ padding: '5rem 1.5rem' }}>
-        <div className="reveal reveal-fade" style={{ maxWidth: 1100, margin: '0 auto' }}>
+      <section style={{ padding: '5rem 1.5rem', position: 'relative', overflow: 'hidden' }}>
+        <div className="eh-section-decor" aria-hidden="true">
+          <div className="eh-section-blob" style={{ bottom: -70, right: '6%', background: 'var(--green)' }} />
+        </div>
+        <div className="reveal reveal-fade" style={{ maxWidth: 1100, margin: '0 auto', position: 'relative' }}>
           <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
-            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em' }}>What our community says</h2>
+            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em' }}>What our <span className="eh-gradient-text">community</span> says</h2>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
             {[
-              { quote: 'ElevateHours gave me my first real design client. I now have a verified portfolio that speaks louder than my degree.', name: 'Andrew T.', role: 'Graphic Designer' },
+              { quote: 'ElevateHours gave me my first real design client. I now have a verified portfolio that speaks louder than my degree.', name: 'Rahel T.', role: 'Graphic Designer' },
               { quote: 'As a non-profit with zero budget, ElevateHours was a lifeline. We got our website built and gave back by teaching sessions.', name: 'Omar S.', role: 'NGO Director' },
-              { quote: 'I started with data entry at Tier 1. Now I offer full stack development at Tier 3. My Impact Score speaks for itself.', name: 'Sabrina M.', role: 'Full Stack Developer' },
+              { quote: 'I started with data entry at Tier 1. Now I offer full stack development at Tier 3. My Impact Score speaks for itself.', name: 'Priya M.', role: 'Full Stack Developer' },
             ].map((t, i) => (
               <div key={i} className="eh-hover-lift" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.75rem' }}>
                 <div style={{ width: 24, height: 24, borderRadius: 'var(--radius-sm)', background: 'var(--brand)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -473,6 +458,34 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Partner / Trust Strip */}
+      <section style={{ padding: '0 0 5rem' }}>
+        <div className="reveal reveal-fade" style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem' }}>
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em' }}>Our <span className="eh-gradient-text">Trusted</span> Partners</h2>
+          </div>
+          <div className="eh-marquee">
+            <div className="eh-marquee-track">
+              {[...Array(4)].flatMap(() => [
+                { name: 'Coco Delizioso', light: '/partners/choco white.png', dark: '/partners/choco dark.png' },
+                { name: 'Engineers', light: '/partners/engineers white.png', dark: '/partners/engineers dark.png' },
+                { name: 'Nobodik News', light: '/partners/nobodik white.png', dark: '/partners/nobodik dark.png' },
+                { name: 'Venfyy', light: '/partners/venfyy white.png', dark: '/partners/venfyy dark.png' },
+                { name: 'Tea Bondhu', light: '/partners/tea white.png', dark: '/partners/tea dark.png' },
+              ]).map((partner, i) => (
+                <div key={i} className="eh-marquee-item">
+                  <img
+                    src={theme === 'dark' ? partner.dark : partner.light}
+                    alt={partner.name}
+                    style={{ maxHeight: '100%', maxWidth: '100%', width: 'auto', height: 'auto', objectFit: 'contain' }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
 {/* Centered Container */}
 <div
   style={{
@@ -481,14 +494,20 @@ export default function LandingPage() {
     margin: '0 auto',
     padding: '0 1.5rem',
     boxSizing: 'border-box',
+    position: 'relative',
+    overflow: 'hidden',
   }}
 >
+  <div className="eh-section-decor" aria-hidden="true">
+    <div className="eh-section-blob" style={{ top: -50, right: '14%', background: 'var(--amber)' }} />
+  </div>
   {/* SDG Alignment */}
   <div
     className="reveal reveal-rotate"
     style={{
       marginBottom: '3rem',
       textAlign: 'center',
+      position: 'relative',
     }}
   >
     <div
@@ -517,7 +536,7 @@ export default function LandingPage() {
         color: 'var(--text)',
       }}
     >
-      Built for Global Impact
+      Built for <span className="eh-gradient-text">Global Impact</span>
     </h2>
 
     <p
@@ -618,9 +637,13 @@ export default function LandingPage() {
 </div>
 
       {/* CTA */}
-      <section style={{ padding: '5rem 1.5rem', background: 'var(--surface)' }}>
-        <div className="reveal reveal-up" style={{ maxWidth: 640, margin: '0 auto', textAlign: 'center' }}>
-          <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', fontWeight: 900, letterSpacing: '-0.03em', marginBottom: '1rem' }}>Ready to elevate your hours?</h2>
+      <section style={{ padding: '5rem 1.5rem', background: 'var(--surface)', position: 'relative', overflow: 'hidden' }}>
+        <div className="eh-section-decor" aria-hidden="true">
+          <div className="eh-section-blob" style={{ top: -60, left: '20%', background: 'var(--brand)' }} />
+          <div className="eh-section-blob" style={{ bottom: -60, right: '18%', background: 'var(--green)' }} />
+        </div>
+        <div className="reveal reveal-up" style={{ maxWidth: 640, margin: '0 auto', textAlign: 'center', position: 'relative' }}>
+          <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', fontWeight: 900, letterSpacing: '-0.03em', marginBottom: '1rem' }}>Ready to <span className="eh-gradient-text">elevate</span> your hours?</h2>
           <p style={{ color: 'var(--text-2)', fontSize: '1rem', marginBottom: '2.5rem', lineHeight: 1.7 }}>
             Join thousands of skilled individuals and organizations already trading on ElevateHours. Your first Spark is waiting.
           </p>
@@ -641,7 +664,7 @@ export default function LandingPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2.5rem', marginBottom: '2.5rem' }}>
             <div>
               <div style={{ marginBottom: '0.625rem' }}>
-                <Logo height={52} linkTo="/" />
+                <Logo height={22} linkTo="/" />
               </div>
               <p style={{ color: 'var(--text-3)', fontSize: '0.825rem', lineHeight: 1.65, marginBottom: '0.75rem' }}>Turn Your Skills Into Impact</p>
               <div style={{ color: 'var(--text-3)', fontSize: '0.75rem' }}>
@@ -947,35 +970,76 @@ export default function LandingPage() {
         .eh-skill-track {
           display: flex;
           width: max-content;
-          gap: 1rem;
-          animation: eh-skill-scroll 32s linear infinite;
+          align-items: baseline;
+          animation: eh-skill-scroll 40s linear infinite;
         }
         .eh-skill-track-2 {
           animation-direction: reverse;
         }
-        .eh-skill-card {
+        .eh-skill-text-item {
           flex-shrink: 0;
           display: flex;
-          align-items: center;
-          gap: 0.7rem;
-          background: var(--surface);
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          padding: 0.75rem 1.1rem;
+          align-items: baseline;
+          gap: 0.75rem;
+          padding: 0 1.75rem;
+        }
+        .eh-skill-text-item-muted {
+          opacity: 0.7;
+        }
+        .eh-skill-name {
+          font-size: clamp(1.25rem, 2.4vw, 1.8rem);
+          font-weight: 800;
+          letter-spacing: -0.02em;
+          color: var(--text);
           white-space: nowrap;
         }
-        .eh-skill-icon {
-          width: 32px;
-          height: 32px;
-          border-radius: var(--radius-sm);
-          display: flex;
-          align-items: center;
-          justify-content: center;
+        .eh-skill-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
           flex-shrink: 0;
+        }
+        .eh-skill-rate {
+          font-size: 0.7rem;
+          font-weight: 700;
+          color: var(--text-3);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          white-space: nowrap;
         }
         @keyframes eh-skill-scroll {
           from { transform: translateX(0); }
-          to { transform: translateX(-25%); }
+          to { transform: translateX(-16.666%); }
+        }
+
+        .eh-gradient-text {
+          background: linear-gradient(90deg, var(--brand), var(--green), var(--amber), var(--brand));
+          background-size: 300% 100%;
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          animation: eh-gradient-shift 6s ease infinite;
+        }
+
+        .eh-section-decor {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+          z-index: 0;
+        }
+        .eh-section-blob {
+          position: absolute;
+          width: 260px;
+          height: 260px;
+          border-radius: 50%;
+          filter: blur(80px);
+          opacity: 0.14;
+          animation: eh-section-blob-float 18s ease-in-out infinite;
+        }
+        @keyframes eh-section-blob-float {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(24px, -18px) scale(1.12); }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -994,7 +1058,7 @@ export default function LandingPage() {
           .eh-hover-lift:hover, .eh-btn:hover {
             transform: none !important;
           }
-          .eh-hero-gradient-text, .eh-float-card-outer, .eh-activity-cursor, .eh-skill-track {
+          .eh-hero-gradient-text, .eh-gradient-text, .eh-float-card-outer, .eh-activity-cursor, .eh-skill-track, .eh-section-blob {
             animation: none !important;
           }
           .eh-float-card-inner {
