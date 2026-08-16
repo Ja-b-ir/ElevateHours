@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Logo from '@/components/Logo'
-import { Sun, Moon, ArrowRight, Check, ChevronRight } from 'lucide-react'
+import { Sun, Moon, ArrowRight, Check, ChevronRight, Zap, MessageCircle, Award, Star, Code, Palette, Film, GraduationCap, PenLine, BarChart3 } from 'lucide-react'
 import HeroCanvas from '@/components/HeroCanvas'
 import LoadingScreen from '@/components/LoadingScreen'
 
@@ -67,6 +67,21 @@ export default function LandingPage() {
   const [tiers, setTiers] = useState([])
   const [theme, setTheme] = useState('light')
   const [tiersLoaded, setTiersLoaded] = useState(false)
+  const heroRef = useRef(null)
+
+  useEffect(() => {
+    const hero = heroRef.current
+    if (!hero) return
+    const handleMove = (e) => {
+      const rect = hero.getBoundingClientRect()
+      const x = (e.clientX - rect.left) / rect.width - 0.5
+      const y = (e.clientY - rect.top) / rect.height - 0.5
+      hero.style.setProperty('--mx', x.toFixed(3))
+      hero.style.setProperty('--my', y.toFixed(3))
+    }
+    hero.addEventListener('mousemove', handleMove)
+    return () => hero.removeEventListener('mousemove', handleMove)
+  }, [])
   const [themeLoaded, setThemeLoaded] = useState(false)
   const pageLoading = !tiersLoaded || !themeLoaded
 
@@ -139,7 +154,7 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero */}
-      <section style={{ padding: 'clamp(4rem, 10vw, 8rem) 1.5rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+      <section ref={heroRef} style={{ padding: 'clamp(4rem, 10vw, 8rem) 1.5rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(13,115,119,0.12), transparent)', pointerEvents: 'none', zIndex: 0 }} />
         <div className="eh-hero-bg" aria-hidden="true">
           <div className="eh-blob eh-blob-1" />
@@ -148,10 +163,69 @@ export default function LandingPage() {
           <div className="eh-grid-overlay" />
         </div>
         <HeroCanvas />
+
+        {/* Floating parallax mockup cards */}
+        <div className="eh-float-card-outer eh-float-1" aria-hidden="true">
+          <div className="eh-float-card-inner">
+            <Zap size={14} style={{ color: 'var(--brand)' }} />
+            <div style={{ textAlign: 'left' }}>
+              <div style={{ fontWeight: 800, fontSize: '0.82rem', color: 'var(--text)' }}>1,240 SPK</div>
+              <div style={{ fontSize: '0.62rem', color: 'var(--text-3)' }}>Sparks Balance</div>
+            </div>
+          </div>
+        </div>
+        <div className="eh-float-card-outer eh-float-2" aria-hidden="true">
+          <div className="eh-float-card-inner">
+            <MessageCircle size={14} style={{ color: 'var(--green)' }} />
+            <div style={{ textAlign: 'left' }}>
+              <div style={{ fontWeight: 700, fontSize: '0.78rem', color: 'var(--text)' }}>Session confirmed</div>
+              <div style={{ fontSize: '0.62rem', color: 'var(--text-3)' }}>with Priya M.</div>
+            </div>
+          </div>
+        </div>
+        <div className="eh-float-card-outer eh-float-3" aria-hidden="true">
+          <div className="eh-float-card-inner">
+            <Award size={14} style={{ color: 'var(--amber)' }} />
+            <div style={{ textAlign: 'left' }}>
+              <div style={{ fontWeight: 700, fontSize: '0.78rem', color: 'var(--text)' }}>Tier 2: Specialized</div>
+              <div style={{ fontSize: '0.62rem', color: 'var(--text-3)' }}>Unlocked</div>
+            </div>
+          </div>
+        </div>
+        <div className="eh-float-card-outer eh-float-4" aria-hidden="true">
+          <div className="eh-float-card-inner">
+            <Star size={14} style={{ color: 'var(--brand)' }} fill="var(--brand)" />
+            <div style={{ textAlign: 'left' }}>
+              <div style={{ fontWeight: 700, fontSize: '0.78rem', color: 'var(--text)' }}>5.0 rating</div>
+              <div style={{ fontSize: '0.62rem', color: 'var(--text-3)' }}>"Amazing tutor!"</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Drifting live-activity cursors */}
+        <div className="eh-activity-cursor eh-cursor-1" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 16 16" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))', flexShrink: 0 }}>
+            <path d="M2 1 L14 8 L8 9 L6 15 Z" fill="var(--green)" />
+          </svg>
+          <span className="eh-activity-label" style={{ background: 'var(--green)' }}>Priya earned 40 SPK</span>
+        </div>
+        <div className="eh-activity-cursor eh-cursor-2" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 16 16" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))', flexShrink: 0 }}>
+            <path d="M2 1 L14 8 L8 9 L6 15 Z" fill="var(--amber)" />
+          </svg>
+          <span className="eh-activity-label" style={{ background: 'var(--amber)' }}>New session booked</span>
+        </div>
+        <div className="eh-activity-cursor eh-cursor-3" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 16 16" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))', flexShrink: 0 }}>
+            <path d="M2 1 L14 8 L8 9 L6 15 Z" fill="var(--red)" />
+          </svg>
+          <span className="eh-activity-label" style={{ background: 'var(--red)' }}>Rafi joined a program</span>
+        </div>
+
         <div className="reveal reveal-up" style={{ maxWidth: 780, margin: '0 auto', position: 'relative', zIndex: 1 }}>
           <h1 style={{ fontSize: 'clamp(2.2rem, 6vw, 3.75rem)', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: '1.5rem', color: 'var(--text)' }}>
             Your Skills Have More<br />
-            <span style={{ color: 'var(--brand)' }}>Value Than You Think.</span>
+            <span className="eh-hero-gradient-text">Value Than You Think.</span>
           </h1>
           <p style={{ fontSize: 'clamp(1rem, 2vw, 1.15rem)', color: 'var(--text-2)', maxWidth: 580, margin: '0 auto 2.5rem', lineHeight: 1.75 }}>
             ElevateHours is a cashless marketplace where students, freelancers, and organizations trade skills and knowledge — powered by Sparks, a community currency that turns your time into real opportunity.
@@ -186,7 +260,86 @@ export default function LandingPage() {
         </div>
       </section>
 
-    
+      {/* Partner / Trust Strip */}
+      <section style={{ padding: '0 0 5rem' }}>
+        <div className="reveal reveal-fade" style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem' }}>
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em' }}>Our Trusted Partners</h2>
+          </div>
+          <div className="eh-marquee">
+            <div className="eh-marquee-track">
+              {[...Array(4)].flatMap(() => [
+                { name: 'Coco Delizioso', light: '/partners/choco-white.png', dark: '/partners/choco-dark.png' },
+                { name: 'Engineers', light: '/partners/engineers-white.png', dark: '/partners/engineers-dark.png' },
+                { name: 'Nobodik News', light: '/partners/nobodik-white.png', dark: '/partners/nobodik-dark.png' },
+                { name: 'Venfyy', light: '/partners/venfyy-white.png', dark: '/partners/venfyy-dark.png' },
+                { name: 'Tea Bondhu', light: '/partners/tea-white.png', dark: '/partners/tea-dark.png' },
+              ]).map((partner, i) => (
+                <div key={i} className="eh-marquee-item">
+                  <img
+                    src={theme === 'dark' ? partner.dark : partner.light}
+                    alt={partner.name}
+                    style={{ maxHeight: '100%', maxWidth: '100%', width: 'auto', height: 'auto', objectFit: 'contain' }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Skill Marquee - two rows scrolling opposite directions */}
+      <section style={{ padding: '0 0 5rem', overflow: 'hidden' }}>
+        <div className="reveal reveal-fade" style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem' }}>
+          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em' }}>Explore What's Being Traded</h2>
+          </div>
+        </div>
+
+        <div className="eh-skill-marquee">
+          <div className="eh-skill-track eh-skill-track-1">
+            {[...Array(4)].flatMap(() => [
+              { name: 'Web Development', rate: '45 SPK/hr', icon: Code, accent: 'var(--brand)' },
+              { name: 'Graphic Design', rate: '38 SPK/hr', icon: Palette, accent: 'var(--green)' },
+              { name: 'Math Tutoring', rate: '30 SPK/hr', icon: GraduationCap, accent: 'var(--amber)' },
+              { name: 'Video Editing', rate: '42 SPK/hr', icon: Film, accent: 'var(--brand)' },
+              { name: 'Content Writing', rate: '28 SPK/hr', icon: PenLine, accent: 'var(--green)' },
+            ]).map((skill, i) => (
+              <div key={i} className="eh-skill-card">
+                <div className="eh-skill-icon" style={{ background: skill.accent }}>
+                  <skill.icon size={16} color="white" />
+                </div>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text)' }}>{skill.name}</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-3)' }}>{skill.rate}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="eh-skill-marquee" style={{ marginTop: '1rem' }}>
+          <div className="eh-skill-track eh-skill-track-2">
+            {[...Array(4)].flatMap(() => [
+              { name: 'Data Entry', rate: '20 SPK/hr', icon: BarChart3, accent: 'var(--amber)' },
+              { name: 'UI/UX Design', rate: '48 SPK/hr', icon: Palette, accent: 'var(--brand)' },
+              { name: 'Language Tutoring', rate: '32 SPK/hr', icon: GraduationCap, accent: 'var(--green)' },
+              { name: 'Backend Development', rate: '50 SPK/hr', icon: Code, accent: 'var(--amber)' },
+              { name: 'Video Production', rate: '40 SPK/hr', icon: Film, accent: 'var(--brand)' },
+            ]).map((skill, i) => (
+              <div key={i} className="eh-skill-card">
+                <div className="eh-skill-icon" style={{ background: skill.accent }}>
+                  <skill.icon size={16} color="white" />
+                </div>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text)' }}>{skill.name}</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-3)' }}>{skill.rate}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* How it works */}
       <section style={{ padding: '5rem 1.5rem', background: 'var(--surface)' }}>
@@ -316,34 +469,6 @@ export default function LandingPage() {
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-{/* Partner / Trust Strip */}
-      <section style={{ padding: '0 0 5rem' }}>
-        <div className="reveal reveal-fade" style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem' }}>
-          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em' }}>Our Trusted Partners</h2>
-          </div>
-          <div className="eh-marquee">
-            <div className="eh-marquee-track">
-              {[...Array(4)].flatMap(() => [
-                { name: 'Coco Delizioso', light: '/partners/choco white.png', dark: '/partners/choco dark.png' },
-                { name: 'Venfyy', light: '/partners/venfyy white.png', dark: '/partners/venfyy dark.png' },
-                { name: 'Tea Bondhu', light: '/partners/tea white.png', dark: '/partners/tea dark.png' },
-                { name: 'Engineers', light: '/partners/engineers white.png', dark: '/partners/engineers dark.png' },
-                { name: 'Nobodik News', light: '/partners/nobodik white.png', dark: '/partners/nobodik dark.png' },
-              ]).map((partner, i) => (
-                <div key={i} className="eh-marquee-item">
-                  <img
-                    src={theme === 'dark' ? partner.dark : partner.light}
-                    alt={partner.name}
-                    style={{ maxHeight: '100%', maxWidth: '100%', width: 'auto', height: 'auto', objectFit: 'contain' }}
-                  />
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </section>
@@ -717,6 +842,142 @@ export default function LandingPage() {
           }
         }
 
+        .eh-hero-gradient-text {
+          background: linear-gradient(90deg, var(--brand), var(--green), var(--amber), var(--brand));
+          background-size: 300% 100%;
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          animation: eh-gradient-shift 6s ease infinite;
+        }
+        @keyframes eh-gradient-shift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+
+        .eh-float-card-outer {
+          position: absolute;
+          z-index: 2;
+          animation: eh-float-bob 6s ease-in-out infinite;
+          pointer-events: none;
+        }
+        .eh-float-card-inner {
+          display: flex;
+          align-items: center;
+          gap: 0.55rem;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          padding: 0.55rem 0.85rem;
+          box-shadow: 0 10px 28px rgba(0,0,0,0.14);
+          transform: translate(calc(var(--mx, 0) * var(--depth, 20px)), calc(var(--my, 0) * var(--depth, 20px)));
+          transition: transform 0.1s ease-out;
+        }
+        .eh-float-1 { top: 14%; left: 3%; }
+        .eh-float-1 .eh-float-card-inner { --depth: 26px; }
+        .eh-float-2 { top: 10%; right: 4%; animation-delay: -2s; }
+        .eh-float-2 .eh-float-card-inner { --depth: -22px; }
+        .eh-float-3 { bottom: 16%; left: 5%; animation-delay: -4s; }
+        .eh-float-3 .eh-float-card-inner { --depth: 32px; }
+        .eh-float-4 { bottom: 12%; right: 6%; animation-delay: -1s; }
+        .eh-float-4 .eh-float-card-inner { --depth: -30px; }
+        @keyframes eh-float-bob {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-12px); }
+        }
+        @media (max-width: 900px) {
+          .eh-float-card-outer { display: none; }
+        }
+
+        .eh-activity-cursor {
+          position: absolute;
+          display: flex;
+          align-items: center;
+          gap: 0.4rem;
+          z-index: 2;
+          pointer-events: none;
+          opacity: 0;
+        }
+        .eh-activity-label {
+          color: white;
+          font-size: 0.66rem;
+          font-weight: 700;
+          padding: 0.25rem 0.6rem;
+          border-radius: 999px;
+          white-space: nowrap;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+        }
+        .eh-cursor-1 { animation: eh-cursor-path-1 14s ease-in-out infinite; }
+        .eh-cursor-2 { animation: eh-cursor-path-2 16s ease-in-out infinite; animation-delay: -5s; }
+        .eh-cursor-3 { animation: eh-cursor-path-3 18s ease-in-out infinite; animation-delay: -9s; }
+        @keyframes eh-cursor-path-1 {
+          0% { top: 20%; left: 12%; opacity: 0; }
+          10% { opacity: 1; }
+          45% { top: 32%; left: 68%; }
+          55% { opacity: 1; }
+          90% { top: 58%; left: 42%; opacity: 0; }
+          100% { top: 20%; left: 12%; opacity: 0; }
+        }
+        @keyframes eh-cursor-path-2 {
+          0% { top: 62%; left: 72%; opacity: 0; }
+          10% { opacity: 1; }
+          50% { top: 22%; left: 52%; }
+          60% { opacity: 1; }
+          90% { top: 46%; left: 18%; opacity: 0; }
+          100% { top: 62%; left: 72%; opacity: 0; }
+        }
+        @keyframes eh-cursor-path-3 {
+          0% { top: 70%; left: 32%; opacity: 0; }
+          12% { opacity: 1; }
+          50% { top: 18%; left: 22%; }
+          60% { opacity: 1; }
+          90% { top: 52%; left: 62%; opacity: 0; }
+          100% { top: 70%; left: 32%; opacity: 0; }
+        }
+        @media (max-width: 900px) {
+          .eh-activity-cursor { display: none; }
+        }
+
+        .eh-skill-marquee {
+          overflow: hidden;
+          -webkit-mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
+          mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
+        }
+        .eh-skill-track {
+          display: flex;
+          width: max-content;
+          gap: 1rem;
+          animation: eh-skill-scroll 32s linear infinite;
+        }
+        .eh-skill-track-2 {
+          animation-direction: reverse;
+        }
+        .eh-skill-card {
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          gap: 0.7rem;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          padding: 0.75rem 1.1rem;
+          white-space: nowrap;
+        }
+        .eh-skill-icon {
+          width: 32px;
+          height: 32px;
+          border-radius: var(--radius-sm);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+        @keyframes eh-skill-scroll {
+          from { transform: translateX(0); }
+          to { transform: translateX(-25%); }
+        }
+
         @media (prefers-reduced-motion: reduce) {
           .reveal,
           .reveal-up, .reveal-down, .reveal-left, .reveal-right,
@@ -732,6 +993,15 @@ export default function LandingPage() {
           }
           .eh-hover-lift:hover, .eh-btn:hover {
             transform: none !important;
+          }
+          .eh-hero-gradient-text, .eh-float-card-outer, .eh-activity-cursor, .eh-skill-track {
+            animation: none !important;
+          }
+          .eh-float-card-inner {
+            transform: none !important;
+          }
+          .eh-activity-cursor {
+            display: none !important;
           }
         }
       `}</style>
