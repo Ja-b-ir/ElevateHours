@@ -179,7 +179,7 @@ export default function LandingPage() {
             <MessageCircle size={14} style={{ color: 'var(--green)' }} />
             <div style={{ textAlign: 'left' }}>
               <div style={{ fontWeight: 700, fontSize: '0.78rem', color: 'var(--text)' }}>Session confirmed</div>
-              <div style={{ fontSize: '0.62rem', color: 'var(--text-3)' }}>with Priya M.</div>
+              <div style={{ fontSize: '0.62rem', color: 'var(--text-3)' }}>with Sabrina.</div>
             </div>
           </div>
         </div>
@@ -411,7 +411,7 @@ export default function LandingPage() {
               { title: 'Verified Certificates', desc: 'Official certificates for every completed engagement, validated by both parties.' },
               { title: 'Experience Letters', desc: 'Formal experience letters recognized by universities, employers, and grant committees.' },
               { title: 'Skill Badges', desc: 'Digital badges as you accumulate Sparks in specific skills. Share on LinkedIn.' },
-              { title: 'Endorsed Portfolio', desc: 'Every transaction adds a verified entry — real work, real clients, real proof.' },
+              { title: 'Endorsed Portfolio', desc: 'Every engagement adds a verified entry — real work, real people, real proof.' },
               { title: 'Impact Score', desc: 'Your community contribution tracked publicly as your Impact Score.' },
               { title: 'Alumni Network', desc: 'Reach 5,000 SPK to join the exclusive Alumni Network with premium access.' },
             ].map((item, i) => (
@@ -454,9 +454,9 @@ export default function LandingPage() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
             {[
-              { quote: 'ElevateHours gave me my first real design client. I now have a verified portfolio that speaks louder than my degree.', name: 'Rahel T.', role: 'Graphic Designer' },
+              { quote: 'ElevateHours gave me my first real design client. I now have a verified portfolio that speaks louder than my degree.', name: 'Andrew T.', role: 'Graphic Designer' },
               { quote: 'As a non-profit with zero budget, ElevateHours was a lifeline. We got our website built and gave back by teaching sessions.', name: 'Omar S.', role: 'NGO Director' },
-              { quote: 'I started with data entry at Tier 1. Now I offer full stack development at Tier 3. My Impact Score speaks for itself.', name: 'Priya M.', role: 'Full Stack Developer' },
+              { quote: 'I started with data entry at Tier 1. Now I offer full stack development at Tier 3. My Impact Score speaks for itself.', name: 'Sabrina M.', role: 'Full Stack Developer' },
             ].map((t, i) => (
               <div key={i} className="eh-hover-lift" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.75rem' }}>
                 <div style={{ width: 24, height: 24, borderRadius: 'var(--radius-sm)', background: 'var(--brand)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -641,7 +641,7 @@ export default function LandingPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2.5rem', marginBottom: '2.5rem' }}>
             <div>
               <div style={{ marginBottom: '0.625rem' }}>
-                <Logo height={22} linkTo="/" />
+                <Logo height={52} linkTo="/" />
               </div>
               <p style={{ color: 'var(--text-3)', fontSize: '0.825rem', lineHeight: 1.65, marginBottom: '0.75rem' }}>Turn Your Skills Into Impact</p>
               <div style={{ color: 'var(--text-3)', fontSize: '0.75rem' }}>
