@@ -269,11 +269,11 @@ export default function LandingPage() {
           <div className="eh-marquee">
             <div className="eh-marquee-track">
               {[...Array(4)].flatMap(() => [
-                { name: 'Coco Delizioso', light: '/partners/choco-white.png', dark: '/partners/choco-dark.png' },
-                { name: 'Engineers', light: '/partners/engineers-white.png', dark: '/partners/engineers-dark.png' },
-                { name: 'Nobodik News', light: '/partners/nobodik-white.png', dark: '/partners/nobodik-dark.png' },
-                { name: 'Venfyy', light: '/partners/venfyy-white.png', dark: '/partners/venfyy-dark.png' },
-                { name: 'Tea Bondhu', light: '/partners/tea-white.png', dark: '/partners/tea-dark.png' },
+                { name: 'Coco Delizioso', light: '/partners/choco white.png', dark: '/partners/choco dark.png' },
+                { name: 'Engineers', light: '/partners/engineers white.png', dark: '/partners/engineers dark.png' },
+                { name: 'Nobodik News', light: '/partners/nobodik white.png', dark: '/partners/nobodik dark.png' },
+                { name: 'Venfyy', light: '/partners/venfyy white.png', dark: '/partners/venfyy dark.png' },
+                { name: 'Tea Bondhu', light: '/partners/tea white.png', dark: '/partners/tea dark.png' },
               ]).map((partner, i) => (
                 <div key={i} className="eh-marquee-item">
                   <img
