@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
 import LoadingScreen from '@/components/LoadingScreen'
+import DynamicApplicationForm from '@/components/DynamicApplicationForm'
 import { Search, Clock, Users, Briefcase, GraduationCap, ChevronRight, Check, Zap, MessageCircle, Mail, Bookmark, Award, X, Sparkles, TrendingUp } from 'lucide-react'
 
 function isRecent(dateStr, days = 3) {
@@ -38,6 +39,8 @@ function MarketplaceContent() {
   const [programs, setPrograms] = useState([])
   const [myEnrollments, setMyEnrollments] = useState(new Set())
   const [joiningProgram, setJoiningProgram] = useState(null)
+  const [appliedProgramIds, setAppliedProgramIds] = useState(new Set())
+  const [applyingFormProgram, setApplyingFormProgram] = useState(null)
 
   const tabs = [
     { key: 'Find Work', label: 'Find Work', icon: Briefcase },
@@ -63,6 +66,8 @@ function MarketplaceContent() {
       setSavedIds(new Set(saved?.map(s => s.transaction_id) || []))
       const { data: myEnroll } = await supabase.from('program_enrollments').select('program_id').eq('student_id', user.id)
       setMyEnrollments(new Set((myEnroll || []).map(e => e.program_id)))
+      const { data: myProgApps } = await supabase.from('program_applications').select('program_id').eq('applicant_id', user.id)
+      setAppliedProgramIds(new Set((myProgApps || []).map(a => a.program_id)))
       setLoading(false)
     }
     init()
@@ -550,6 +555,16 @@ function MarketplaceContent() {
                         </div>
                       ) : full ? (
                         <span style={{ fontSize: '0.78rem', color: 'var(--text-3)', fontWeight: 600 }}>Full</span>
+                      ) : (p.application_form && p.application_form.length > 0) ? (
+                        appliedProgramIds.has(p.id) ? (
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--surface-3)', color: 'var(--text-2)', padding: '0.4rem 0.875rem', borderRadius: 'var(--radius-sm)', fontWeight: 700, fontSize: '0.78rem' }}>
+                            <Check size={11} /> Applied
+                          </span>
+                        ) : (
+                          <button onClick={() => setApplyingFormProgram(p)} className="btn btn-primary btn-sm">
+                            Apply
+                          </button>
+                        )
                       ) : (
                         <button onClick={() => joinProgram(p)} disabled={joiningProgram === p.id} className="btn btn-primary btn-sm">
                           {joiningProgram === p.id ? 'Joining...' : 'Join'}
@@ -563,6 +578,12 @@ function MarketplaceContent() {
           )
         )}
       </div>
+
+      <DynamicApplicationForm
+        program={applyingFormProgram}
+        onClose={() => setApplyingFormProgram(null)}
+        onSubmitted={(programId) => setAppliedProgramIds(prev => new Set([...prev, programId]))}
+      />
 
       <style>{`
         .eh-mkt-decor {
