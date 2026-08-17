@@ -22,6 +22,64 @@ function tierInfo(sparksEarned) {
   return TIERS[0]
 }
 
+function greeting() {
+  const h = new Date().getHours()
+  if (h < 12) return 'Good morning'
+  if (h < 18) return 'Good afternoon'
+  return 'Good evening'
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return ''
+  const diff = (Date.now() - new Date(dateStr).getTime()) / 1000
+  if (diff < 60) return 'just now'
+  if (diff < 3600) return Math.floor(diff / 60) + 'm ago'
+  if (diff < 86400) return Math.floor(diff / 3600) + 'h ago'
+  return Math.floor(diff / 86400) + 'd ago'
+}
+
+// Animated count-up for the headline balance numbers. Runs once whenever
+// `value` changes (typically just on initial data load).
+function AnimatedStat({ value }) {
+  const [display, setDisplay] = useState(0)
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (prefersReducedMotion) { setDisplay(value); return }
+    const duration = 900
+    const start = performance.now()
+    const step = (now) => {
+      const progress = Math.min((now - start) / duration, 1)
+      const eased = 1 - Math.pow(1 - progress, 3)
+      setDisplay(Math.round(value * eased))
+      if (progress < 1) requestAnimationFrame(step)
+    }
+    requestAnimationFrame(step)
+  }, [value])
+  return <>{display.toLocaleString()}</>
+}
+
+// Compact circular progress ring for tier advancement.
+function TierRing({ percent, color = 'var(--amber)' }) {
+  const size = 56
+  const stroke = 5
+  const radius = (size - stroke) / 2
+  const circumference = 2 * Math.PI * radius
+  const offset = circumference - (Math.min(100, Math.max(0, percent)) / 100) * circumference
+  return (
+    <svg width={size} height={size} style={{ flexShrink: 0, transform: 'rotate(-90deg)' }}>
+      <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="var(--surface-3)" strokeWidth={stroke} />
+      <circle
+        cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={color} strokeWidth={stroke}
+        strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round"
+        style={{ transition: 'stroke-dashoffset 0.9s cubic-bezier(0.16,1,0.3,1)' }}
+      />
+    </svg>
+  )
+}
+
+const cardHover = (e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 12px 28px rgba(0,0,0,0.1)' }
+const cardLeave = (e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none' }
+
 export default function Dashboard() {
   const router = useRouter()
   const [profile, setProfile] = useState(null)
@@ -208,17 +266,22 @@ export default function Dashboard() {
     return { bg: 'var(--amber-light)', color: 'var(--amber-dark)' }
   }
 
+  const tierPct = Math.min(100, (((profile?.sparks_earned || 0) - tierInfo(profile?.sparks_earned || 0).min) / ((tierInfo(profile?.sparks_earned || 0).next || 1) - tierInfo(profile?.sparks_earned || 0).min)) * 100)
+
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <Navbar />
 
-      <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '1.75rem 1.5rem' }}>
+      <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)', position: 'relative', overflow: 'hidden' }}>
+        <div className="eh-dash-decor" aria-hidden="true">
+          <div className="eh-dash-blob" style={{ top: -80, right: '10%', background: 'var(--brand)' }} />
+        </div>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '1.75rem 1.5rem', position: 'relative' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.3rem', flexWrap: 'wrap' }}>
                 <h1 style={{ fontSize: 'clamp(1.4rem, 3vw, 1.75rem)', fontWeight: 900, letterSpacing: '-0.03em', color: 'var(--text)' }}>
-                  Welcome back, {profile?.full_name?.split(' ')[0]}
+                  {greeting()}, {profile?.full_name?.split(' ')[0]}
                 </h1>
                 <span style={{
                   background: profile?.account_type === 'Personal' ? 'var(--brand-light)' : 'var(--amber-light)',
@@ -268,7 +331,7 @@ export default function Dashboard() {
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '2rem 1.5rem' }}>
 
         {!profile?.welcome_banner_dismissed && (
-          <div style={{
+          <div className="eh-dash-fade-in" style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem',
             background: 'var(--brand-light)', border: '1px solid var(--brand)', borderRadius: 'var(--radius-lg)',
             padding: '1rem 1.25rem', marginBottom: '1.5rem', flexWrap: 'wrap'
@@ -293,13 +356,15 @@ export default function Dashboard() {
           </div>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+        <div className="eh-dash-fade-in" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
 
-          <div style={{
-            background: 'linear-gradient(135deg, var(--brand) 0%, var(--brand-mid) 100%)',
-            borderRadius: 'var(--radius-lg)', padding: '1.5rem',
-            color: 'white', position: 'relative', overflow: 'hidden'
-          }}>
+          <div
+            onMouseEnter={cardHover} onMouseLeave={cardLeave}
+            style={{
+              background: 'linear-gradient(135deg, var(--brand) 0%, var(--brand-mid) 100%)',
+              borderRadius: 'var(--radius-lg)', padding: '1.5rem',
+              color: 'white', position: 'relative', overflow: 'hidden', transition: 'transform 0.25s ease, box-shadow 0.25s ease'
+            }}>
             <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
             <div style={{ position: 'absolute', bottom: -30, right: 20, width: 140, height: 140, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
             <div style={{ position: 'relative' }}>
@@ -307,16 +372,18 @@ export default function Dashboard() {
                 <Zap size={11} /> Total Usable Balance
               </div>
               <div style={{ fontSize: 'clamp(2rem, 4vw, 2.75rem)', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: '0.4rem' }}>
-                {total.toLocaleString()}
+                <AnimatedStat value={total} />
               </div>
               <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>SPK &nbsp;·&nbsp; ≈ ${(total * 0.10).toFixed(2)} USD</div>
             </div>
           </div>
 
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
+          <div
+            onMouseEnter={cardHover} onMouseLeave={cardLeave}
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', position: 'relative', overflow: 'hidden', transition: 'transform 0.25s ease, box-shadow 0.25s ease' }}>
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'var(--brand)', borderRadius: '16px 16px 0 0' }} />
             <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>Permanent Balance</div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 900, letterSpacing: '-0.03em', color: 'var(--text)', lineHeight: 1, marginBottom: '0.3rem' }}>{permanent.toLocaleString()}</div>
+            <div style={{ fontSize: '1.75rem', fontWeight: 900, letterSpacing: '-0.03em', color: 'var(--text)', lineHeight: 1, marginBottom: '0.3rem' }}><AnimatedStat value={permanent} /></div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>SPK · Earned + Purchased</div>
             <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem' }}>
               <div>
@@ -334,10 +401,12 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
+          <div
+            onMouseEnter={cardHover} onMouseLeave={cardLeave}
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', position: 'relative', overflow: 'hidden', transition: 'transform 0.25s ease, box-shadow 0.25s ease' }}>
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'var(--green)', borderRadius: '16px 16px 0 0' }} />
             <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>Gifted Balance</div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 900, letterSpacing: '-0.03em', color: 'var(--text)', lineHeight: 1, marginBottom: '0.3rem' }}>{(profile?.active_gifts_received || 0).toLocaleString()}</div>
+            <div style={{ fontSize: '1.75rem', fontWeight: 900, letterSpacing: '-0.03em', color: 'var(--text)', lineHeight: 1, marginBottom: '0.3rem' }}><AnimatedStat value={profile?.active_gifts_received || 0} /></div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>SPK · Expires in 30 days</div>
             <div style={{ marginTop: '1rem', padding: '0.5rem 0.75rem', background: 'var(--green-light)', borderRadius: 'var(--radius-sm)', display: 'inline-flex', alignItems: 'center', gap: '0.375rem' }}>
               <TrendingUp size={11} style={{ color: 'var(--green)' }} />
@@ -345,41 +414,46 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
+          <div
+            onMouseEnter={cardHover} onMouseLeave={cardLeave}
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', position: 'relative', overflow: 'hidden', transition: 'transform 0.25s ease, box-shadow 0.25s ease' }}>
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'var(--amber)', borderRadius: '16px 16px 0 0' }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
               <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Tier Progress</div>
               <Award size={15} style={{ color: 'var(--amber)' }} />
             </div>
-            <div style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text)', marginBottom: '0.6rem' }}>
-              {tierInfo(profile?.sparks_earned || 0).name}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              {tierInfo(profile?.sparks_earned || 0).next ? (
+                <TierRing percent={tierPct} />
+              ) : (
+                <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--green-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Award size={20} style={{ color: 'var(--green)' }} />
+                </div>
+              )}
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--text)', marginBottom: '0.3rem' }}>
+                  {tierInfo(profile?.sparks_earned || 0).name}
+                </div>
+                {tierInfo(profile?.sparks_earned || 0).next ? (
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-3)' }}>
+                    {(profile?.sparks_earned || 0).toLocaleString()} / {tierInfo(profile?.sparks_earned || 0).next.toLocaleString()} SPK
+                  </div>
+                ) : (
+                  <div style={{ fontSize: '0.75rem', color: 'var(--green)', fontWeight: 600 }}>Highest tier reached</div>
+                )}
+              </div>
             </div>
-            {tierInfo(profile?.sparks_earned || 0).next ? (
-              <>
-                <div style={{ background: 'var(--surface-3)', borderRadius: 999, height: 8, overflow: 'hidden', marginBottom: '0.5rem' }}>
-                  <div style={{
-                    height: '100%', borderRadius: 999,
-                    background: 'linear-gradient(90deg, var(--amber), var(--brand))',
-                    width: Math.min(100, (((profile?.sparks_earned || 0) - tierInfo(profile?.sparks_earned || 0).min) / (tierInfo(profile?.sparks_earned || 0).next - tierInfo(profile?.sparks_earned || 0).min)) * 100) + '%'
-                  }} />
-                </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>
-                  {(profile?.sparks_earned || 0).toLocaleString()} / {tierInfo(profile?.sparks_earned || 0).next.toLocaleString()} SPK to next tier
-                </div>
-              </>
-            ) : (
-              <div style={{ fontSize: '0.78rem', color: 'var(--green)', fontWeight: 600 }}>You've reached the highest tier</div>
-            )}
           </div>
         </div>
-<BlogPromoCard />
+
+        <BlogPromoCard />
 
         {/* Activity Streak */}
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', marginBottom: '1.5rem' }}>
+        <div className="eh-dash-fade-in" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', marginBottom: '1.5rem' }}>
           <ActivityStreak streakDays={streakDays} />
         </div>
 
-        <div className="dash-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '1.5rem', alignItems: 'start' }}>
+        <div className="dash-grid eh-dash-fade-in" style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '1.5rem', alignItems: 'start' }}>
 
           <div>
             <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
@@ -424,11 +498,14 @@ export default function Dashboard() {
                         const enrolled = myEnrollments.has(prog.id)
                         const full = prog.capacity && false // capacity enforcement is server-side; UI just disables after join
                         return (
-                          <div key={prog.id} style={{
+                          <div key={prog.id}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--brand)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(13,115,119,0.08)' }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none' }}
+                            style={{
                             padding: '1.125rem', background: 'var(--surface-2)',
                             borderRadius: 'var(--radius)', border: '1px solid var(--border)',
                             display: 'flex', justifyContent: 'space-between',
-                            alignItems: 'flex-start', gap: '1rem'
+                            alignItems: 'flex-start', gap: '1rem', transition: 'border-color 0.15s, box-shadow 0.15s'
                           }}>
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.375rem', flexWrap: 'wrap' }}>
@@ -530,7 +607,7 @@ export default function Dashboard() {
               <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--border)' }}>
                 <h3 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text)' }}>Quick Actions</h3>
               </div>
-              <div style={{ padding: '0.75rem' }}>
+              <div style={{ padding: '0.75rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
                 {[
                   { label: 'Browse Marketplace', href: '/marketplace', icon: Users, accent: 'var(--brand)' },
                   { label: 'Post a Request', href: '/post-request', icon: Plus, accent: 'var(--brand-mid)' },
@@ -540,19 +617,18 @@ export default function Dashboard() {
                   { label: 'My Transactions', href: '/transactions', icon: ArrowRight, accent: 'var(--purple)' },
                 ].map((action, i) => (
                   <a key={i} href={action.href} style={{
-                    display: 'flex', alignItems: 'center', gap: '0.75rem',
-                    padding: '0.7rem 0.75rem', borderRadius: 'var(--radius-sm)',
-                    color: 'var(--text-2)', fontSize: '0.825rem', fontWeight: 600,
-                    textDecoration: 'none', transition: 'all 0.15s'
+                    display: 'flex', flexDirection: 'column', gap: '0.6rem',
+                    padding: '0.9rem 0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)',
+                    color: 'var(--text)', fontSize: '0.78rem', fontWeight: 600,
+                    textDecoration: 'none', transition: 'all 0.2s', background: 'var(--surface-2)'
                   }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-3)'; e.currentTarget.style.color = 'var(--text)' }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-2)' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-3)'; e.currentTarget.style.borderColor = action.accent; e.currentTarget.style.transform = 'translateY(-2px)' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'var(--surface-2)'; e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'none' }}
                   >
                     <div style={{ width: 30, height: 30, borderRadius: 'var(--radius-sm)', background: 'var(--surface-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <action.icon size={14} style={{ color: action.accent }} />
                     </div>
-                    {action.label}
-                    <ChevronRight size={13} style={{ marginLeft: 'auto', color: 'var(--text-3)' }} />
+                    <span style={{ lineHeight: 1.3 }}>{action.label}</span>
                   </a>
                 ))}
               </div>
@@ -575,7 +651,7 @@ export default function Dashboard() {
                       <div style={{ width: 8, height: 8, borderRadius: '50%', background: statusColor(txn.status), flexShrink: 0 }} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{txn.skill?.skill_name}</div>
-                        <div style={{ fontSize: '0.72rem', color: 'var(--text-3)' }}>{txn.status}</div>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-3)' }}>{txn.status} · {timeAgo(txn.created_at)}</div>
                       </div>
                       <div style={{ background: statusBg(txn.status), color: statusColor(txn.status), padding: '0.15rem 0.5rem', borderRadius: '999px', fontSize: '0.68rem', fontWeight: 700, whiteSpace: 'nowrap' }}>
                         {txn.status}
@@ -593,6 +669,36 @@ export default function Dashboard() {
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 900px) {
           .dash-grid { grid-template-columns: 1fr !important; }
+        }
+        .eh-dash-decor {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+          z-index: 0;
+        }
+        .eh-dash-blob {
+          position: absolute;
+          width: 280px;
+          height: 280px;
+          border-radius: 50%;
+          filter: blur(90px);
+          opacity: 0.1;
+          animation: eh-dash-blob-float 20s ease-in-out infinite;
+        }
+        @keyframes eh-dash-blob-float {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(20px, 16px) scale(1.1); }
+        }
+        .eh-dash-fade-in {
+          animation: eh-dash-fade-in-kf 0.5s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        @keyframes eh-dash-fade-in-kf {
+          from { opacity: 0; transform: translateY(12px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .eh-dash-blob, .eh-dash-fade-in { animation: none !important; }
         }
       `}</style>
     </div>
@@ -640,13 +746,16 @@ function OrgDashboard({ profile }) {
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <Navbar />
 
-      <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '1.75rem 1.5rem' }}>
+      <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)', position: 'relative', overflow: 'hidden' }}>
+        <div className="eh-dash-decor" aria-hidden="true">
+          <div className="eh-dash-blob" style={{ top: -80, right: '10%', background: 'var(--amber)' }} />
+        </div>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '1.75rem 1.5rem', position: 'relative' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.3rem', flexWrap: 'wrap' }}>
                 <h1 style={{ fontSize: 'clamp(1.4rem, 3vw, 1.75rem)', fontWeight: 900, letterSpacing: '-0.03em', color: 'var(--text)' }}>
-                  Welcome back, {profile?.full_name?.split(' ')[0]}
+                  {greeting()}, {profile?.full_name?.split(' ')[0]}
                 </h1>
                 <span style={{ background: 'var(--amber-light)', color: 'var(--amber-dark)', padding: '0.2rem 0.75rem', borderRadius: '999px', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
                   {profile?.account_type === 'Educator' ? 'Educator' : 'Organization / NGO'}
@@ -669,7 +778,7 @@ function OrgDashboard({ profile }) {
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '2rem 1.5rem' }}>
 
         {!bannerDismissed && (
-          <div style={{
+          <div className="eh-dash-fade-in" style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem',
             background: 'var(--brand-light)', border: '1px solid var(--brand)', borderRadius: 'var(--radius-lg)',
             padding: '1rem 1.25rem', marginBottom: '1.5rem', flexWrap: 'wrap'
@@ -698,28 +807,36 @@ function OrgDashboard({ profile }) {
           </div>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
-          <div style={{ background: 'linear-gradient(135deg, var(--brand) 0%, var(--brand-mid) 100%)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', color: 'white' }}>
+        <div className="eh-dash-fade-in" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+          <div
+            onMouseEnter={cardHover} onMouseLeave={cardLeave}
+            style={{ background: 'linear-gradient(135deg, var(--brand) 0%, var(--brand-mid) 100%)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', color: 'white', transition: 'transform 0.25s ease, box-shadow 0.25s ease' }}>
             <div style={{ fontSize: '0.7rem', fontWeight: 700, opacity: 0.7, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <Zap size={11} /> Sparks Balance
             </div>
-            <div style={{ fontSize: 'clamp(2rem, 4vw, 2.5rem)', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1 }}>{totalSparks.toLocaleString()}</div>
+            <div style={{ fontSize: 'clamp(2rem, 4vw, 2.5rem)', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1 }}><AnimatedStat value={totalSparks} /></div>
             <div style={{ fontSize: '0.8rem', opacity: 0.7, marginTop: '0.4rem' }}>SPK</div>
           </div>
 
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem' }}>
+          <div
+            onMouseEnter={cardHover} onMouseLeave={cardLeave}
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', transition: 'transform 0.25s ease, box-shadow 0.25s ease' }}>
             <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>Total Programs</div>
             <div style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--text)' }}>{programs.length}</div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginTop: '0.3rem' }}>{openCount} currently open</div>
           </div>
 
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem' }}>
+          <div
+            onMouseEnter={cardHover} onMouseLeave={cardLeave}
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', transition: 'transform 0.25s ease, box-shadow 0.25s ease' }}>
             <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>Total Students</div>
             <div style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--brand)' }}>{totalStudents}</div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginTop: '0.3rem' }}>across all programs</div>
           </div>
 
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem' }}>
+          <div
+            onMouseEnter={cardHover} onMouseLeave={cardLeave}
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', transition: 'transform 0.25s ease, box-shadow 0.25s ease' }}>
             <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.875rem' }}>Quick Actions</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <a href="/my-programs" style={{ fontSize: '0.85rem', color: 'var(--brand)', fontWeight: 600, textDecoration: 'none' }}>Manage Programs →</a>
@@ -752,10 +869,13 @@ function OrgDashboard({ profile }) {
                 {programs.slice(0, 5).map(p => {
                   const TypeIcon = p.program_type === 'Internship' ? Briefcase : GraduationCap
                   return (
-                    <a key={p.id} href="/my-programs" style={{
+                    <a key={p.id} href="/my-programs"
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--brand)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(13,115,119,0.08)' }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none' }}
+                      style={{
                       display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem',
                       padding: '1rem 1.125rem', background: 'var(--surface-2)', borderRadius: 'var(--radius)',
-                      border: '1px solid var(--border)', textDecoration: 'none'
+                      border: '1px solid var(--border)', textDecoration: 'none', transition: 'border-color 0.15s, box-shadow 0.15s'
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
                         <TypeIcon size={16} style={{ color: 'var(--text-3)', flexShrink: 0 }} />
@@ -775,6 +895,39 @@ function OrgDashboard({ profile }) {
           </div>
         </div>
       </div>
+
+      <style>{`
+        .eh-dash-decor {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+          z-index: 0;
+        }
+        .eh-dash-blob {
+          position: absolute;
+          width: 280px;
+          height: 280px;
+          border-radius: 50%;
+          filter: blur(90px);
+          opacity: 0.1;
+          animation: eh-dash-blob-float 20s ease-in-out infinite;
+        }
+        @keyframes eh-dash-blob-float {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(20px, 16px) scale(1.1); }
+        }
+        .eh-dash-fade-in {
+          animation: eh-dash-fade-in-kf 0.5s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        @keyframes eh-dash-fade-in-kf {
+          from { opacity: 0; transform: translateY(12px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .eh-dash-blob, .eh-dash-fade-in { animation: none !important; }
+        }
+      `}</style>
     </div>
   )
 }
