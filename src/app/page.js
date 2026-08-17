@@ -511,22 +511,6 @@ export default function LandingPage() {
       position: 'relative',
     }}
   >
-    <div
-      style={{
-        display: 'inline-block',
-        background: 'var(--green-light)',
-        color: 'var(--green)',
-        padding: '0.3rem 0.9rem',
-        borderRadius: 999,
-        fontSize: '0.8rem',
-        fontWeight: 700,
-        marginBottom: '1rem',
-        letterSpacing: '0.05em',
-        textTransform: 'uppercase',
-      }}
-    >
-      SDG Alignment
-    </div>
 
     <h2
       style={{
