@@ -514,7 +514,7 @@ export default function LandingPage() {
 
     <h2
       style={{
-        fontSize: '1.6rem',
+        fontSize: '2.6rem',
         fontWeight: 800,
         marginBottom: '1.25rem',
         letterSpacing: '-0.02em',
