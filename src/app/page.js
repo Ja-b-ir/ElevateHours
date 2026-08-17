@@ -472,7 +472,7 @@ export default function LandingPage() {
                 { name: 'Nobodik News', light: '/partners/nobodik white.png', dark: '/partners/nobodik dark.png' },
                 { name: 'Venfyy', light: '/partners/venfyy white.png', dark: '/partners/venfyy dark.png' },
                 { name: 'Tea Bondhu', light: '/partners/tea white.png', dark: '/partners/tea dark.png' },
-                { name: 'Venfyy', light: '/partners/le light.png', dark: '/partners/le dark.png' },
+                { name: 'Venfyy', light: '/partners/le white.png', dark: '/partners/le dark.png' },
               ]).map((partner, i) => (
                 <div key={i} className="eh-marquee-item">
                   <img
