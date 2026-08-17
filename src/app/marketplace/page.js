@@ -3,7 +3,16 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
-import { Search, Clock, Users, Briefcase, GraduationCap, ChevronRight, Check, Zap, MessageCircle, Mail, Bookmark, Award } from 'lucide-react'
+import LoadingScreen from '@/components/LoadingScreen'
+import { Search, Clock, Users, Briefcase, GraduationCap, ChevronRight, Check, Zap, MessageCircle, Mail, Bookmark, Award, X, Sparkles, TrendingUp } from 'lucide-react'
+
+function isRecent(dateStr, days = 3) {
+  if (!dateStr) return false
+  return (Date.now() - new Date(dateStr).getTime()) < days * 24 * 3600 * 1000
+}
+
+const cardHover = (e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 16px 32px rgba(0,0,0,0.1)' }
+const cardLeave = (e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none' }
 
 function MarketplaceContent() {
   const router = useRouter()
@@ -20,6 +29,7 @@ function MarketplaceContent() {
   const [myApplications, setMyApplications] = useState(new Set())
   const [filterTier, setFilterTier] = useState('')
   const [search, setSearch] = useState('')
+  const [sortBy, setSortBy] = useState('newest')
   const [loading, setLoading] = useState(true)
   const [applying, setApplying] = useState(null)
   const [success, setSuccess] = useState('')
@@ -62,6 +72,12 @@ function MarketplaceContent() {
     if (!user) return
     fetchData()
   }, [activeTab, filterTier, user])
+
+  // Sort options depend on what kind of content the active tab shows,
+  // so reset to a sensible default whenever the tab changes.
+  useEffect(() => {
+    setSortBy('newest')
+  }, [activeTab])
 
   const fetchData = async () => {
     if (activeTab === 'Find Work' || activeTab === 'Find Education') {
@@ -179,39 +195,135 @@ function MarketplaceContent() {
   const filteredProfiles = profiles.filter(p => !search || p.full_name?.toLowerCase().includes(search.toLowerCase()))
   const filteredPrograms = programs.filter(p => !search || p.title?.toLowerCase().includes(search.toLowerCase()) || p.description?.toLowerCase().includes(search.toLowerCase()))
 
-  if (loading) return <div><Navbar /><div className="loading-wrap"><div className="spinner" /> Loading marketplace...</div></div>
-
   const isListTab = activeTab === 'Find Work' || activeTab === 'Find Education'
   const isProgramsTab = activeTab === 'Courses' || activeTab === 'Internships'
   const isProfileTab = activeTab === 'Find Help (Work)' || activeTab === 'Find Help (Education)'
 
+  // Client-side sorting — the underlying Supabase query already orders by
+  // created_at, this just lets the user reorder what's already loaded.
+  const sortedTxns = [...filteredTxns].sort((a, b) => {
+    if (sortBy === 'sparks') return (b.total_sparks_transferred || 0) - (a.total_sparks_transferred || 0)
+    if (sortBy === 'hours') return (b.agreed_hours || 0) - (a.agreed_hours || 0)
+    return new Date(b.created_at) - new Date(a.created_at)
+  })
+  const sortedPrograms = [...filteredPrograms].sort((a, b) => {
+    if (sortBy === 'enrolled') return b.enrolledCount - a.enrolledCount
+    return new Date(b.created_at) - new Date(a.created_at)
+  })
+  const sortedProfiles = [...filteredProfiles].sort((a, b) => {
+    if (sortBy === 'rated') return (b.completed_transactions || 0) - (a.completed_transactions || 0)
+    return new Date(b.created_at || 0) - new Date(a.created_at || 0)
+  })
+
+  const avgSparks = filteredTxns.length
+    ? filteredTxns.reduce((s, t) => s + (t.total_sparks_transferred || 0), 0) / filteredTxns.length
+    : 0
+
+  const activeFilterChips = []
+  if (search) activeFilterChips.push({ key: 'search', label: `"${search}"`, clear: () => setSearch('') })
+  if (filterTier) {
+    const t = tiers.find(t => String(t.id) === String(filterTier))
+    if (t) activeFilterChips.push({ key: 'tier', label: t.tier_name, clear: () => setFilterTier('') })
+  }
+
+  if (loading) return (
+    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+      <Navbar />
+      <LoadingScreen text="Loading marketplace..." />
+    </div>
+  )
+
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <Navbar />
-      <div className="page-wrap">
-        <div className="page-header">
-          <h1 className="page-title">Marketplace</h1>
+      <div className="page-wrap" style={{ position: 'relative' }}>
+        <div className="eh-mkt-decor" aria-hidden="true">
+          <div className="eh-mkt-blob" style={{ top: -60, right: '8%', background: 'var(--brand)' }} />
+        </div>
+
+        <div className="page-header eh-mkt-fade-in">
+          <h1 className="page-title">
+            <span className="eh-mkt-gradient-text">Marketplace</span>
+          </h1>
           <p className="page-subtitle">Find work, find talent, find knowledge — all powered by Sparks</p>
         </div>
 
         {success && <div className="alert alert-success"><Check size={15} /> {success}</div>}
 
-        {/* Search + filter bar */}
-        <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+        {/* Search + filter + sort bar */}
+        <div className="eh-mkt-fade-in" style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
           <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
             <Search size={14} style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)', pointerEvents: 'none' }} />
-            <input type="text" placeholder="Search skills, descriptions..." value={search} onChange={e => setSearch(e.target.value)} className="form-input" style={{ paddingLeft: '2.5rem' }} />
+            <input type="text" placeholder="Search skills, descriptions..." value={search} onChange={e => setSearch(e.target.value)} className="form-input" style={{ paddingLeft: '2.5rem', paddingRight: search ? '2.25rem' : undefined }} />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', display: 'flex', padding: 0 }}
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
+
           {isListTab && (
             <select value={filterTier} onChange={e => setFilterTier(e.target.value)} className="form-select" style={{ width: 'auto', minWidth: 160 }}>
               <option value="">All Tiers</option>
               {tiers.map(t => <option key={t.id} value={t.id}>{t.tier_name}</option>)}
             </select>
           )}
+
+          <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="form-select" style={{ width: 'auto', minWidth: 150 }}>
+            {isListTab && (
+              <>
+                <option value="newest">Newest First</option>
+                <option value="sparks">Highest Sparks</option>
+                <option value="hours">Most Hours</option>
+              </>
+            )}
+            {isProgramsTab && (
+              <>
+                <option value="newest">Newest First</option>
+                <option value="enrolled">Most Enrolled</option>
+              </>
+            )}
+            {isProfileTab && (
+              <>
+                <option value="newest">Newest Members</option>
+                <option value="rated">Top Rated</option>
+              </>
+            )}
+          </select>
         </div>
 
+        {/* Active filter chips */}
+        {activeFilterChips.length > 0 && (
+          <div className="eh-mkt-fade-in" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+            {activeFilterChips.map(chip => (
+              <button
+                key={chip.key}
+                onClick={chip.clear}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+                  background: 'var(--brand-light)', color: 'var(--brand)', border: '1px solid var(--brand)',
+                  borderRadius: 999, padding: '0.3rem 0.7rem', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer'
+                }}
+              >
+                {chip.label} <X size={12} />
+              </button>
+            ))}
+            {activeFilterChips.length > 1 && (
+              <button
+                onClick={() => { setSearch(''); setFilterTier('') }}
+                style={{ background: 'none', border: 'none', color: 'var(--text-3)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}
+              >
+                Clear all
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Tabs */}
-        <div className="tab-bar">
+        <div className="tab-bar eh-mkt-fade-in">
           {tabs.map(({ key, label, icon: Icon }) => (
             <button key={key} onClick={() => setActiveTab(key)} className={`tab-item ${activeTab === key ? 'active' : ''}`}>
               <Icon size={13} style={{ marginRight: 5, verticalAlign: 'middle' }} />{label}
@@ -221,21 +333,41 @@ function MarketplaceContent() {
 
         {/* Opportunity cards */}
         {isListTab && (
-          filteredTxns.length === 0 ? (
-            <div className="card empty-state">
+          sortedTxns.length === 0 ? (
+            <div className="card empty-state eh-mkt-fade-in">
               <Search size={40} style={{ margin: '0 auto 1rem', color: 'var(--border-2)' }} />
               <h3>No opportunities found</h3>
               <p>Try a different filter or check back soon.</p>
             </div>
           ) : (
             <>
-              <p style={{ color: 'var(--text-3)', fontSize: '0.78rem', marginBottom: '1rem' }}>{filteredTxns.length} opportunities found</p>
+              <p style={{ color: 'var(--text-3)', fontSize: '0.78rem', marginBottom: '1rem' }}>{sortedTxns.length} opportunities found</p>
               <div className="grid-auto">
-                {filteredTxns.map(txn => {
+                {sortedTxns.map((txn, i) => {
                   const applied = myApplications.has(txn.id)
                   const saved = savedIds.has(txn.id)
+                  const fresh = isRecent(txn.created_at)
+                  const popular = (txn.total_sparks_transferred || 0) > avgSparks && avgSparks > 0
                   return (
-                    <div key={txn.id} className="card" style={{ border: applied ? '1.5px solid var(--brand)' : '1px solid var(--border)', display: 'flex', flexDirection: 'column' }}>
+                    <div
+                      key={txn.id} className="card eh-mkt-card eh-mkt-reveal"
+                      onMouseEnter={cardHover} onMouseLeave={cardLeave}
+                      style={{ border: applied ? '1.5px solid var(--brand)' : '1px solid var(--border)', display: 'flex', flexDirection: 'column', transitionDelay: `${(i % 8) * 40}ms` }}
+                    >
+                      {(fresh || popular) && (
+                        <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.6rem' }}>
+                          {fresh && (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', background: 'var(--green-light)', color: 'var(--green)', padding: '0.15rem 0.5rem', borderRadius: 999, fontSize: '0.65rem', fontWeight: 700 }}>
+                              <Sparkles size={9} /> New
+                            </span>
+                          )}
+                          {popular && (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', background: 'var(--amber-light)', color: 'var(--amber-dark)', padding: '0.15rem 0.5rem', borderRadius: 999, fontSize: '0.65rem', fontWeight: 700 }}>
+                              <TrendingUp size={9} /> Popular
+                            </span>
+                          )}
+                        </div>
+                      )}
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.625rem' }}>
                         <h3 style={{ fontSize: '0.9rem', flex: 1, color: 'var(--text)' }}>{txn.skill?.skill_name}</h3>
                         <span className={tierBadgeClass(txn.tier?.tier_name)}>{txn.tier?.tier_name?.split(':')[0]}</span>
@@ -280,18 +412,18 @@ function MarketplaceContent() {
 
         {/* Profile cards */}
         {isProfileTab && (
-          filteredProfiles.length === 0 ? (
-            <div className="card empty-state">
+          sortedProfiles.length === 0 ? (
+            <div className="card empty-state eh-mkt-fade-in">
               <Users size={40} style={{ margin: '0 auto 1rem', color: 'var(--border-2)' }} />
               <h3>No individuals found yet</h3>
               <p>Check back as more members join.</p>
             </div>
           ) : (
             <div className="grid-auto">
-              {filteredProfiles.map(p => (
-                <div key={p.id} className="card" style={{ display: 'flex', flexDirection: 'column' }}>
+              {sortedProfiles.map((p, i) => (
+                <div key={p.id} className="card eh-mkt-card eh-mkt-reveal" onMouseEnter={cardHover} onMouseLeave={cardLeave} style={{ display: 'flex', flexDirection: 'column', transitionDelay: `${(i % 8) * 40}ms` }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem', marginBottom: '1rem' }}>
-                    <div className="avatar avatar-md">{p.full_name?.[0]?.toUpperCase()}</div>
+                    <div className="avatar avatar-md" style={{ background: ['var(--brand)', 'var(--green)', 'var(--amber)'][i % 3], color: 'white' }}>{p.full_name?.[0]?.toUpperCase()}</div>
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
                         <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{p.full_name}</span>
@@ -318,8 +450,8 @@ function MarketplaceContent() {
                     </div>
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', marginBottom: '1rem', flex: 1 }}>
-                    {p.skills?.slice(0, 4).map((s, i) => (
-                      <span key={i} style={{ background: 'var(--surface-3)', color: 'var(--text-2)', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-sm)', fontSize: '0.7rem', fontWeight: 500 }}>
+                    {p.skills?.slice(0, 4).map((s, si) => (
+                      <span key={si} style={{ background: 'var(--surface-3)', color: 'var(--text-2)', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-sm)', fontSize: '0.7rem', fontWeight: 500 }}>
                         {s.skill?.skill_name}
                       </span>
                     ))}
@@ -346,20 +478,26 @@ function MarketplaceContent() {
 
         {/* Programs */}
         {isProgramsTab && (
-          filteredPrograms.length === 0 ? (
-            <div className="card empty-state">
+          sortedPrograms.length === 0 ? (
+            <div className="card empty-state eh-mkt-fade-in">
               <GraduationCap size={40} style={{ margin: '0 auto 1rem', color: 'var(--border-2)' }} />
               <h3>No programs open right now</h3>
               <p>Check back soon for new courses and internships.</p>
             </div>
           ) : (
             <div className="grid-auto">
-              {filteredPrograms.map(p => {
+              {sortedPrograms.map((p, i) => {
                 const enrolled = myEnrollments.has(p.id)
                 const full = p.capacity && p.enrolledCount >= p.capacity
+                const fresh = isRecent(p.created_at)
                 return (
-                  <div key={p.id} className="card" style={{ display: 'flex', flexDirection: 'column' }}>
+                  <div key={p.id} className="card eh-mkt-card eh-mkt-reveal" onMouseEnter={cardHover} onMouseLeave={cardLeave} style={{ display: 'flex', flexDirection: 'column', transitionDelay: `${(i % 8) * 40}ms` }}>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.625rem' }}>
+                      {fresh && (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', background: 'var(--green-light)', color: 'var(--green)', padding: '0.15rem 0.5rem', borderRadius: 999, fontSize: '0.65rem', fontWeight: 700 }}>
+                          <Sparkles size={9} /> New
+                        </span>
+                      )}
                       <span className={`badge ${p.program_type === 'Internship' ? 'badge-purple' : 'badge-blue'}`}>
                         {p.program_type}
                       </span>
@@ -425,13 +563,66 @@ function MarketplaceContent() {
           )
         )}
       </div>
+
+      <style>{`
+        .eh-mkt-decor {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+          z-index: 0;
+        }
+        .eh-mkt-blob {
+          position: absolute;
+          width: 280px;
+          height: 280px;
+          border-radius: 50%;
+          filter: blur(90px);
+          opacity: 0.1;
+          animation: eh-mkt-blob-float 20s ease-in-out infinite;
+        }
+        @keyframes eh-mkt-blob-float {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(20px, 16px) scale(1.1); }
+        }
+        .eh-mkt-gradient-text {
+          background: linear-gradient(90deg, var(--brand), var(--green), var(--amber), var(--brand));
+          background-size: 300% 100%;
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          animation: eh-mkt-gradient-shift 6s ease infinite;
+        }
+        @keyframes eh-mkt-gradient-shift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .eh-mkt-card {
+          transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .eh-mkt-fade-in {
+          animation: eh-mkt-fade-in-kf 0.5s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        .eh-mkt-reveal {
+          animation: eh-mkt-fade-in-kf 0.45s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        @keyframes eh-mkt-fade-in-kf {
+          from { opacity: 0; transform: translateY(14px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .eh-mkt-blob, .eh-mkt-gradient-text, .eh-mkt-fade-in, .eh-mkt-reveal { animation: none !important; }
+          .eh-mkt-card { transition: none !important; }
+        }
+      `}</style>
     </div>
   )
 }
 
 export default function Marketplace() {
   return (
-    <Suspense fallback={<div><Navbar /><div className="loading-wrap"><div className="spinner" /> Loading marketplace...</div></div>}>
+    <Suspense fallback={<div style={{ background: 'var(--bg)', minHeight: '100vh' }}><Navbar /><LoadingScreen text="Loading marketplace..." /></div>}>
       <MarketplaceContent />
     </Suspense>
   )
