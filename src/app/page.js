@@ -83,7 +83,37 @@ export default function LandingPage() {
     return () => hero.removeEventListener('mousemove', handleMove)
   }, [])
   const [themeLoaded, setThemeLoaded] = useState(false)
+  const [scrollProgress, setScrollProgress] = useState(0)
+  const [cursor, setCursor] = useState({ x: -500, y: -500 })
   const pageLoading = !tiersLoaded || !themeLoaded
+
+  useEffect(() => {
+    let ticking = false
+
+    const handleScroll = () => {
+      if (ticking) return
+      ticking = true
+      requestAnimationFrame(() => {
+        const doc = document.documentElement
+        const max = Math.max(doc.scrollHeight - window.innerHeight, 1)
+        setScrollProgress(Math.min(window.scrollY / max, 1))
+        ticking = false
+      })
+    }
+
+    const handlePointer = (e) => {
+      setCursor({ x: e.clientX, y: e.clientY })
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    window.addEventListener('pointermove', handlePointer, { passive: true })
+    handleScroll()
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('pointermove', handlePointer)
+    }
+  }, [])
 
   useEffect(() => {
     supabase.from('tier_reference').select('*').order('multiplier').then(({ data }) => {
@@ -116,6 +146,33 @@ export default function LandingPage() {
     return () => observer.disconnect()
   }, [pageLoading])
 
+  useEffect(() => {
+    const buttons = document.querySelectorAll('.eh-btn')
+    const cards = document.querySelectorAll('.eh-glass-card')
+
+    const onButtonMove = (e) => {
+      const el = e.currentTarget
+      const rect = el.getBoundingClientRect()
+      el.style.setProperty('--mx-btn', `${e.clientX - rect.left}px`)
+      el.style.setProperty('--my-btn', `${e.clientY - rect.top}px`)
+    }
+
+    const onCardMove = (e) => {
+      const el = e.currentTarget
+      const rect = el.getBoundingClientRect()
+      el.style.setProperty('--mx-card', `${e.clientX - rect.left}px`)
+      el.style.setProperty('--my-card', `${e.clientY - rect.top}px`)
+    }
+
+    buttons.forEach((el) => el.addEventListener('pointermove', onButtonMove))
+    cards.forEach((el) => el.addEventListener('pointermove', onCardMove))
+
+    return () => {
+      buttons.forEach((el) => el.removeEventListener('pointermove', onButtonMove))
+      cards.forEach((el) => el.removeEventListener('pointermove', onCardMove))
+    }
+  }, [pageLoading, theme])
+
   const toggleTheme = () => {
     const next = theme === 'light' ? 'dark' : 'light'
     setTheme(next)
@@ -134,10 +191,26 @@ export default function LandingPage() {
   }
 
   return (
-    <div style={{ fontFamily: 'Inter, -apple-system, sans-serif', background: 'var(--bg)', color: 'var(--text)', minHeight: '100vh' }}>
+    <div
+      className="eh-page-shell"
+      style={{
+        fontFamily: 'Inter, -apple-system, sans-serif',
+        background: 'var(--bg)',
+        color: 'var(--text)',
+        minHeight: '100vh',
+        '--cursor-x': `${cursor.x}px`,
+        '--cursor-y': `${cursor.y}px`,
+      }}
+    >
+      <div className="eh-scroll-progress" aria-hidden="true">
+        <span style={{ transform: `scaleX(${scrollProgress})` }} />
+      </div>
+      <div className="eh-cursor-glow" aria-hidden="true" />
+      <div className="eh-noise" aria-hidden="true" />
+      <div className="eh-global-grid" aria-hidden="true" />
 
       {/* Navbar */}
-      <nav style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 100, backdropFilter: 'blur(12px)', overflowX: 'hidden' }}>
+      <nav className="eh-navbar" style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 100, overflowX: 'hidden' }}>
         <div className="eh-land-nav" style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem', display: 'flex', flexWrap: 'nowrap', alignItems: 'center', justifyContent: 'space-between', height: 60 }}>
           <div className="eh-land-logo" style={{ flexShrink: 0 }}>
             <Logo height={50} linkTo="/" />
@@ -154,7 +227,7 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero */}
-      <section ref={heroRef} style={{ padding: 'clamp(4rem, 10vw, 8rem) 1.5rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+      <section ref={heroRef} className="eh-hero-section" style={{ padding: 'clamp(4rem, 10vw, 8rem) 1.5rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(13,115,119,0.12), transparent)', pointerEvents: 'none', zIndex: 0 }} />
         <div className="eh-hero-bg" aria-hidden="true">
           <div className="eh-blob eh-blob-1" />
@@ -222,8 +295,18 @@ export default function LandingPage() {
           <span className="eh-activity-label" style={{ background: 'var(--red)' }}>Rafi joined a program</span>
         </div>
 
-        <div className="reveal reveal-up" style={{ maxWidth: 780, margin: '0 auto', position: 'relative', zIndex: 1 }}>
-          <h1 style={{ fontSize: 'clamp(2.2rem, 6vw, 3.75rem)', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: '1.5rem', color: 'var(--text)' }}>
+        <div className="eh-hero-orbit eh-orbit-a" aria-hidden="true" />
+        <div className="eh-hero-orbit eh-orbit-b" aria-hidden="true" />
+        <div className="eh-hero-orbit eh-orbit-c" aria-hidden="true" />
+
+        <div className="reveal reveal-up" style={{ maxWidth: 860, margin: '0 auto', position: 'relative', zIndex: 1 }}>
+          <div className="eh-hero-eyebrow">
+            <span className="eh-live-dot" />
+            <span>THE SKILL ECONOMY IS MOVING</span>
+            <span className="eh-eyebrow-divider" />
+            <span>Powered by Sparks</span>
+          </div>
+          <h1 className="eh-hero-title" style={{ fontSize: 'clamp(2.2rem, 6vw, 3.75rem)', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: '1.5rem', color: 'var(--text)' }}>
             Your Skills Have More<br />
             <span className="eh-hero-gradient-text">Value Than You Think.</span>
           </h1>
@@ -245,6 +328,11 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
+        </div>
+
+        <div className="eh-scroll-cue" aria-hidden="true">
+          <span>SCROLL TO EXPLORE</span>
+          <div className="eh-scroll-line"><i /></div>
         </div>
       </section>
 
@@ -327,7 +415,7 @@ export default function LandingPage() {
               { n: '02', title: 'Find or Post a Request', desc: 'Browse Work and Education opportunities. Post requests for skills you need. Match with the right person.' },
               { n: '03', title: 'Complete and Earn', desc: 'Deliver the work, confirm completion, earn Sparks. Build your verified portfolio, badges, and endorsements.' }
             ].map((step, i) => (
-              <div key={i} className="eh-hover-lift" style={{ position: 'relative', padding: '2rem', background: 'var(--surface-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)' }}>
+              <div key={i} className="eh-hover-lift eh-glass-card" style={{ position: 'relative', padding: '2rem', background: 'var(--surface-2)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)' }}>
                 <div style={{ fontSize: '3rem', fontWeight: 900, color: 'var(--border-2)', position: 'absolute', top: '1.25rem', right: '1.5rem', lineHeight: 1 }}>{step.n}</div>
                 <div style={{ width: 40, height: 40, borderRadius: 'var(--radius-sm)', background: 'var(--brand-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
                   <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'var(--brand)' }} />
@@ -353,7 +441,7 @@ export default function LandingPage() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
             {tiers.map((tier, i) => (
-              <div key={tier.id} className="eh-hover-lift" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderTop: `4px solid ${tierAccent[i]}`, borderRadius: 'var(--radius-lg)', padding: '2rem' }}>
+              <div key={tier.id} className="eh-hover-lift eh-glass-card" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderTop: `4px solid ${tierAccent[i]}`, borderRadius: 'var(--radius-lg)', padding: '2rem' }}>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', background: 'var(--surface-3)', padding: '0.25rem 0.75rem', borderRadius: 'var(--radius-full)', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-2)', marginBottom: '1.25rem' }}>
                   {tier.multiplier}x MULTIPLIER
                 </div>
@@ -677,7 +765,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
-  <div style={{ color: 'var(--text-3)', fontSize: '0.78rem' }}>2025 ElevateHours. All rights reserved.</div>
+  <div style={{ color: 'var(--text-3)', fontSize: '0.78rem' }}>2026 ElevateHours. All rights reserved.</div>
   <div style={{ display: 'flex', gap: '1rem' }}>
     <a href="/terms" style={{ color: 'var(--text-3)', fontSize: '0.78rem' }}>Terms of Service</a>
     <a href="/privacy" style={{ color: 'var(--text-3)', fontSize: '0.78rem' }}>Privacy Policy</a>
@@ -690,6 +778,433 @@ export default function LandingPage() {
       </footer>
 
       <style>{`
+
+        /* =========================================================
+           MODERN LANDING SYSTEM
+           ========================================================= */
+
+        .eh-page-shell {
+          position: relative;
+          isolation: isolate;
+          overflow: clip;
+        }
+
+        .eh-page-shell::selection {
+          background: var(--brand);
+          color: #fff;
+        }
+
+        .eh-scroll-progress {
+          position: fixed;
+          inset: 0 0 auto;
+          height: 3px;
+          z-index: 1000;
+          pointer-events: none;
+          background: transparent;
+        }
+
+        .eh-scroll-progress span {
+          display: block;
+          width: 100%;
+          height: 100%;
+          transform-origin: left center;
+          background: linear-gradient(90deg, var(--brand), var(--green), var(--amber));
+          box-shadow: 0 0 18px rgba(13,115,119,.45);
+        }
+
+        .eh-cursor-glow {
+          position: fixed;
+          left: var(--cursor-x);
+          top: var(--cursor-y);
+          width: 420px;
+          height: 420px;
+          transform: translate(-50%, -50%);
+          border-radius: 50%;
+          pointer-events: none;
+          z-index: -1;
+          background: radial-gradient(circle, rgba(13,115,119,.12) 0%, rgba(13,115,119,.045) 28%, transparent 68%);
+          filter: blur(4px);
+          transition: left .12s ease-out, top .12s ease-out;
+        }
+
+        .eh-noise {
+          position: fixed;
+          inset: 0;
+          pointer-events: none;
+          z-index: 50;
+          opacity: .025;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");
+          mix-blend-mode: multiply;
+        }
+
+        [data-theme="dark"] .eh-noise {
+          mix-blend-mode: screen;
+          opacity: .035;
+        }
+
+        .eh-global-grid {
+          position: fixed;
+          inset: 0;
+          pointer-events: none;
+          z-index: -2;
+          opacity: .16;
+          background-image:
+            linear-gradient(to right, rgba(120,140,150,.08) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(120,140,150,.08) 1px, transparent 1px);
+          background-size: 72px 72px;
+          mask-image: linear-gradient(to bottom, black, transparent 75%);
+          -webkit-mask-image: linear-gradient(to bottom, black, transparent 75%);
+        }
+
+        .eh-navbar {
+          background: color-mix(in srgb, var(--surface) 78%, transparent) !important;
+          backdrop-filter: blur(20px) saturate(150%);
+          -webkit-backdrop-filter: blur(20px) saturate(150%);
+          box-shadow: 0 1px 0 rgba(255,255,255,.08), 0 10px 40px rgba(0,0,0,.035);
+          transition: background .3s ease, box-shadow .3s ease;
+        }
+
+        .eh-navbar::after {
+          content: "";
+          position: absolute;
+          inset: auto 0 0;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, var(--brand), transparent);
+          opacity: .25;
+        }
+
+        .eh-hero-section {
+          min-height: 760px;
+          display: grid;
+          place-items: center;
+          background:
+            radial-gradient(circle at 50% 20%, rgba(13,115,119,.08), transparent 36%),
+            radial-gradient(circle at 12% 65%, rgba(53,180,125,.06), transparent 24%),
+            radial-gradient(circle at 88% 62%, rgba(245,180,60,.055), transparent 24%);
+        }
+
+        .eh-hero-section::before {
+          content: "";
+          position: absolute;
+          width: min(1000px, 95vw);
+          height: min(1000px, 95vw);
+          border: 1px solid var(--border);
+          border-radius: 50%;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -44%);
+          opacity: .22;
+          pointer-events: none;
+          animation: eh-orbit-spin 32s linear infinite;
+        }
+
+        .eh-hero-section::after {
+          content: "";
+          position: absolute;
+          width: 70%;
+          height: 1px;
+          left: 15%;
+          bottom: 10%;
+          background: linear-gradient(90deg, transparent, var(--border-2), transparent);
+          opacity: .6;
+        }
+
+        @keyframes eh-orbit-spin {
+          from { transform: translate(-50%, -44%) rotate(0deg); }
+          to { transform: translate(-50%, -44%) rotate(360deg); }
+        }
+
+        .eh-hero-eyebrow {
+          display: inline-flex;
+          align-items: center;
+          gap: .55rem;
+          padding: .45rem .8rem;
+          margin-bottom: 1.4rem;
+          border: 1px solid color-mix(in srgb, var(--brand) 20%, var(--border));
+          border-radius: 999px;
+          background: color-mix(in srgb, var(--surface) 78%, transparent);
+          box-shadow: 0 8px 30px rgba(13,115,119,.08), inset 0 1px 0 rgba(255,255,255,.35);
+          color: var(--text-2);
+          font-size: .66rem;
+          font-weight: 800;
+          letter-spacing: .09em;
+          text-transform: uppercase;
+          backdrop-filter: blur(12px);
+        }
+
+        .eh-live-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: var(--green);
+          box-shadow: 0 0 0 0 rgba(53,180,125,.45);
+          animation: eh-pulse-dot 2s infinite;
+        }
+
+        @keyframes eh-pulse-dot {
+          0% { box-shadow: 0 0 0 0 rgba(53,180,125,.45); }
+          70% { box-shadow: 0 0 0 7px rgba(53,180,125,0); }
+          100% { box-shadow: 0 0 0 0 rgba(53,180,125,0); }
+        }
+
+        .eh-eyebrow-divider {
+          width: 1px;
+          height: 12px;
+          background: var(--border-2);
+        }
+
+        .eh-hero-title {
+          text-wrap: balance;
+          text-shadow: 0 10px 50px rgba(13,115,119,.07);
+        }
+
+        .eh-hero-title::after {
+          content: "";
+          display: block;
+          width: 74px;
+          height: 4px;
+          margin: 1.3rem auto 0;
+          border-radius: 999px;
+          background: linear-gradient(90deg, var(--brand), var(--green), var(--amber));
+          animation: eh-title-line 3s ease-in-out infinite;
+        }
+
+        @keyframes eh-title-line {
+          0%, 100% { width: 54px; opacity: .55; }
+          50% { width: 110px; opacity: 1; }
+        }
+
+        .eh-hero-orbit {
+          position: absolute;
+          border: 1px solid color-mix(in srgb, var(--brand) 20%, transparent);
+          border-radius: 50%;
+          pointer-events: none;
+          opacity: .55;
+        }
+
+        .eh-orbit-a {
+          width: 180px;
+          height: 180px;
+          left: 7%;
+          top: 22%;
+          animation: eh-orbit-drift-a 11s ease-in-out infinite;
+        }
+
+        .eh-orbit-b {
+          width: 95px;
+          height: 95px;
+          right: 10%;
+          top: 28%;
+          border-color: color-mix(in srgb, var(--amber) 28%, transparent);
+          animation: eh-orbit-drift-b 8s ease-in-out infinite;
+        }
+
+        .eh-orbit-c {
+          width: 130px;
+          height: 130px;
+          right: 13%;
+          bottom: 15%;
+          border-color: color-mix(in srgb, var(--green) 25%, transparent);
+          animation: eh-orbit-drift-c 12s ease-in-out infinite;
+        }
+
+        @keyframes eh-orbit-drift-a {
+          0%, 100% { transform: translate3d(0,0,0) rotate(0deg); }
+          50% { transform: translate3d(35px,-25px,0) rotate(35deg); }
+        }
+
+        @keyframes eh-orbit-drift-b {
+          0%, 100% { transform: translate3d(0,0,0) scale(1); }
+          50% { transform: translate3d(-25px,30px,0) scale(1.18); }
+        }
+
+        @keyframes eh-orbit-drift-c {
+          0%, 100% { transform: translate3d(0,0,0); }
+          50% { transform: translate3d(-30px,-20px,0); }
+        }
+
+        .eh-scroll-cue {
+          position: absolute;
+          left: 50%;
+          bottom: 1.7rem;
+          transform: translateX(-50%);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: .45rem;
+          color: var(--text-3);
+          font-size: .55rem;
+          font-weight: 800;
+          letter-spacing: .16em;
+          opacity: .7;
+        }
+
+        .eh-scroll-line {
+          width: 1px;
+          height: 42px;
+          overflow: hidden;
+          background: var(--border-2);
+          position: relative;
+        }
+
+        .eh-scroll-line i {
+          position: absolute;
+          left: 0;
+          top: -100%;
+          width: 100%;
+          height: 55%;
+          background: var(--brand);
+          animation: eh-scroll-drop 1.8s ease-in-out infinite;
+        }
+
+        @keyframes eh-scroll-drop {
+          0% { top: -60%; }
+          60%, 100% { top: 110%; }
+        }
+
+        .eh-glass-card {
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+          box-shadow: 0 20px 60px rgba(0,0,0,.045), inset 0 1px 0 rgba(255,255,255,.28);
+          transition:
+            transform .45s cubic-bezier(.16,1,.3,1),
+            box-shadow .45s cubic-bezier(.16,1,.3,1),
+            border-color .3s ease;
+        }
+
+        .eh-glass-card::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+          pointer-events: none;
+          opacity: 0;
+          background: radial-gradient(
+            320px circle at var(--mx-card, 50%) var(--my-card, 50%),
+            rgba(13,115,119,.11),
+            transparent 65%
+          );
+          transition: opacity .35s ease;
+        }
+
+        .eh-glass-card:hover {
+          transform: translateY(-8px) scale(1.008);
+          box-shadow: 0 24px 70px rgba(0,0,0,.09), 0 0 0 1px rgba(13,115,119,.05);
+          border-color: color-mix(in srgb, var(--brand) 28%, var(--border));
+        }
+
+        .eh-glass-card:hover::before {
+          opacity: 1;
+        }
+
+        .eh-btn {
+          position: relative;
+          overflow: hidden;
+          isolation: isolate;
+        }
+
+        .eh-btn::before {
+          content: "";
+          position: absolute;
+          width: 0;
+          height: 0;
+          left: var(--mx-btn, 50%);
+          top: var(--my-btn, 50%);
+          transform: translate(-50%, -50%);
+          border-radius: 50%;
+          background: rgba(255,255,255,.18);
+          transition: width .55s cubic-bezier(.16,1,.3,1), height .55s cubic-bezier(.16,1,.3,1);
+          z-index: -1;
+        }
+
+        .eh-btn:hover::before {
+          width: 260px;
+          height: 260px;
+        }
+
+        .eh-btn svg {
+          transition: transform .3s cubic-bezier(.16,1,.3,1);
+        }
+
+        .eh-btn:hover svg {
+          transform: translateX(3px);
+        }
+
+        .eh-float-card-inner {
+          box-shadow: 0 18px 45px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.35);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+        }
+
+        .eh-skill-text-item {
+          transition: opacity .3s ease, transform .3s ease;
+        }
+
+        .eh-skill-text-item:hover {
+          opacity: 1;
+          transform: scale(1.035);
+        }
+
+        .eh-section-blob {
+          mix-blend-mode: multiply;
+        }
+
+        [data-theme="dark"] .eh-section-blob {
+          mix-blend-mode: screen;
+        }
+
+        @media (max-width: 900px) {
+          .eh-hero-section {
+            min-height: 680px;
+          }
+
+          .eh-hero-section::before {
+            width: 760px;
+            height: 760px;
+          }
+
+          .eh-orbit-a {
+            left: -55px;
+          }
+
+          .eh-orbit-b {
+            right: -20px;
+          }
+
+          .eh-scroll-cue {
+            display: none;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .eh-cursor-glow,
+          .eh-global-grid,
+          .eh-hero-orbit {
+            display: none;
+          }
+
+          .eh-hero-section {
+            min-height: 620px;
+          }
+
+          .eh-hero-eyebrow {
+            font-size: .56rem;
+            gap: .4rem;
+          }
+
+          .eh-eyebrow-divider {
+            display: none;
+          }
+
+          .eh-hero-title::after {
+            margin-top: 1rem;
+          }
+
+          .eh-noise {
+            opacity: .018;
+          }
+        }
+
         @media (max-width: 480px) {
           .eh-land-nav { padding: 0 0.875rem !important; }
           .eh-land-actions { gap: 0.35rem !important; }
