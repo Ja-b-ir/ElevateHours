@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
-import { GraduationCap, Briefcase, Users, Plus, X, MessageSquare, Zap } from 'lucide-react'
+import ProgramApplicationsList from '@/components/ProgramApplicationsList'
+import { GraduationCap, Briefcase, Users, Plus, X, MessageSquare, Zap, ClipboardList } from 'lucide-react'
 
 export default function MyPrograms() {
   const router = useRouter()
@@ -11,6 +12,7 @@ export default function MyPrograms() {
   const [programs, setPrograms] = useState([])
   const [loading, setLoading] = useState(true)
   const [expanded, setExpanded] = useState(null)
+  const [expandedApplications, setExpandedApplications] = useState(null)
   const [students, setStudents] = useState({}) // { programId: [ {id, full_name, enrolled_at} ] }
 
   useEffect(() => {
@@ -51,6 +53,10 @@ export default function MyPrograms() {
         [programId]: (enrollments || []).map(e => ({ ...profilesById[e.student_id], enrolled_at: e.enrolled_at, id: e.student_id }))
       }))
     }
+  }
+
+  const toggleExpandApplications = (programId) => {
+    setExpandedApplications(prev => prev === programId ? null : programId)
   }
 
   const toggleStatus = async (program) => {
@@ -108,6 +114,8 @@ export default function MyPrograms() {
             {programs.map(p => {
               const TypeIcon = p.program_type === 'Internship' ? Briefcase : GraduationCap
               const isExpanded = expanded === p.id
+              const hasApplicationForm = p.application_form && p.application_form.length > 0
+              const isApplicationsExpanded = expandedApplications === p.id
               return (
                 <div key={p.id} className="card">
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem' }}>
@@ -135,6 +143,7 @@ export default function MyPrograms() {
                           </span>
                         )}
                         {p.interview_required && <span className="badge badge-red">Interview Required</span>}
+                        {hasApplicationForm && <span className="badge badge-brand">Collects Applications</span>}
                         <span className={p.status === 'Open' ? 'badge badge-open' : 'badge badge-gray'}>{p.status}</span>
                       </div>
                       {(p.start_date || p.end_date) && (
@@ -146,9 +155,16 @@ export default function MyPrograms() {
                         </div>
                       )}
                       <p style={{ color: 'var(--text-2)', fontSize: '0.85rem', marginBottom: '0.75rem' }}>{p.description}</p>
-                      <button onClick={() => toggleExpand(p.id)} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'none', border: 'none', color: 'var(--brand)', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', padding: 0 }}>
-                        <Users size={14} /> {p.enrolledCount}{p.capacity ? ' / ' + p.capacity : ''} enrolled — {isExpanded ? 'hide' : 'view'} students
-                      </button>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
+                        <button onClick={() => toggleExpand(p.id)} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'none', border: 'none', color: 'var(--brand)', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', padding: 0 }}>
+                          <Users size={14} /> {p.enrolledCount}{p.capacity ? ' / ' + p.capacity : ''} enrolled — {isExpanded ? 'hide' : 'view'} students
+                        </button>
+                        {hasApplicationForm && (
+                          <button onClick={() => toggleExpandApplications(p.id)} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'none', border: 'none', color: 'var(--brand)', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', padding: 0 }}>
+                            <ClipboardList size={14} /> {isApplicationsExpanded ? 'Hide' : 'View'} applications
+                          </button>
+                        )}
+                      </div>
                     </div>
                     <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0, flexWrap: 'wrap' }}>
                       <a href={'/programs/chat?id=' + p.id} className="btn btn-primary btn-sm">
@@ -220,6 +236,12 @@ export default function MyPrograms() {
                           ))}
                         </div>
                       )}
+                    </div>
+                  )}
+
+                  {isApplicationsExpanded && (
+                    <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border)' }}>
+                      <ProgramApplicationsList programId={p.id} />
                     </div>
                   )}
                 </div>
