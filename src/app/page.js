@@ -381,7 +381,6 @@ export default function LandingPage() {
         </div>
         <div className="reveal reveal-left" style={{ maxWidth: 1100, margin: '0 auto', position: 'relative' }}>
           <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
-            <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>How It Works</div>
             <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em' }}>Three steps to start <span className="eh-gradient-text">trading</span></h2>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
@@ -410,7 +409,6 @@ export default function LandingPage() {
         </div>
         <div className="reveal reveal-right" style={{ maxWidth: 1100, margin: '0 auto', position: 'relative' }}>
           <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
-            <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Spark Economy</div>
             <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '0.75rem' }}>The <span className="eh-gradient-text">Tier System</span></h2>
             <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', maxWidth: 480, margin: '0 auto' }}>Not all skills are equal — and neither are the rewards. Earn more for higher-tier expertise.</p>
           </div>
@@ -445,7 +443,6 @@ export default function LandingPage() {
         </div>
         <div className="reveal reveal-blur" style={{ maxWidth: 1100, margin: '0 auto', position: 'relative' }}>
           <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
-            <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Real Value</div>
             <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em' }}>Sparks unlock real <span className="eh-gradient-text">career value</span></h2>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1px', background: 'var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1px solid var(--border)' }}>
@@ -473,7 +470,6 @@ export default function LandingPage() {
           <div className="eh-section-blob" style={{ top: -60, left: '12%', background: 'var(--brand)' }} />
         </div>
         <div className="reveal reveal-down" style={{ maxWidth: 640, margin: '0 auto', textAlign: 'center', position: 'relative' }}>
-          <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Who We Are</div>
           <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '1rem' }}>
             The people behind <span className="eh-gradient-text">ElevateHours</span>
           </h2>
