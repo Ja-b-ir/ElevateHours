@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Logo from '@/components/Logo'
-import { Sun, Moon, ArrowRight, Check, ChevronRight, Zap, MessageCircle, Award, Star, Code, Palette, Film, GraduationCap, PenLine, BarChart3 } from 'lucide-react'
+import { Sun, Moon, ArrowRight, Check, ChevronRight, Zap, MessageCircle, Award, Star, Code, Palette, Film, GraduationCap, PenLine, BarChart3, Mail, Send, Facebook, Youtube, Globe } from 'lucide-react'
 import HeroCanvas from '@/components/HeroCanvas'
 import LoadingScreen from '@/components/LoadingScreen'
 
@@ -63,11 +63,64 @@ function AnimatedNumber({ value }) {
   )
 }
 
+// Shared input styling for the contact form
+const inputStyle = {
+  width: '100%',
+  padding: '0.7rem 0.875rem',
+  borderRadius: 'var(--radius-sm)',
+  border: '1px solid var(--border)',
+  background: 'var(--surface)',
+  color: 'var(--text)',
+  fontSize: '0.875rem',
+  fontFamily: 'inherit',
+  boxSizing: 'border-box',
+  outline: 'none',
+}
+
+const labelStyle = {
+  display: 'block',
+  fontSize: '0.78rem',
+  fontWeight: 600,
+  color: 'var(--text-2)',
+  marginBottom: '0.4rem',
+}
+
 export default function LandingPage() {
   const [tiers, setTiers] = useState([])
   const [theme, setTheme] = useState('light')
   const [tiersLoaded, setTiersLoaded] = useState(false)
   const heroRef = useRef(null)
+
+  // Contact form state
+  const [contactForm, setContactForm] = useState({ name: '', email: '', subject: '', message: '' })
+  const [contactStatus, setContactStatus] = useState('idle') // idle | submitting | success | error
+
+  const handleContactChange = (e) => {
+    const { name, value } = e.target
+    setContactForm((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleContactSubmit = async (e) => {
+    e.preventDefault()
+    if (contactStatus === 'submitting') return
+    setContactStatus('submitting')
+    try {
+      const { error } = await supabase.from('contact_messages').insert([
+        {
+          name: contactForm.name,
+          email: contactForm.email,
+          subject: contactForm.subject,
+          message: contactForm.message,
+        },
+      ])
+      if (error) throw error
+      setContactStatus('success')
+      setContactForm({ name: '', email: '', subject: '', message: '' })
+    } catch (err) {
+      console.error('Contact form submission failed:', err)
+      setContactStatus('error')
+    }
+  }
 
   useEffect(() => {
     const hero = heroRef.current
@@ -554,6 +607,7 @@ export default function LandingPage() {
         gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
         gap: '1rem',
         textAlign: 'left',
+        marginBottom: '2rem',
       }}
     >
       {[
@@ -629,11 +683,140 @@ export default function LandingPage() {
         </div>
       ))}
     </div>
+
+    <a
+      href="https://sdgs.un.org/goals"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="eh-btn"
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '0.5rem',
+        background: 'var(--surface)',
+        color: 'var(--text)',
+        padding: '0.75rem 1.5rem',
+        borderRadius: 'var(--radius)',
+        fontWeight: 700,
+        fontSize: '0.85rem',
+        border: '1.5px solid var(--border)',
+      }}
+    >
+      <Globe size={15} style={{ color: 'var(--brand)' }} /> Learn more about the UN SDGs <ArrowRight size={14} />
+    </a>
   </div>
 </div>
 
+      {/* Contact Us */}
+      <section id="contact" style={{ padding: '5rem 1.5rem', background: 'var(--surface)', position: 'relative', overflow: 'hidden' }}>
+        <div className="eh-section-decor" aria-hidden="true">
+          <div className="eh-section-blob" style={{ top: -70, left: '8%', background: 'var(--brand)' }} />
+        </div>
+        <div className="reveal reveal-up" style={{ maxWidth: 1100, margin: '0 auto', position: 'relative' }}>
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Get In Touch</div>
+            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '0.75rem' }}>Let's talk <span className="eh-gradient-text">Sparks</span></h2>
+            <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', maxWidth: 480, margin: '0 auto' }}>Questions, partnership ideas, or just want to say hi? Send us a message and we'll get back to you.</p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(220px, .8fr) minmax(280px, 1.2fr)', gap: '2rem', alignItems: 'start' }}>
+
+            {/* Left: info column */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem' }}>
+                <div style={{ width: 36, height: 36, borderRadius: 'var(--radius-sm)', background: 'var(--brand-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.75rem' }}>
+                  <Mail size={16} style={{ color: 'var(--brand)' }} />
+                </div>
+                <div style={{ fontWeight: 700, fontSize: '0.875rem', marginBottom: '0.25rem' }}>Email us</div>
+                <a href="mailto:hello@elevatehours.com" style={{ color: 'var(--text-2)', fontSize: '0.825rem' }}>hello@elevatehours.com</a>
+              </div>
+
+              <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem' }}>
+                <div style={{ fontWeight: 700, fontSize: '0.875rem', marginBottom: '0.75rem' }}>Follow along</div>
+                <div style={{ display: 'flex', gap: '0.625rem' }}>
+                  <a href="https://www.facebook.com/codescriptors/" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="eh-btn" style={{ width: 36, height: 36, borderRadius: 'var(--radius-sm)', background: 'var(--surface-3)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-2)' }}>
+                    <Facebook size={16} />
+                  </a>
+                  <a href="https://www.youtube.com/@codescriptors" target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="eh-btn" style={{ width: 36, height: 36, borderRadius: 'var(--radius-sm)', background: 'var(--surface-3)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-2)' }}>
+                    <Youtube size={16} />
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: form */}
+            <form onSubmit={handleContactSubmit} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
+                <div>
+                  <label htmlFor="contact-name" style={labelStyle}>Name</label>
+                  <input id="contact-name" name="name" type="text" required value={contactForm.name} onChange={handleContactChange} placeholder="Your full name" style={inputStyle} />
+                </div>
+                <div>
+                  <label htmlFor="contact-email" style={labelStyle}>Email</label>
+                  <input id="contact-email" name="email" type="email" required value={contactForm.email} onChange={handleContactChange} placeholder="you@example.com" style={inputStyle} />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="contact-subject" style={labelStyle}>Subject</label>
+                <select id="contact-subject" name="subject" required value={contactForm.subject} onChange={handleContactChange} style={inputStyle}>
+                  <option value="" disabled>Select a topic</option>
+                  <option value="General Inquiry">General Inquiry</option>
+                  <option value="Partnership">Partnership</option>
+                  <option value="Organization Sign-up">Organization Sign-up</option>
+                  <option value="Press & Media">Press & Media</option>
+                  <option value="Support">Support</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="contact-message" style={labelStyle}>Your Message</label>
+                <textarea id="contact-message" name="message" required rows={5} value={contactForm.message} onChange={handleContactChange} placeholder="Tell us what's on your mind..." style={{ ...inputStyle, resize: 'vertical' }} />
+              </div>
+
+              <button
+                type="submit"
+                disabled={contactStatus === 'submitting'}
+                className="eh-btn"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  background: 'var(--brand)',
+                  color: 'white',
+                  padding: '0.875rem 1.5rem',
+                  borderRadius: 'var(--radius)',
+                  fontWeight: 700,
+                  fontSize: '0.9rem',
+                  border: 'none',
+                  cursor: contactStatus === 'submitting' ? 'not-allowed' : 'pointer',
+                  opacity: contactStatus === 'submitting' ? 0.7 : 1,
+                }}
+              >
+                {contactStatus === 'submitting' ? 'Sending...' : (
+                  <>Send Message <Send size={15} /></>
+                )}
+              </button>
+
+              {contactStatus === 'success' && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--green)', fontSize: '0.825rem', fontWeight: 600 }}>
+                  <Check size={15} /> Thanks! Your message has been sent — we'll be in touch soon.
+                </div>
+              )}
+              {contactStatus === 'error' && (
+                <div style={{ color: 'var(--red)', fontSize: '0.825rem', fontWeight: 600 }}>
+                  Something went wrong. Please try again or email us directly.
+                </div>
+              )}
+            </form>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
-      <section style={{ padding: '5rem 1.5rem', background: 'var(--surface)', position: 'relative', overflow: 'hidden' }}>
+      <section style={{ padding: '5rem 1.5rem', position: 'relative', overflow: 'hidden' }}>
         <div className="eh-section-decor" aria-hidden="true">
           <div className="eh-section-blob" style={{ top: -60, left: '20%', background: 'var(--brand)' }} />
           <div className="eh-section-blob" style={{ bottom: -60, right: '18%', background: 'var(--green)' }} />
@@ -663,15 +846,26 @@ export default function LandingPage() {
                 <Logo height={52} linkTo="/" />
               </div>
               <p style={{ color: 'var(--text-3)', fontSize: '0.825rem', lineHeight: 1.65, marginBottom: '0.75rem' }}>Turn Your Skills Into Impact</p>
-              <div style={{ color: 'var(--text-3)', fontSize: '0.75rem' }}>
+              <div style={{ color: 'var(--text-3)', fontSize: '0.75rem', marginBottom: '1.25rem' }}>
                 Built by <a href="https://www.facebook.com/codescriptors/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--brand)', fontWeight: 600 }}>CodeScriptors</a>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.6rem' }}>Follow Us</div>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <a href="https://www.facebook.com/codescriptors/" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="eh-btn" style={{ width: 32, height: 32, borderRadius: 'var(--radius-sm)', background: 'var(--surface-3)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-2)' }}>
+                    <Facebook size={15} />
+                  </a>
+                  <a href="https://www.youtube.com/@codescriptors" target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="eh-btn" style={{ width: 32, height: 32, borderRadius: 'var(--radius-sm)', background: 'var(--surface-3)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-2)' }}>
+                    <Youtube size={15} />
+                  </a>
+                </div>
               </div>
             </div>
             <div>
               <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '1rem' }}>Platform</div>
               {['About', 'How It Works', 'Marketplace', 'Contact'].map(l => (
                 <div key={l} style={{ marginBottom: '0.5rem' }}>
-                  <a href="#" style={{ color: 'var(--text-2)', fontSize: '0.85rem' }}>{l}</a>
+                  <a href={l === 'Contact' ? '#contact' : '#'} style={{ color: 'var(--text-2)', fontSize: '0.85rem' }}>{l}</a>
                 </div>
               ))}
             </div>
@@ -681,6 +875,11 @@ export default function LandingPage() {
               <div style={{ marginBottom: '0.5rem' }}><a href="/team" style={{ color: 'var(--text-2)', fontSize: '0.85rem' }}>Our Team</a></div>
               <div style={{ marginBottom: '0.5rem' }}><a href="https://www.facebook.com/codescriptors/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-2)', fontSize: '0.85rem' }}>CodeScriptors</a></div>
               <div style={{ marginBottom: '0.5rem' }}><a href="https://www.linkedin.com/in/md-jabir-hossen/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-2)', fontSize: '0.85rem' }}>LinkedIn</a></div>
+              <div style={{ marginBottom: '0.5rem' }}>
+                <a href="https://sdgs.un.org/goals" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-2)', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <Globe size={13} /> UN SDGs
+                </a>
+              </div>
             </div>
             <div>
               <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '1rem' }}>Spark Economy</div>
@@ -1041,7 +1240,7 @@ export default function LandingPage() {
         @media (prefers-reduced-motion: reduce) {
           .reveal,
           .reveal-up, .reveal-down, .reveal-left, .reveal-right,
-          .reveal-scale, .reveal-fade, .reveal-blur, .reveal-rotate {
+          .reveal-scale, .reveal-blur, .reveal-rotate {
             opacity: 1 !important;
             transform: none !important;
             filter: none !important;
