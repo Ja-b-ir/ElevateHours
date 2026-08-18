@@ -2206,7 +2206,7 @@ function AnimatedNumber({ value }) {
           }
         }
 
-{`
+
         @media (max-width: 480px) {
           .eh-land-nav { padding: 0 0.875rem !important; }
           .eh-land-actions { gap: 0.35rem !important; }
