@@ -832,6 +832,7 @@ export default function LandingPage() {
         </div>
       </section>
 
+
       {/* Footer */}
       <footer style={{ background: 'var(--surface-2)', borderTop: '1px solid var(--border)', padding: '3rem 1.5rem' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
