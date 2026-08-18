@@ -531,7 +531,7 @@ export default function LandingPage() {
 
     <h2
       style={{
-        fontSize: '1.6rem',
+        fontSize: '2.6rem',
         fontWeight: 800,
         marginBottom: '1.25rem',
         letterSpacing: '-0.02em',
@@ -666,7 +666,7 @@ export default function LandingPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2.5rem', marginBottom: '2.5rem' }}>
             <div>
               <div style={{ marginBottom: '0.625rem' }}>
-                <Logo height={22} linkTo="/" />
+                <Logo height={52} linkTo="/" />
               </div>
               <p style={{ color: 'var(--text-3)', fontSize: '0.825rem', lineHeight: 1.65, marginBottom: '0.75rem' }}>Turn Your Skills Into Impact</p>
               <div style={{ color: 'var(--text-3)', fontSize: '0.75rem' }}>
