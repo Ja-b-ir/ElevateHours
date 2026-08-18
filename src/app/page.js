@@ -179,7 +179,7 @@ export default function LandingPage() {
             <MessageCircle size={14} style={{ color: 'var(--green)' }} />
             <div style={{ textAlign: 'left' }}>
               <div style={{ fontWeight: 700, fontSize: '0.78rem', color: 'var(--text)' }}>Session confirmed</div>
-              <div style={{ fontSize: '0.62rem', color: 'var(--text-3)' }}>with Priya M.</div>
+              <div style={{ fontSize: '0.62rem', color: 'var(--text-3)' }}>with Sabrina M.</div>
             </div>
           </div>
         </div>
@@ -207,7 +207,7 @@ export default function LandingPage() {
           <svg width="15" height="15" viewBox="0 0 16 16" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))', flexShrink: 0 }}>
             <path d="M2 1 L14 8 L8 9 L6 15 Z" fill="var(--green)" />
           </svg>
-          <span className="eh-activity-label" style={{ background: 'var(--green)' }}>Priya earned 40 SPK</span>
+          <span className="eh-activity-label" style={{ background: 'var(--green)' }}>Meem earned 40 SPK</span>
         </div>
         <div className="eh-activity-cursor eh-cursor-2" aria-hidden="true">
           <svg width="15" height="15" viewBox="0 0 16 16" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))', flexShrink: 0 }}>
@@ -228,7 +228,7 @@ export default function LandingPage() {
             <span className="eh-hero-gradient-text">Value Than You Think.</span>
           </h1>
           <p style={{ fontSize: 'clamp(1rem, 2vw, 1.15rem)', color: 'var(--text-2)', maxWidth: 580, margin: '0 auto 2.5rem', lineHeight: 1.75 }}>
-            ElevateHours is a cashless marketplace where students, freelancers, and organizations trade skills and knowledge — powered by Sparks, a community currency that turns your time into real opportunity.
+            Turn your time and skills into real opportunity. Earn Sparks by contributing to the community, then use them to learn, teach, take courses, complete microjobs, hire others, and grow together.
           </p>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             <a href="/auth/signup" className="eh-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--brand)', color: 'white', padding: '0.875rem 2rem', borderRadius: 'var(--radius)', fontWeight: 700, fontSize: '0.95rem', boxShadow: 'var(--shadow-brand)' }}>
@@ -278,10 +278,15 @@ export default function LandingPage() {
           <div className="eh-skill-track eh-skill-track-1">
             {[...Array(6)].flatMap(() => [
               { name: 'Web Development', rate: '45 SPK / hr' },
-              { name: 'Graphic Design', rate: '38 SPK / hr' },
-              { name: 'Math Tutoring', rate: '30 SPK / hr' },
-              { name: 'Video Editing', rate: '42 SPK / hr' },
-              { name: 'Content Writing', rate: '28 SPK / hr' },
+{ name: 'Graphic Design', rate: '38 SPK / hr' },
+{ name: 'Math Tutoring', rate: '30 SPK / hr' },
+{ name: 'Video Editing', rate: '42 SPK / hr' },
+{ name: 'Content Writing', rate: '35 SPK / hr' },
+{ name: 'Social Media Management', rate: '40 SPK / hr' },
+{ name: 'UI/UX Design', rate: '45 SPK / hr' },
+{ name: 'Data Entry', rate: '25 SPK / hr' },
+{ name: 'Translation', rate: '30 SPK / hr' },
+{ name: 'Digital Marketing', rate: '42 SPK / hr' },
             ]).map((skill, i) => (
               <div key={i} className="eh-skill-text-item">
                 <span className="eh-skill-name">{skill.name}</span>
@@ -295,11 +300,16 @@ export default function LandingPage() {
         <div className="eh-skill-marquee" style={{ marginTop: '0.75rem' }}>
           <div className="eh-skill-track eh-skill-track-2">
             {[...Array(6)].flatMap(() => [
-              { name: 'Data Entry', rate: '20 SPK / hr' },
-              { name: 'UI/UX Design', rate: '48 SPK / hr' },
-              { name: 'Language Tutoring', rate: '32 SPK / hr' },
-              { name: 'Backend Development', rate: '50 SPK / hr' },
-              { name: 'Video Production', rate: '40 SPK / hr' },
+              { name: 'Voice Over', rate: '32 SPK / hr' },
+{ name: 'Customer Support', rate: '28 SPK / hr' },
+{ name: 'Presentation Design', rate: '36 SPK / hr' },
+{ name: 'Research Assistance', rate: '30 SPK / hr' },
+{ name: 'Resume Writing', rate: '34 SPK / hr' },
+{ name: 'Proofreading', rate: '27 SPK / hr' },
+{ name: 'Photography Editing', rate: '35 SPK / hr' },
+{ name: 'Podcast Production', rate: '40 SPK / hr' },
+{ name: 'Excel & Spreadsheet Work', rate: '29 SPK / hr' },
+{ name: '3D Modeling', rate: '48 SPK / hr' },
             ]).map((skill, i) => (
               <div key={i} className="eh-skill-text-item eh-skill-text-item-muted">
                 <span className="eh-skill-name">{skill.name}</span>
