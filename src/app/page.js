@@ -511,7 +511,7 @@ function AnimatedNumber({ value }) {
            ELEVATEHOURS — PREMIUM PRODUCT LANDING SYSTEM
            ============================================================ */
 
-        :root {
+        root {
           --eh-black: #071011;
           --eh-ink: #101a1b;
           --eh-muted: #6b797a;
