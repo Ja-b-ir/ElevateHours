@@ -3,7 +3,9 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
-import { GraduationCap, Briefcase } from 'lucide-react'
+import LoadingScreen from '@/components/LoadingScreen'
+import FormBuilder from '@/components/FormBuilder'
+import { GraduationCap, Briefcase, ClipboardList } from 'lucide-react'
 
 const CURRENCIES = ['USD', 'BDT', 'EUR', 'GBP', 'INR', 'PKR', 'AUD', 'CAD']
 
@@ -17,6 +19,8 @@ export default function CreateProgram() {
     is_paid: false, pay_type: 'Per Month', pay_amount: '', pay_payment_method: 'Real Money', pay_currency: 'USD',
     interview_required: false, start_date: '', end_date: ''
   })
+  const [applicationFields, setApplicationFields] = useState([])
+  const [collectApplications, setCollectApplications] = useState(false)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -39,6 +43,7 @@ export default function CreateProgram() {
     setError('')
     if (!form.title.trim()) { setError('Please give your program a title'); return }
     if (form.start_date && form.end_date && form.end_date < form.start_date) { setError('End date cannot be before the start date'); return }
+    if (collectApplications && applicationFields.some(f => !f.label.trim())) { setError('Every application question needs a label'); return }
     setSubmitting(true)
     try {
       const { error } = await supabase.from('programs').insert({
@@ -61,6 +66,7 @@ export default function CreateProgram() {
         start_date: form.start_date || null,
         end_date: form.end_date || null,
         status: 'Open',
+        application_form: collectApplications && applicationFields.length > 0 ? applicationFields : null,
       })
       if (error) throw error
       router.push('/my-programs')
@@ -68,7 +74,12 @@ export default function CreateProgram() {
     setSubmitting(false)
   }
 
-  if (loading) return <div><Navbar /><div className="loading-wrap"><div className="spinner" /> Loading...</div></div>
+  if (loading) return (
+    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+      <Navbar />
+      <LoadingScreen text="Loading..." />
+    </div>
+  )
 
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
@@ -280,6 +291,38 @@ export default function CreateProgram() {
             <div className="form-group">
               <label className="form-label">Capacity (optional)</label>
               <input type="number" min="1" placeholder="Leave blank for unlimited" value={form.capacity} onChange={e => setForm({ ...form, capacity: e.target.value })} className="form-input" />
+            </div>
+
+            <div className="form-group">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: collectApplications ? '1rem' : 0 }}>
+                <div>
+                  <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.2rem' }}>
+                    <ClipboardList size={14} /> Collect Applications
+                  </label>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>
+                    Ask students to fill out a short form before they can apply, instead of joining instantly.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setCollectApplications(v => !v)}
+                  style={{
+                    width: 44, height: 24, borderRadius: 999, border: 'none', cursor: 'pointer', flexShrink: 0,
+                    background: collectApplications ? 'var(--brand)' : 'var(--surface-3)', position: 'relative', transition: 'background 0.2s ease'
+                  }}
+                >
+                  <span style={{
+                    position: 'absolute', top: 3, left: collectApplications ? 23 : 3, width: 18, height: 18, borderRadius: '50%',
+                    background: 'white', transition: 'left 0.2s ease', boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                  }} />
+                </button>
+              </div>
+
+              {collectApplications && (
+                <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1rem' }}>
+                  <FormBuilder fields={applicationFields} onChange={setApplicationFields} />
+                </div>
+              )}
             </div>
 
             {error && <div className="alert alert-error">{error}</div>}
