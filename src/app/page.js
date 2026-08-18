@@ -714,8 +714,7 @@ export default function LandingPage() {
         </div>
         <div className="reveal reveal-up" style={{ maxWidth: 1100, margin: '0 auto', position: 'relative' }}>
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Get In Touch</div>
-            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '0.75rem' }}>Let's talk <span className="eh-gradient-text">Sparks</span></h2>
+            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '0.75rem' }}>Let's <span className="eh-gradient-text">Get in Touch</span></h2>
             <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', maxWidth: 480, margin: '0 auto' }}>Questions, partnership ideas, or just want to say hi? Send us a message and we'll get back to you.</p>
           </div>
 
@@ -728,13 +727,13 @@ export default function LandingPage() {
                   <Mail size={16} style={{ color: 'var(--brand)' }} />
                 </div>
                 <div style={{ fontWeight: 700, fontSize: '0.875rem', marginBottom: '0.25rem' }}>Email us</div>
-                <a href="mailto:hello@elevatehours.com" style={{ color: 'var(--text-2)', fontSize: '0.825rem' }}>hello@elevatehours.com</a>
+                <a href="mailto:hello@elevatehours.com" style={{ color: 'var(--text-2)', fontSize: '0.825rem' }}>hello.elevatehours@gmail.com</a>
               </div>
 
               <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem' }}>
                 <div style={{ fontWeight: 700, fontSize: '0.875rem', marginBottom: '0.75rem' }}>Follow along</div>
                 <div style={{ display: 'flex', gap: '0.625rem' }}>
-                  <a href="https://www.facebook.com/codescriptors/" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="eh-btn" style={{ width: 36, height: 36, borderRadius: 'var(--radius-sm)', background: 'var(--surface-3)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-2)' }}>
+                  <a href="https://www.facebook.com/elevatehours/" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="eh-btn" style={{ width: 36, height: 36, borderRadius: 'var(--radius-sm)', background: 'var(--surface-3)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-2)' }}>
                     <Facebook size={16} />
                   </a>
                   <a href="https://www.youtube.com/@codescriptors" target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="eh-btn" style={{ width: 36, height: 36, borderRadius: 'var(--radius-sm)', background: 'var(--surface-3)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-2)' }}>
@@ -882,12 +881,12 @@ export default function LandingPage() {
               </div>
             </div>
             <div>
-              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '1rem' }}>Spark Economy</div>
-              <p style={{ color: 'var(--text-3)', fontSize: '0.8rem', lineHeight: 1.65 }}>Powered by community, verified by platform, built for impact.</p>
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '1rem' }}>Better When We Share</div>
+              <p style={{ color: 'var(--text-3)', fontSize: '0.8rem', lineHeight: 1.65 }}>Everyone has something to offer. Everyone deserves an opportunity.</p>
             </div>
           </div>
           <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
-  <div style={{ color: 'var(--text-3)', fontSize: '0.78rem' }}>2025 ElevateHours. All rights reserved.</div>
+  <div style={{ color: 'var(--text-3)', fontSize: '0.78rem' }}>2026 ElevateHours. All rights reserved.</div>
   <div style={{ display: 'flex', gap: '1rem' }}>
     <a href="/terms" style={{ color: 'var(--text-3)', fontSize: '0.78rem' }}>Terms of Service</a>
     <a href="/privacy" style={{ color: 'var(--text-3)', fontSize: '0.78rem' }}>Privacy Policy</a>
