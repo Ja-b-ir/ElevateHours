@@ -52,6 +52,12 @@ function AnimatedNumber({ value }) {
     observer.observe(el)
     return () => observer.disconnect()
   }, [value])
+
+  return <span ref={ref}>{display}</span>
+}
+
+export default function Home() {
+  const [theme, setTheme] = useState('light')
   const [scrollProgress, setScrollProgress] = useState(0)
   const [pointer, setPointer] = useState({ x: -500, y: -500 })
 
@@ -77,7 +83,6 @@ function AnimatedNumber({ value }) {
     }
   }, [])
 
-
   useEffect(() => {
     const items = document.querySelectorAll('.eh-reveal')
     if (!items.length) return
@@ -95,9 +100,17 @@ function AnimatedNumber({ value }) {
     return () => observer.disconnect()
   }, [])
 
+  useEffect(() => {
+    // Sync initial theme state from the document (in case it was set before hydration)
+    if (typeof document !== 'undefined' && document.documentElement.dataset.theme) {
+      setTheme(document.documentElement.dataset.theme)
+    }
+  }, [])
+
   const toggleTheme = () => {
-    document.documentElement.dataset.theme =
-      document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'
+    const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'
+    document.documentElement.dataset.theme = next
+    setTheme(next)
   }
 
   useEffect(() => {
@@ -446,7 +459,7 @@ function AnimatedNumber({ value }) {
             </p>
 
             <div className="eh-impact-quote">
-              <span>“</span>
+              <span>"</span>
               <blockquote>
                 Your skills are your capital.<br />
                 Your time is your investment.<br />
@@ -502,7 +515,7 @@ function AnimatedNumber({ value }) {
         </div>
       </footer>
 
-<style>{`
+      <style>{`
         /* ============================================================
            ELEVATEHOURS — PREMIUM PRODUCT LANDING SYSTEM
            ============================================================ */
@@ -2571,7 +2584,7 @@ function AnimatedNumber({ value }) {
           }
         }
       `}</style>
-</div>
+    </div>
 
   )
 }
