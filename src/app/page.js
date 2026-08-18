@@ -501,17 +501,13 @@ function AnimatedNumber({ value }) {
           <span>Built around skills, time & opportunity.</span>
         </div>
       </footer>
-    </div>
 
-  )
-}
-
-<style>
+<style>{`
         /* ============================================================
            ELEVATEHOURS — PREMIUM PRODUCT LANDING SYSTEM
            ============================================================ */
 
-        root {
+        :root {
           --eh-black: #071011;
           --eh-ink: #101a1b;
           --eh-muted: #6b797a;
@@ -2575,3 +2571,7 @@ function AnimatedNumber({ value }) {
           }
         }
       `}</style>
+</div>
+
+  )
+}
