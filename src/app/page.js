@@ -473,6 +473,7 @@ export default function LandingPage() {
                 { name: 'Venfyy', light: '/partners/venfyy white.png', dark: '/partners/venfyy dark.png' },
                 { name: 'Tea Bondhu', light: '/partners/tea white.png', dark: '/partners/tea dark.png' },
                 { name: 'London Educators', light: '/partners/le white.png', dark: '/partners/le dark.png' },
+                { name: 'Team Big Iftar Foundation', light: '/partners/tbi white.png', dark: '/partners/tbi dark.png' },
               ]).map((partner, i) => (
                 <div key={i} className="eh-marquee-item">
                   <img
