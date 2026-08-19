@@ -610,6 +610,7 @@ export default function Dashboard() {
               <div style={{ padding: '0.75rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
                 {[
                   { label: 'Browse Marketplace', href: '/marketplace', icon: Users, accent: 'var(--brand)' },
+                  { label: 'My Enrolled Programs', href: '/my-enrollments', icon: GraduationCap, accent: 'var(--green)' },
                   { label: 'Post a Request', href: '/post-request', icon: Plus, accent: 'var(--brand-mid)' },
                   { label: 'My Requests', href: '/my-requests', icon: BarChart3, accent: 'var(--amber)' },
                   { label: 'Buy Sparks', href: '/buy-sparks', icon: Zap, accent: 'var(--green)' },
