@@ -5,6 +5,7 @@ import Logo from '@/components/Logo'
 import { Sun, Moon, ArrowRight, Check, ChevronRight, Zap, MessageCircle, Award, Star, Code, Palette, Film, GraduationCap, PenLine, BarChart3, Mail, Send, Facebook, Youtube, Globe } from 'lucide-react'
 import HeroCanvas from '@/components/HeroCanvas'
 import LoadingScreen from '@/components/LoadingScreen'
+import ChatWidget from '@/components/ChatWidget'
 
 function AnimatedNumber({ value }) {
   const ref = useRef(null)
@@ -1260,6 +1261,8 @@ export default function LandingPage() {
           }
         }
       `}</style>
+
+      <ChatWidget />
     </div>
   )
 }
