@@ -1,6 +1,5 @@
 'use client'
 import { useAdmin } from '../layout'
-import AdminLiveChat from '@/components/AdminLiveChat'
 
 export default function LiveChatPage() {
   const { admin } = useAdmin()
@@ -17,7 +16,9 @@ export default function LiveChatPage() {
   return (
     <div>
       <h1 style={{ fontSize: '1.3rem', fontWeight: 800, marginBottom: '1.25rem' }}>Live Chat</h1>
-      <AdminLiveChat />
+      <div style={{ padding: '2rem', border: '1px dashed #ccc', borderRadius: '8px', color: '#666', background: '#fff' }}>
+        Live Chat interface component under construction.
+      </div>
     </div>
   )
 }
