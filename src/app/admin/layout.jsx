@@ -1,6 +1,7 @@
 'use client'
 import { createContext, useContext, useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { MessageSquare, Mail, Users, LayoutDashboard, LogOut } from 'lucide-react'
 
@@ -98,7 +99,7 @@ export default function AdminLayout({ children }) {
               const Icon = item.icon
               const active = pathname === item.href
               return (
-                
+                <Link
                   key={item.href}
                   href={item.href}
                   style={{
@@ -116,7 +117,7 @@ export default function AdminLayout({ children }) {
                 >
                   <Icon size={16} />
                   {item.label}
-                </a>
+                </Link>
               )
             })}
           </nav>
