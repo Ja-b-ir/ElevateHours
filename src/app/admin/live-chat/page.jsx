@@ -72,7 +72,7 @@ export default function LiveChatPage() {
     supabase
       .from('chat_messages')
       .select('*')
-      .eq('chat_session_id', activeId)
+      .eq('session_id', activeId)
       .order('created_at', { ascending: true })
       .then(({ data }) => { if (!cancelled) setMessages(data || []) })
 
@@ -81,7 +81,7 @@ export default function LiveChatPage() {
       .channel(`admin_chat_messages_${activeId}`)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `chat_session_id=eq.${activeId}` },
+        { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `session_id=eq.${activeId}` },
         (payload) => setMessages((prev) => [...prev, payload.new])
       )
       .subscribe()
@@ -102,14 +102,14 @@ export default function LiveChatPage() {
     if (!draft.trim() || !activeSession || sending) return
 
     setSending(true)
-    const body = draft.trim()
+    const content = draft.trim()
     setDraft('')
 
     const { error } = await supabase.from('chat_messages').insert({
-      chat_session_id: activeSession.id,
-      sender_type: 'admin',
+      session_id: activeSession.id,
+      sender: 'admin',
       sender_admin_id: admin.id,
-      body,
+      content,
     })
     if (error) console.error('Reply failed', error)
     setSending(false)
@@ -217,13 +217,13 @@ export default function LiveChatPage() {
 
               <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                 {messages.map((m) => (
-                  <div key={m.id} style={{ display: 'flex', justifyContent: m.sender_type === 'admin' ? 'flex-end' : 'flex-start' }}>
+                  <div key={m.id} style={{ display: 'flex', justifyContent: m.sender === 'admin' ? 'flex-end' : 'flex-start' }}>
                     <div style={{
                       maxWidth: '70%', padding: '0.55rem 0.8rem', borderRadius: 12, fontSize: '0.84rem', lineHeight: 1.5,
-                      background: m.sender_type === 'admin' ? 'var(--brand, #0b7375)' : 'var(--surface-2, #f4f6f5)',
-                      color: m.sender_type === 'admin' ? 'white' : 'var(--text-2, #444)',
+                      background: m.sender === 'admin' ? 'var(--brand, #0b7375)' : 'var(--surface-2, #f4f6f5)',
+                      color: m.sender === 'admin' ? 'white' : 'var(--text-2, #444)',
                     }}>
-                      {m.body}
+                      {m.content}
                     </div>
                   </div>
                 ))}
