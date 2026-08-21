@@ -41,25 +41,29 @@ export default function ChatWidget() {
     let cancelled = false
 
     const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (cancelled) return
-      setAuthUser(user || null)
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (cancelled) return
+        setAuthUser(user || null)
 
-      const storedId = typeof window !== 'undefined' ? localStorage.getItem(SESSION_STORAGE_KEY) : null
-      if (!storedId || !user) return
+        const storedId = typeof window !== 'undefined' ? localStorage.getItem(SESSION_STORAGE_KEY) : null
+        if (!storedId || !user) return
 
-      const { data: existing } = await supabase
-        .from('chat_sessions')
-        .select('id, status, visitor_id')
-        .eq('id', storedId)
-        .maybeSingle()
+        const { data: existing } = await supabase
+          .from('chat_sessions')
+          .select('id, status, visitor_uid')
+          .eq('id', storedId)
+          .maybeSingle()
 
-      if (cancelled || !existing || existing.visitor_id !== user.id) return
+        if (cancelled || !existing || existing.visitor_uid !== user.id) return
 
-      setSession(existing)
-      setView('live')
-      loadMessages(existing.id)
-      subscribeToSession(existing.id)
+        setSession(existing)
+        setView('live')
+        loadMessages(existing.id)
+        subscribeToSession(existing.id)
+      } catch (err) {
+        console.error('ChatWidget init failed', err)
+      }
     }
 
     init()
@@ -80,12 +84,17 @@ export default function ChatWidget() {
   }, [])
 
   async function loadMessages(sessionId) {
-    const { data } = await supabase
-      .from('chat_messages')
-      .select('*')
-      .eq('chat_session_id', sessionId)
-      .order('created_at', { ascending: true })
-    setMessages(data || [])
+    try {
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('created_at', { ascending: true })
+      if (error) throw error
+      setMessages(data || [])
+    } catch (err) {
+      console.error('Could not load chat messages', err)
+    }
   }
 
   function subscribeToSession(sessionId) {
@@ -95,11 +104,11 @@ export default function ChatWidget() {
       .channel(`chat_session_${sessionId}`)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `chat_session_id=eq.${sessionId}` },
+        { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `session_id=eq.${sessionId}` },
         (payload) => {
           setMessages((prev) => [...prev, payload.new])
           const isViewingLive = viewRef.current === 'live'
-          if (payload.new.sender_type === 'admin' && (!openRef.current || !isViewingLive)) {
+          if (payload.new.sender === 'admin' && (!openRef.current || !isViewingLive)) {
             setUnread((u) => u + 1)
           }
         }
@@ -121,48 +130,57 @@ export default function ChatWidget() {
       return
     }
 
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (user && !user.is_anonymous) {
-      // Real logged-in platform user — skip the contact form
-      setAuthUser(user)
-      const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle()
-      await createSession(user, profile?.full_name || '', user.email || '')
-      return
-    }
-
-    setNeedsContactInfo(true)
+    // Show the contact form immediately so the button always visibly does
+    // something, even if the auth check below is slow or fails.
     setView('live')
+    setNeedsContactInfo(true)
+
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser()
+      if (error) throw error
+
+      if (user && !user.is_anonymous) {
+        // Real logged-in platform user — skip the contact form
+        setAuthUser(user)
+        const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle()
+        await createSession(user, profile?.full_name || '', user.email || '')
+      }
+    } catch (err) {
+      // Fall back to the guest contact form, which is already showing.
+      console.error('Auth check failed, falling back to guest form', err)
+    }
   }
 
   async function createSession(user, name, email) {
     setStarting(true)
-    const { data: newSession, error } = await supabase
-      .from('chat_sessions')
-      .insert({
-        visitor_id: user.id,
-        visitor_name: name || null,
-        visitor_email: email || null,
-        source_page: typeof window !== 'undefined' ? window.location.pathname : null,
-        status: 'open',
-      })
-      .select()
-      .single()
+    try {
+      const { data: newSession, error } = await supabase
+        .from('chat_sessions')
+        .insert({
+          visitor_uid: user.id,
+          visitor_name: name || null,
+          visitor_email: email || null,
+          source_page: typeof window !== 'undefined' ? window.location.pathname : null,
+          status: 'open',
+        })
+        .select()
+        .single()
 
-    setStarting(false)
+      if (error) throw error
+      if (!newSession) return
 
-    if (error || !newSession) {
-      console.error('Could not start chat session', error)
-      return
+      localStorage.setItem(SESSION_STORAGE_KEY, newSession.id)
+      setSession(newSession)
+      setNeedsContactInfo(false)
+      setView('live')
+      setUnread(0)
+      loadMessages(newSession.id)
+      subscribeToSession(newSession.id)
+    } catch (err) {
+      console.error('Could not start chat session', err)
+    } finally {
+      setStarting(false)
     }
-
-    localStorage.setItem(SESSION_STORAGE_KEY, newSession.id)
-    setSession(newSession)
-    setNeedsContactInfo(false)
-    setView('live')
-    setUnread(0)
-    loadMessages(newSession.id)
-    subscribeToSession(newSession.id)
   }
 
   async function handleContactSubmit(e) {
@@ -170,20 +188,23 @@ export default function ChatWidget() {
     if (!guestName.trim() || !guestEmail.trim()) return
 
     setStarting(true)
-    let { data: { user } } = await supabase.auth.getUser()
+    try {
+      let { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) {
-      const { data: anonData, error: anonError } = await supabase.auth.signInAnonymously()
-      if (anonError || !anonData?.user) {
-        console.error('Could not start guest session', anonError)
-        setStarting(false)
-        return
+      if (!user) {
+        const { data: anonData, error: anonError } = await supabase.auth.signInAnonymously()
+        if (anonError || !anonData?.user) {
+          throw anonError || new Error('Anonymous sign-in returned no user — is it enabled in Supabase Auth settings?')
+        }
+        user = anonData.user
       }
-      user = anonData.user
-    }
 
-    setAuthUser(user)
-    await createSession(user, guestName.trim(), guestEmail.trim())
+      setAuthUser(user)
+      await createSession(user, guestName.trim(), guestEmail.trim())
+    } catch (err) {
+      console.error('Could not start guest session', err)
+      setStarting(false)
+    }
   }
 
   async function handleSend(e) {
@@ -191,17 +212,21 @@ export default function ChatWidget() {
     if (!draft.trim() || !session || sending) return
 
     setSending(true)
-    const body = draft.trim()
+    const content = draft.trim()
     setDraft('')
 
-    const { error } = await supabase.from('chat_messages').insert({
-      chat_session_id: session.id,
-      sender_type: 'visitor',
-      body,
-    })
-
-    if (error) console.error('Message failed to send', error)
-    setSending(false)
+    try {
+      const { error } = await supabase.from('chat_messages').insert({
+        session_id: session.id,
+        sender: 'visitor',
+        content,
+      })
+      if (error) throw error
+    } catch (err) {
+      console.error('Message failed to send', err)
+    } finally {
+      setSending(false)
+    }
   }
 
   function togglePanel() {
@@ -319,7 +344,7 @@ export default function ChatWidget() {
             )}
 
             {view === 'live' && session && messages.map((m) => (
-              <ChatBubble key={m.id} fromUser={m.sender_type === 'visitor'} text={m.body} />
+              <ChatBubble key={m.id} fromUser={m.sender === 'visitor'} text={m.content} />
             ))}
           </div>
 
