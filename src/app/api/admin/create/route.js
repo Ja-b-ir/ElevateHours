@@ -22,6 +22,7 @@ export async function POST(req) {
       email,
       password,
       email_confirm: true,
+      user_metadata: { is_admin_account: true },
     })
 
     if (authError) {
