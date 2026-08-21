@@ -26,6 +26,7 @@ export default function ChatWidget() {
   const [guestEmail, setGuestEmail] = useState('')
   const [draft, setDraft] = useState('')
   const [starting, setStarting] = useState(false)
+  const [guestError, setGuestError] = useState('')
   const [sending, setSending] = useState(false)
 
   const scrollRef = useRef(null)
@@ -174,10 +175,12 @@ export default function ChatWidget() {
       setNeedsContactInfo(false)
       setView('live')
       setUnread(0)
+      setGuestError('')
       loadMessages(newSession.id)
       subscribeToSession(newSession.id)
     } catch (err) {
       console.error('Could not start chat session', err)
+      setGuestError(err?.message || 'Could not start the chat. Please try again.')
     } finally {
       setStarting(false)
     }
@@ -188,13 +191,14 @@ export default function ChatWidget() {
     if (!guestName.trim() || !guestEmail.trim()) return
 
     setStarting(true)
+    setGuestError('')
     try {
       let { data: { user } } = await supabase.auth.getUser()
 
       if (!user) {
         const { data: anonData, error: anonError } = await supabase.auth.signInAnonymously()
         if (anonError || !anonData?.user) {
-          throw anonError || new Error('Anonymous sign-in returned no user — is it enabled in Supabase Auth settings?')
+          throw anonError || new Error('Guest chat is not enabled yet — anonymous sign-in needs to be turned on in Supabase.')
         }
         user = anonData.user
       }
@@ -203,6 +207,7 @@ export default function ChatWidget() {
       await createSession(user, guestName.trim(), guestEmail.trim())
     } catch (err) {
       console.error('Could not start guest session', err)
+      setGuestError(err?.message || 'Could not start the chat. Please try again.')
       setStarting(false)
     }
   }
@@ -330,6 +335,11 @@ export default function ChatWidget() {
                   required type="email" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} placeholder="Your email"
                   style={inputStyle}
                 />
+                {guestError && (
+                  <div style={{ fontSize: '0.76rem', color: 'var(--red, #d33)', background: 'rgba(211,51,51,0.08)', padding: '0.5rem 0.7rem', borderRadius: 8 }}>
+                    {guestError}
+                  </div>
+                )}
                 <button
                   type="submit" disabled={starting}
                   style={{
