@@ -56,3 +56,47 @@ export async function requireSuperAdmin(req) {
 
   return { user, adminRow }
 }
+
+// Like requireSuperAdmin, but allows any admin whose `permissions` array
+// includes the given key. Super admins always pass, regardless of their
+// permissions list. This is the server-side enforcement layer — even if an
+// admin's UI button is disabled, a direct API call from that admin is still
+// rejected here, so turning off a permission actually blocks the action.
+export async function requireAdminPermission(req, permissionKey) {
+  let supabaseAdmin
+  try {
+    supabaseAdmin = getSupabaseAdmin()
+  } catch (err) {
+    console.error(err.message)
+    return { error: 'Server misconfiguration — contact the site owner.', status: 500 }
+  }
+
+  const authHeader = req.headers.get('authorization') || ''
+  const token = authHeader.replace('Bearer ', '').trim()
+
+  if (!token) {
+    return { error: 'Missing authorization token', status: 401 }
+  }
+
+  const { data: { user }, error } = await supabaseAdmin.auth.getUser(token)
+  if (error || !user) {
+    return { error: 'Invalid or expired session', status: 401 }
+  }
+
+  const { data: adminRow, error: adminError } = await supabaseAdmin
+    .from('admin_users')
+    .select('*')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  if (adminError || !adminRow) {
+    return { error: 'Not authorized', status: 403 }
+  }
+
+  const hasAccess = adminRow.role === 'super_admin' || (adminRow.permissions || []).includes(permissionKey)
+  if (!hasAccess) {
+    return { error: `Not authorized — missing "${permissionKey}" permission`, status: 403 }
+  }
+
+  return { user, adminRow }
+}
