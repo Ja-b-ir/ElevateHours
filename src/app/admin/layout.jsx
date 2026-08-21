@@ -80,9 +80,13 @@ export default function AdminLayout({ children }) {
   }
 
   const permissions = admin && admin.permissions ? admin.permissions : []
+  const isSuperAdmin = admin && admin.role === 'super_admin'
   const visibleNav = NAV_ITEMS.filter(function (item) {
     if (item.superAdminOnly) {
-      return admin && admin.role === 'super_admin'
+      return isSuperAdmin
+    }
+    if (isSuperAdmin) {
+      return true
     }
     if (!item.permission) {
       return true
