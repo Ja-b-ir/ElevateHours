@@ -3,13 +3,18 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
-import { MessageSquare, Mail, Users, LayoutDashboard, LogOut } from 'lucide-react'
+import { MessageSquare, Mail, Users, LayoutDashboard, LogOut, ShieldAlert, ClipboardList, Bell, Zap } from 'lucide-react'
 
 export const AdminContext = createContext(null)
 export const useAdmin = () => useContext(AdminContext)
 
 const NAV_ITEMS = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard, permission: null },
+  { href: '/admin/users', label: 'Users', icon: Users, permission: 'users' },
+  { href: '/admin/reports', label: 'Reports', icon: ShieldAlert, permission: 'reports' },
+  { href: '/admin/requests', label: 'Requests & Posts', icon: ClipboardList, permission: 'content' },
+  { href: '/admin/sparks', label: 'Broadcast Sparks', icon: Zap, permission: 'sparks' },
+  { href: '/admin/notifications', label: 'Broadcast Notify', icon: Bell, permission: 'notifications' },
   { href: '/admin/live-chat', label: 'Live Chat', icon: MessageSquare, permission: 'live_chat' },
   { href: '/admin/messages', label: 'Contact Messages', icon: Mail, permission: 'contact_messages' },
   { href: '/admin/admins', label: 'Manage Admins', icon: Users, permission: null, superAdminOnly: true },
