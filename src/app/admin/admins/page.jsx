@@ -7,6 +7,12 @@ import { UserPlus, Trash2, KeyRound } from 'lucide-react'
 const ALL_PERMISSIONS = [
   { key: 'live_chat', label: 'Live Chat' },
   { key: 'contact_messages', label: 'Contact Messages' },
+  { key: 'users', label: 'Users Directory' },
+  { key: 'moderation', label: 'Warn / Ban / Delete Users' },
+  { key: 'sparks', label: 'Give Sparks' },
+  { key: 'notifications', label: 'Send Notifications' },
+  { key: 'reports', label: 'Reports' },
+  { key: 'content', label: 'Requests & Posts' },
 ]
 
 const inputStyle = {
