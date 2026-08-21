@@ -715,10 +715,10 @@ export default function LandingPage() {
             <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', maxWidth: 480, margin: '0 auto' }}>Questions, partnership ideas, or just want to say hi? Send us a message and we'll get back to you.</p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(220px, .8fr) minmax(280px, 1.2fr)', gap: '2rem', alignItems: 'start' }}>
+          <div className="eh-contact-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(220px, .8fr) minmax(280px, 1.2fr)', gap: '2rem', alignItems: 'start' }}>
 
             {/* Left: info column */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div className="eh-contact-info" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem' }}>
                 <div style={{ width: 36, height: 36, borderRadius: 'var(--radius-sm)', background: 'var(--brand-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.75rem' }}>
                   <Mail size={16} style={{ color: 'var(--brand)' }} />
@@ -741,7 +741,7 @@ export default function LandingPage() {
             </div>
 
             {/* Right: form */}
-            <form onSubmit={handleContactSubmit} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <form onSubmit={handleContactSubmit} className="eh-contact-form" style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
                 <div>
                   <label htmlFor="contact-name" style={labelStyle}>Name</label>
@@ -1103,6 +1103,18 @@ export default function LandingPage() {
         }
         @media (max-width: 900px) {
           .eh-float-card-outer { display: none; }
+        }
+
+        @media (max-width: 820px) {
+          .eh-contact-grid {
+            grid-template-columns: 1fr !important;
+            gap: 1.25rem !important;
+          }
+          .eh-contact-form { order: 1; }
+          .eh-contact-info { order: 2; }
+        }
+        @media (max-width: 480px) {
+          .eh-contact-form { padding: 1.25rem !important; }
         }
 
         .eh-activity-cursor {
