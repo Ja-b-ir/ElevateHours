@@ -30,6 +30,7 @@ function MarketplaceContent() {
   const [myApplications, setMyApplications] = useState(new Set())
   const [filterTier, setFilterTier] = useState('')
   const [search, setSearch] = useState('')
+  const [searchDraft, setSearchDraft] = useState('')
   const [sortBy, setSortBy] = useState('newest')
   const [loading, setLoading] = useState(true)
   const [applying, setApplying] = useState(null)
@@ -114,7 +115,7 @@ function MarketplaceContent() {
       const track = activeTab === 'Find Help (Work)' ? 'Work' : 'Education'
       if (track === 'Education') {
         // Education helpers = dedicated Educator accounts + any Personal account offering education skills
-        const { data: educators } = await supabase.from('profiles').select('*').eq('account_type', 'Educator').neq('id', user.id)
+        const { data: educators } = await supabase.from('profiles').select('*, skills:profile_skills_offered(skill:skills_catalog(skill_name, track, tier:tier_reference(tier_name)))').eq('account_type', 'Educator').neq('id', user.id)
         const { data: personalWithSkills } = await supabase.from('profiles').select('*, skills:profile_skills_offered(skill:skills_catalog(skill_name, track, tier:tier_reference(tier_name)))').eq('account_type', 'Personal').neq('id', user.id)
         const filteredPersonal = (personalWithSkills || []).filter(p => p.skills?.some(s => s.skill?.track === 'Education'))
         setProfiles([...(educators || []), ...filteredPersonal])
@@ -197,7 +198,7 @@ function MarketplaceContent() {
   }
 
   const filteredTxns = transactions.filter(t => !search || t.skill?.skill_name?.toLowerCase().includes(search.toLowerCase()) || t.description?.toLowerCase().includes(search.toLowerCase()))
-  const filteredProfiles = profiles.filter(p => !search || p.full_name?.toLowerCase().includes(search.toLowerCase()))
+  const filteredProfiles = profiles.filter(p => !search || p.full_name?.toLowerCase().includes(search.toLowerCase()) || p.skills?.some(s => s.skill?.skill_name?.toLowerCase().includes(search.toLowerCase())))
   const filteredPrograms = programs.filter(p => !search || p.title?.toLowerCase().includes(search.toLowerCase()) || p.description?.toLowerCase().includes(search.toLowerCase()))
 
   const isListTab = activeTab === 'Find Work' || activeTab === 'Find Education'
@@ -225,7 +226,7 @@ function MarketplaceContent() {
     : 0
 
   const activeFilterChips = []
-  if (search) activeFilterChips.push({ key: 'search', label: `"${search}"`, clear: () => setSearch('') })
+  if (search) activeFilterChips.push({ key: 'search', label: `"${search}"`, clear: () => { setSearch(''); setSearchDraft('') } })
   if (filterTier) {
     const t = tiers.find(t => String(t.id) === String(filterTier))
     if (t) activeFilterChips.push({ key: 'tier', label: t.tier_name, clear: () => setFilterTier('') })
@@ -257,18 +258,37 @@ function MarketplaceContent() {
 
         {/* Search + filter + sort bar */}
         <div className="eh-mkt-fade-in" style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
-          <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
-            <Search size={14} style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)', pointerEvents: 'none' }} />
-            <input type="text" placeholder="Search skills, descriptions..." value={search} onChange={e => setSearch(e.target.value)} className="form-input" style={{ paddingLeft: '2.5rem', paddingRight: search ? '2.25rem' : undefined }} />
-            {search && (
-              <button
-                onClick={() => setSearch('')}
-                style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', display: 'flex', padding: 0 }}
-              >
-                <X size={14} />
-              </button>
-            )}
-          </div>
+          <form
+            onSubmit={e => { e.preventDefault(); setSearch(searchDraft) }}
+            style={{ position: 'relative', flex: 1, minWidth: 200, display: 'flex', gap: '0.5rem' }}
+          >
+            <div style={{ position: 'relative', flex: 1 }}>
+              <Search size={14} style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)', pointerEvents: 'none' }} />
+              <input
+                type="text" placeholder="Search by skill (e.g. React, Spanish tutoring...)" value={searchDraft}
+                onChange={e => setSearchDraft(e.target.value)} className="form-input"
+                style={{ paddingLeft: '2.5rem', paddingRight: searchDraft ? '2.25rem' : undefined }}
+              />
+              {searchDraft && (
+                <button
+                  type="button"
+                  onClick={() => { setSearchDraft(''); setSearch('') }}
+                  style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', display: 'flex', padding: 0 }}
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+            <button
+              type="submit"
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0 1.1rem', borderRadius: 'var(--radius, 8px)',
+                border: 'none', background: 'var(--brand)', color: 'white', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer',
+              }}
+            >
+              <Search size={14} /> Search
+            </button>
+          </form>
 
           {isListTab && (
             <select value={filterTier} onChange={e => setFilterTier(e.target.value)} className="form-select" style={{ width: 'auto', minWidth: 160 }}>
@@ -318,7 +338,7 @@ function MarketplaceContent() {
             ))}
             {activeFilterChips.length > 1 && (
               <button
-                onClick={() => { setSearch(''); setFilterTier('') }}
+                onClick={() => { setSearch(''); setSearchDraft(''); setFilterTier('') }}
                 style={{ background: 'none', border: 'none', color: 'var(--text-3)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}
               >
                 Clear all
