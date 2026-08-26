@@ -29,10 +29,26 @@ function MarketplaceContent() {
   const [tiers, setTiers] = useState([])
   const [myApplications, setMyApplications] = useState(new Set())
   const [filterTier, setFilterTier] = useState('')
-  const [search, setSearch] = useState('')
+  const [skillChips, setSkillChips] = useState([])
   const [searchDraft, setSearchDraft] = useState('')
+  const [suggestions, setSuggestions] = useState([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
   const [sortBy, setSortBy] = useState('newest')
   const [loading, setLoading] = useState(true)
+
+  // Debounced skill autocomplete — queries skills_catalog as the person types
+  useEffect(() => {
+    if (!searchDraft.trim()) { setSuggestions([]); return }
+    const timeout = setTimeout(async () => {
+      const { data } = await supabase
+        .from('skills_catalog')
+        .select('id, skill_name, track')
+        .ilike('skill_name', `%${searchDraft.trim()}%`)
+        .limit(8)
+      setSuggestions((data || []).filter(s => !skillChips.includes(s.skill_name)))
+    }, 250)
+    return () => clearTimeout(timeout)
+  }, [searchDraft, skillChips])
   const [applying, setApplying] = useState(null)
   const [success, setSuccess] = useState('')
   const [myName, setMyName] = useState('')
@@ -197,9 +213,10 @@ function MarketplaceContent() {
     return 'badge badge-tier3'
   }
 
-  const filteredTxns = transactions.filter(t => !search || t.skill?.skill_name?.toLowerCase().includes(search.toLowerCase()) || t.description?.toLowerCase().includes(search.toLowerCase()))
-  const filteredProfiles = profiles.filter(p => !search || p.full_name?.toLowerCase().includes(search.toLowerCase()) || p.skills?.some(s => s.skill?.skill_name?.toLowerCase().includes(search.toLowerCase())))
-  const filteredPrograms = programs.filter(p => !search || p.title?.toLowerCase().includes(search.toLowerCase()) || p.description?.toLowerCase().includes(search.toLowerCase()))
+  const matchesChips = (texts) => skillChips.length === 0 || skillChips.some(chip => texts.some(t => t?.toLowerCase().includes(chip.toLowerCase())))
+  const filteredTxns = transactions.filter(t => matchesChips([t.skill?.skill_name, t.description]))
+  const filteredProfiles = profiles.filter(p => matchesChips([p.full_name, ...(p.skills || []).map(s => s.skill?.skill_name)]))
+  const filteredPrograms = programs.filter(p => matchesChips([p.title, p.description]))
 
   const isListTab = activeTab === 'Find Work' || activeTab === 'Find Education'
   const isProgramsTab = activeTab === 'Courses' || activeTab === 'Internships'
@@ -226,7 +243,7 @@ function MarketplaceContent() {
     : 0
 
   const activeFilterChips = []
-  if (search) activeFilterChips.push({ key: 'search', label: `"${search}"`, clear: () => { setSearch(''); setSearchDraft('') } })
+  skillChips.forEach(chip => activeFilterChips.push({ key: `skill-${chip}`, label: chip, clear: () => setSkillChips(prev => prev.filter(c => c !== chip)) }))
   if (filterTier) {
     const t = tiers.find(t => String(t.id) === String(filterTier))
     if (t) activeFilterChips.push({ key: 'tier', label: t.tier_name, clear: () => setFilterTier('') })
@@ -259,31 +276,92 @@ function MarketplaceContent() {
         {/* Search + filter + sort bar */}
         <div className="eh-mkt-fade-in" style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
           <form
-            onSubmit={e => { e.preventDefault(); setSearch(searchDraft) }}
+            onSubmit={e => {
+              e.preventDefault()
+              if (searchDraft.trim() && !skillChips.includes(searchDraft.trim())) setSkillChips(prev => [...prev, searchDraft.trim()])
+              setSearchDraft('')
+              setShowSuggestions(false)
+            }}
             style={{ position: 'relative', flex: 1, minWidth: 200, display: 'flex', gap: '0.5rem' }}
           >
             <div style={{ position: 'relative', flex: 1 }}>
-              <Search size={14} style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)', pointerEvents: 'none' }} />
-              <input
-                type="text" placeholder="Search by skill (e.g. React, Spanish tutoring...)" value={searchDraft}
-                onChange={e => setSearchDraft(e.target.value)} className="form-input"
-                style={{ paddingLeft: '2.5rem', paddingRight: searchDraft ? '2.25rem' : undefined }}
-              />
-              {searchDraft && (
-                <button
-                  type="button"
-                  onClick={() => { setSearchDraft(''); setSearch('') }}
-                  style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', display: 'flex', padding: 0 }}
+              <div
+                className="form-input"
+                style={{
+                  display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.4rem',
+                  paddingLeft: '2.5rem', minHeight: 42, height: 'auto', paddingTop: skillChips.length ? '0.4rem' : undefined, paddingBottom: skillChips.length ? '0.4rem' : undefined,
+                }}
+              >
+                <Search size={14} style={{ position: 'absolute', left: '0.875rem', top: skillChips.length ? '1.1rem' : '50%', transform: 'translateY(-50%)', color: 'var(--text-3)', pointerEvents: 'none' }} />
+                {skillChips.map(chip => (
+                  <span
+                    key={chip}
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: 'var(--brand-light)', color: 'var(--brand)',
+                      border: '1px solid var(--brand)', borderRadius: 999, padding: '0.2rem 0.6rem', fontSize: '0.75rem', fontWeight: 600, whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {chip}
+                    <button
+                      type="button" onClick={() => setSkillChips(prev => prev.filter(c => c !== chip))}
+                      style={{ background: 'none', border: 'none', color: 'var(--brand)', cursor: 'pointer', display: 'flex', padding: 0 }}
+                    >
+                      <X size={11} />
+                    </button>
+                  </span>
+                ))}
+                <input
+                  type="text"
+                  placeholder={skillChips.length ? 'Add another skill...' : 'Search by skill (e.g. React, Spanish tutoring...)'}
+                  value={searchDraft}
+                  onChange={e => { setSearchDraft(e.target.value); setShowSuggestions(true) }}
+                  onFocus={() => setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                  onKeyDown={e => {
+                    if (e.key === 'Backspace' && !searchDraft && skillChips.length) {
+                      setSkillChips(prev => prev.slice(0, -1))
+                    }
+                  }}
+                  style={{ flex: 1, minWidth: 120, border: 'none', outline: 'none', background: 'transparent', fontSize: '0.9rem', padding: '0.2rem 0' }}
+                />
+              </div>
+
+              {showSuggestions && suggestions.length > 0 && (
+                <div
+                  style={{
+                    position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '0.35rem', background: 'var(--surface, #fff)',
+                    border: '1px solid var(--border)', borderRadius: 'var(--radius, 8px)', boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                    zIndex: 20, overflow: 'hidden', maxHeight: 260, overflowY: 'auto',
+                  }}
                 >
-                  <X size={14} />
-                </button>
+                  {suggestions.map(s => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onMouseDown={e => e.preventDefault()}
+                      onClick={() => {
+                        setSkillChips(prev => [...prev, s.skill_name])
+                        setSearchDraft('')
+                        setShowSuggestions(false)
+                      }}
+                      style={{
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', textAlign: 'left',
+                        padding: '0.55rem 0.9rem', border: 'none', borderBottom: '1px solid var(--border)', background: 'none',
+                        cursor: 'pointer', fontSize: '0.83rem',
+                      }}
+                    >
+                      <span>{s.skill_name}</span>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--text-3)' }}>{s.track}</span>
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
             <button
               type="submit"
               style={{
                 display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0 1.1rem', borderRadius: 'var(--radius, 8px)',
-                border: 'none', background: 'var(--brand)', color: 'white', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer',
+                border: 'none', background: 'var(--brand)', color: 'white', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', flexShrink: 0,
               }}
             >
               <Search size={14} /> Search
@@ -338,7 +416,7 @@ function MarketplaceContent() {
             ))}
             {activeFilterChips.length > 1 && (
               <button
-                onClick={() => { setSearch(''); setSearchDraft(''); setFilterTier('') }}
+                onClick={() => { setSkillChips([]); setSearchDraft(''); setFilterTier('') }}
                 style={{ background: 'none', border: 'none', color: 'var(--text-3)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}
               >
                 Clear all
