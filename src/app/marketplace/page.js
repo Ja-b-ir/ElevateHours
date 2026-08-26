@@ -274,7 +274,7 @@ function MarketplaceContent() {
         {success && <div className="alert alert-success"><Check size={15} /> {success}</div>}
 
         {/* Search + filter + sort bar */}
-        <div className="eh-mkt-fade-in" style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
+        <div className="eh-mkt-fade-in" style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem', flexWrap: 'wrap', position: 'relative', zIndex: 30 }}>
           <form
             onSubmit={e => {
               e.preventDefault()
@@ -331,7 +331,7 @@ function MarketplaceContent() {
                   style={{
                     position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '0.35rem', background: 'var(--surface, #fff)',
                     border: '1px solid var(--border)', borderRadius: 'var(--radius, 8px)', boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-                    zIndex: 20, overflow: 'hidden', maxHeight: 260, overflowY: 'auto',
+                    zIndex: 40, overflow: 'hidden', maxHeight: 260, overflowY: 'auto',
                   }}
                 >
                   {suggestions.map(s => (
