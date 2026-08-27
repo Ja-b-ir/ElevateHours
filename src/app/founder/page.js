@@ -85,7 +85,7 @@ export default function FounderPage() {
                 marginBottom: '1.5rem'
               }}>
                 <img
-                  src="/founder.jpg"
+                  src="/founder2.jpeg"
                   alt="Md. Jabir Hossen — Founder & CEO of ElevateHours"
                   style={{ width: '100%', height: 'auto', display: 'block' }}
                   onError={(e) => {
