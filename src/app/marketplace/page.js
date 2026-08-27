@@ -322,7 +322,7 @@ function MarketplaceContent() {
                       setSkillChips(prev => prev.slice(0, -1))
                     }
                   }}
-                  style={{ flex: 1, minWidth: 120, border: 'none', outline: 'none', background: 'transparent', fontSize: '0.9rem', padding: '0.2rem 0' }}
+                  style={{ flex: 1, minWidth: 120, border: 'none', outline: 'none', background: 'transparent', color: 'var(--text)', fontSize: '0.9rem', padding: '0.2rem 0' }}
                 />
               </div>
 
@@ -347,7 +347,7 @@ function MarketplaceContent() {
                       style={{
                         display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', textAlign: 'left',
                         padding: '0.55rem 0.9rem', border: 'none', borderBottom: '1px solid var(--border)', background: 'none',
-                        cursor: 'pointer', fontSize: '0.83rem',
+                        cursor: 'pointer', fontSize: '0.83rem', color: 'var(--text)', fontFamily: 'inherit',
                       }}
                     >
                       <span>{s.skill_name}</span>
