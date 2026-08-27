@@ -126,7 +126,7 @@ export default function FounderPage() {
 
                 <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border)' }}>
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-2)', fontWeight: 600, marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Organization</div>
-                  <div style={{ fontWeight: 700, color: 'var(--text)' }}>CodeScriptors IT Solutions</div>
+                  <div style={{ fontWeight: 700, color: 'var(--text)' }}>CodeScriptors Technologies</div>
                   <div style={{ fontSize: '0.85rem', color: 'var(--text-2)', marginTop: '0.2rem' }}>Dhaka, Bangladesh</div>
                 </div>
               </div>
@@ -148,7 +148,7 @@ export default function FounderPage() {
                 </h2>
                 <div style={{ color: 'var(--text-2)', lineHeight: 1.85, fontSize: '1rem' }}>
                   <p style={{ marginBottom: '1rem' }}>
-                    Md. Jabir Hossen is a final-year Bachelor's student of Computer Science and Engineering at a private university in Dhaka, Bangladesh. As the Founder & CEO of <strong>CodeScriptors IT Solutions</strong>, he has dedicated his academic and professional journey to building technology that solves real problems for real people.
+                    Md. Jabir Hossen has recently completed his Bachelor's in Computer Science and Engineering from a private university in Dhaka, Bangladesh. As the Founder & CEO of <strong>CodeScriptors Technologies</strong>, he has dedicated his academic and professional journey to building technology that solves real problems for real people.
                   </p>
                   <p style={{ marginBottom: '1rem' }}>
                     Jabir's journey with ElevateHours began with a simple but powerful observation: countless students across Bangladesh and the broader developing world possess genuine skills and boundless potential — but lack the connections, resources, and verified track records needed to access meaningful opportunities. At the same time, early-stage social ventures and non-profits desperately need skilled support but cannot afford market-rate fees.
