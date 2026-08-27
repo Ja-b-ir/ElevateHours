@@ -101,39 +101,26 @@ export default function Transactions() {
   }
 
   // Confirming a transaction is what actually rewards Sparks and updates both profiles.
-  const TIER_THRESHOLDS = [
-    { name: 'Tier 3: Strategic', min: 10000 },
-    { name: 'Tier 2: Specialized', min: 5000 },
-    { name: 'Tier 1: Foundational', min: 0 },
-  ]
-  const tierForSparks = (sparks) => TIER_THRESHOLDS.find(t => sparks >= t.min)?.name || 'Tier 1: Foundational'
-
   const confirmTransaction = async (txn) => {
     setUpdating(txn.id)
     try {
       const sparks = txn.total_sparks_transferred || 0
 
-      await supabase.from('transactions').update({ status: 'Confirmed', completed_at: new Date().toISOString() }).eq('id', txn.id)
-
-      // Credit the provider: Sparks earned, completed count, impact score
+      // Sparks, completed_transactions, impact_score, and tier_level are all
+      // credited server-side by the update_profile_balances() database
+      // trigger the moment status flips to 'Confirmed' — not by this client
+      // code. Grab the provider's tier before confirming so we can tell
+      // afterward whether they leveled up, purely for the notification copy.
+      let tierBefore = null
       if (txn.provider_id) {
         const { data: providerProfile } = await supabase
-          .from('profiles')
-          .select('sparks_earned, completed_transactions, impact_score, tier_level')
-          .eq('id', txn.provider_id)
-          .single()
+          .from('profiles').select('tier_level').eq('id', txn.provider_id).single()
+        tierBefore = providerProfile?.tier_level
+      }
 
-        const newSparksEarned = (providerProfile?.sparks_earned || 0) + sparks
-        const newTier = tierForSparks(newSparksEarned)
-        const tierChanged = newTier !== providerProfile?.tier_level
+      await supabase.from('transactions').update({ status: 'Confirmed', completed_at: new Date().toISOString() }).eq('id', txn.id)
 
-        await supabase.from('profiles').update({
-          sparks_earned: newSparksEarned,
-          completed_transactions: (providerProfile?.completed_transactions || 0) + 1,
-          impact_score: (providerProfile?.impact_score || 0) + 10,
-          tier_level: newTier,
-        }).eq('id', txn.provider_id)
-
+      if (txn.provider_id) {
         await supabase.from('notifications').insert({
           user_id: txn.provider_id,
           title: 'Transaction Confirmed!',
@@ -142,27 +129,17 @@ export default function Transactions() {
           related_id: txn.id
         })
 
-        if (tierChanged) {
+        const { data: providerAfter } = await supabase
+          .from('profiles').select('tier_level').eq('id', txn.provider_id).single()
+
+        if (providerAfter?.tier_level && providerAfter.tier_level !== tierBefore) {
           await supabase.from('notifications').insert({
             user_id: txn.provider_id,
             title: 'Tier Upgraded!',
-            message: `Congratulations — you've been upgraded to ${newTier}!`,
+            message: `Congratulations — you've been upgraded to ${providerAfter.tier_level}!`,
             type: 'confirmed',
           })
         }
-      }
-
-      // Debit the receiver: Sparks spent
-      if (txn.receiver_id) {
-        const { data: receiverProfile } = await supabase
-          .from('profiles')
-          .select('sparks_spent')
-          .eq('id', txn.receiver_id)
-          .single()
-
-        await supabase.from('profiles').update({
-          sparks_spent: (receiverProfile?.sparks_spent || 0) + sparks,
-        }).eq('id', txn.receiver_id)
       }
 
       await fetchTransactions(user.id)
