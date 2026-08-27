@@ -269,7 +269,7 @@ export default function FounderPage() {
             <Logo height={26} linkTo="/" forceTheme="dark" />
           </div>
           <div style={{ opacity: 0.5, fontSize: '0.85rem' }}>
-            Built by <a href="https://www.facebook.com/codescriptors/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--amber)', fontWeight: 600 }}>CodeScriptors IT Solutions</a>
+            Built by <a href="https://www.facebook.com/codescriptors/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--amber)', fontWeight: 600 }}>CodeScriptors Technologies</a>
           </div>
         </div>
       </footer>
