@@ -16,6 +16,15 @@ const TEAM = [
   },
   {
     rank: 2,
+    name: 'Syada Rafia Bari Risha',
+    designation: 'Community Programme Coordinator',
+    photo: 'team/risha.jpeg',
+    bio: 'Syada Rafia has completed her BSc in Computer Science & Engineering and is passionate about technology, continuous learning, and creating meaningful opportunities for young people. As a Community Programme Coordinator at ElevateHours, she is dedicated to connecting students, educators, and organizations, supporting skill development, and helping individuals gain practical experience that prepares them for their careers.',
+    quote: 'I believe meaningful opportunities can transform the way people learn, work, and grow. Through ElevateHours, I want to help connect people with opportunities to share their skills, gain real-world experience, collaborate with others, and build the confidence they need to move forward in their careers.',
+    socials: { linkedin: '', email: 'mariamakterkhushi7@gmail.com' }
+  },
+  {
+    rank: 2,
     name: 'Mariam Akter Khushi',
     designation: 'Community Programme Coordinator',
     photo: 'team/khushi.jpg',
