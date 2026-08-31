@@ -39,7 +39,7 @@ export async function POST(req) {
         user_id: userId,
         title: 'Account Suspended',
         message: reason,
-        type: 'ban',
+        type: 'general',
       })
     }
 
