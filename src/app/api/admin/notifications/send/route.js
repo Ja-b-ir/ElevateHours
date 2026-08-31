@@ -21,7 +21,7 @@ export async function POST(req) {
       const { data: profiles, error: fetchError } = await supabaseAdmin.from('profiles').select('id')
       if (fetchError) return Response.json({ error: fetchError.message }, { status: 400 })
 
-      const notifRows = profiles.map((p) => ({ user_id: p.id, title, message, type: 'announcement' }))
+      const notifRows = profiles.map((p) => ({ user_id: p.id, title, message, type: 'general' }))
       if (notifRows.length) {
         const { error: insertError } = await supabaseAdmin.from('notifications').insert(notifRows)
         if (insertError) return Response.json({ error: insertError.message }, { status: 400 })
@@ -45,7 +45,7 @@ export async function POST(req) {
 
     const { error: insertError } = await supabaseAdmin
       .from('notifications')
-      .insert({ user_id: userId, title, message, type: 'announcement' })
+      .insert({ user_id: userId, title, message, type: 'general' })
 
     if (insertError) return Response.json({ error: insertError.message }, { status: 400 })
 
