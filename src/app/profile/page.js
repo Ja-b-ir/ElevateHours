@@ -3,7 +3,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
-import { Mail, MessageCircle, MessageSquare, CheckCircle2, BarChart3, Star, Zap, Award, AlertTriangle, Globe, Clock, Flag, X } from 'lucide-react'
+import { Mail, MessageCircle, MessageSquare, CheckCircle2, BarChart3, Star, Zap, Award, AlertTriangle, Globe, Clock, Flag, X, Camera, Loader2 } from 'lucide-react'
 
 const COUNTRIES = [
   'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia',
@@ -70,6 +70,8 @@ function ProfileContent() {
   const [customTierId, setCustomTierId] = useState('')
   const [skillError, setSkillError] = useState('')
   const [skillSubmitting, setSkillSubmitting] = useState(false)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [avatarError, setAvatarError] = useState('')
 
   useEffect(() => {
     const init = async () => {
@@ -129,6 +131,49 @@ function ProfileContent() {
     }
     init()
   }, [viewId])
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0]
+    e.target.value = '' // allow re-selecting the same file later
+    if (!file) return
+
+    setAvatarError('')
+
+    if (!file.type.startsWith('image/')) {
+      setAvatarError('Please choose an image file.')
+      return
+    }
+    if (file.size < 10 * 1024) {
+      setAvatarError('Image is too small — please use a file of at least 10KB.')
+      return
+    }
+    if (file.size > 500 * 1024) {
+      setAvatarError('Image is too large — please use a file under 500KB.')
+      return
+    }
+
+    setUploadingAvatar(true)
+    try {
+      const ext = file.name.split('.').pop()
+      const path = `${currentUser.id}/avatar-${Date.now()}.${ext}`
+
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(path, file, { upsert: true })
+      if (uploadError) throw uploadError
+
+      const { data: publicUrlData } = supabase.storage.from('avatars').getPublicUrl(path)
+      const avatarUrl = publicUrlData.publicUrl
+
+      const { error: updateError } = await supabase.from('profiles').update({ avatar_url: avatarUrl }).eq('id', currentUser.id)
+      if (updateError) throw updateError
+
+      setProfile((p) => ({ ...p, avatar_url: avatarUrl }))
+    } catch (err) {
+      console.error('Avatar upload failed', err)
+      setAvatarError('Upload failed — please try again.')
+    } finally {
+      setUploadingAvatar(false)
+    }
+  }
 
   const saveProfile = async () => {
     setSaving(true)
@@ -293,13 +338,41 @@ function ProfileContent() {
             {success}
           </div>
         )}
+        {avatarError && (
+          <div style={{ background: 'var(--red-light)', color: 'var(--red)', padding: '0.75rem 1.125rem', borderRadius: 10, fontSize: '0.875rem', fontWeight: 600, marginBottom: '1.25rem' }}>
+            {avatarError}
+          </div>
+        )}
 
         {/* Profile Header Card */}
         <div style={{ background: 'var(--surface)', borderRadius: 20, padding: '2rem', marginBottom: '1.5rem', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-              <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'linear-gradient(135deg, var(--brand), var(--brand-mid))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 900, fontSize: '1.75rem', flexShrink: 0 }}>
-                {profile.full_name?.[0]?.toUpperCase()}
+              <div style={{ position: 'relative', flexShrink: 0 }}>
+                <div style={{ width: 72, height: 72, borderRadius: '50%', background: profile.avatar_url ? undefined : 'linear-gradient(135deg, var(--brand), var(--brand-mid))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 900, fontSize: '1.75rem', overflow: 'hidden' }}>
+                  {profile.avatar_url ? (
+                    <img src={profile.avatar_url} alt={profile.full_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    profile.full_name?.[0]?.toUpperCase()
+                  )}
+                </div>
+                {isOwnProfile && (
+                  <label
+                    htmlFor="avatar-upload-input"
+                    title="Change profile photo"
+                    style={{
+                      position: 'absolute', bottom: -2, right: -2, width: 26, height: 26, borderRadius: '50%',
+                      background: 'var(--brand)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      cursor: uploadingAvatar ? 'default' : 'pointer', border: '2px solid var(--surface)',
+                    }}
+                  >
+                    {uploadingAvatar ? <Loader2 size={12} style={{ animation: 'spin 0.7s linear infinite' }} /> : <Camera size={12} />}
+                    <input
+                      id="avatar-upload-input" type="file" accept="image/*" onChange={handleAvatarUpload}
+                      disabled={uploadingAvatar} style={{ display: 'none' }}
+                    />
+                  </label>
+                )}
               </div>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
