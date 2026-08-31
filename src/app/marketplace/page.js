@@ -526,7 +526,9 @@ function MarketplaceContent() {
               {sortedProfiles.map((p, i) => (
                 <div key={p.id} className="card eh-mkt-card eh-mkt-reveal" onMouseEnter={cardHover} onMouseLeave={cardLeave} style={{ display: 'flex', flexDirection: 'column', transitionDelay: `${(i % 8) * 40}ms` }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem', marginBottom: '1rem' }}>
-                    <div className="avatar avatar-md" style={{ background: ['var(--brand)', 'var(--green)', 'var(--amber)'][i % 3], color: 'white' }}>{p.full_name?.[0]?.toUpperCase()}</div>
+                    <div className="avatar avatar-md" style={{ background: p.avatar_url ? undefined : ['var(--brand)', 'var(--green)', 'var(--amber)'][i % 3], color: 'white', overflow: 'hidden' }}>
+                      {p.avatar_url ? <img src={p.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : p.full_name?.[0]?.toUpperCase()}
+                    </div>
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
                         <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{p.full_name}</span>
