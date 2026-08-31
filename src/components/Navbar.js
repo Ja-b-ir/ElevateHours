@@ -60,7 +60,7 @@ export default function Navbar() {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
       if (user) {
-        const { data: prof } = await supabase.from('profiles').select('full_name, account_type, is_banned, ban_reason, is_admin').eq('id', user.id).single()
+        const { data: prof } = await supabase.from('profiles').select('full_name, account_type, is_banned, ban_reason, is_admin, avatar_url').eq('id', user.id).single()
         if (prof?.is_banned) {
           await supabase.auth.signOut()
           alert('Your account has been suspended.' + (prof.ban_reason ? ' Reason: ' + prof.ban_reason : ''))
@@ -273,11 +273,15 @@ export default function Navbar() {
               }}>
                 <div style={{
                   width: 26, height: 26, borderRadius: '50%',
-                  background: 'linear-gradient(135deg, var(--brand), var(--brand-mid))',
+                  background: profile?.avatar_url ? undefined : 'linear-gradient(135deg, var(--brand), var(--brand-mid))',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'white', fontSize: '0.7rem', fontWeight: 800
+                  color: 'white', fontSize: '0.7rem', fontWeight: 800, overflow: 'hidden', flexShrink: 0
                 }}>
-                  {profile?.full_name?.[0]?.toUpperCase() || 'U'}
+                  {profile?.avatar_url ? (
+                    <img src={profile.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    profile?.full_name?.[0]?.toUpperCase() || 'U'
+                  )}
                 </div>
                 <span style={{ maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {profile?.full_name?.split(' ')[0] || 'Account'}
