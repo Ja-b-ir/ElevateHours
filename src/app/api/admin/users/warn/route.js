@@ -39,7 +39,7 @@ export async function POST(req) {
       user_id: userId,
       title: 'Account Warning',
       message: reason,
-      type: 'warning',
+      type: 'general',
     })
 
     await supabaseAdmin.from('admin_actions_log').insert({
