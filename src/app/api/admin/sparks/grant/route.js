@@ -37,7 +37,7 @@ export async function POST(req) {
         user_id: p.id,
         title: 'You received Sparks!',
         message: `${auth.adminRow.name} gifted you ${parsedAmount} SPK${reason ? `: ${reason}` : '.'}`,
-        type: 'sparks',
+        type: 'gift',
       }))
       if (notifRows.length) await supabaseAdmin.from('notifications').insert(notifRows)
 
@@ -70,7 +70,7 @@ export async function POST(req) {
       user_id: userId,
       title: 'You received Sparks!',
       message: `${auth.adminRow.name} gifted you ${parsedAmount} SPK${reason ? `: ${reason}` : '.'}`,
-      type: 'sparks',
+      type: 'gift',
     })
 
     await supabaseAdmin.from('admin_actions_log').insert({
