@@ -1,13 +1,13 @@
 'use client'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import Logo from '@/components/Logo'
-import BlogModal from '@/components/BlogModal'
 import LoadingScreen from '@/components/LoadingScreen'
 import HeroCanvas from '@/components/HeroCanvas'
 import { htmlToPlainText, countWords } from '@/lib/sanitizeHtml'
-import { ArrowRight, PenLine, Clock } from 'lucide-react'
+import { ArrowRight, PenLine, Clock, Search, X, Tag } from 'lucide-react'
 
 const ACCENTS = ['var(--brand)', 'var(--green)', 'var(--amber)']
 
@@ -43,10 +43,20 @@ function handleTiltLeave(e) {
   e.currentTarget.style.transform = ''
 }
 
-export default function BlogPage() {
+function BlogPageInner() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
   const [blogs, setBlogs] = useState([])
   const [loading, setLoading] = useState(true)
-  const [selected, setSelected] = useState(null)
+  const [chips, setChips] = useState([])
+  const [searchDraft, setSearchDraft] = useState('')
+  const [showSuggestions, setShowSuggestions] = useState(false)
+
+  useEffect(() => {
+    const tagFromUrl = searchParams.get('tag')
+    if (tagFromUrl) setChips([tagFromUrl.toLowerCase()])
+  }, [searchParams])
 
   useEffect(() => {
     supabase
@@ -74,8 +84,36 @@ export default function BlogPage() {
     return () => observer.disconnect()
   }, [loading, blogs])
 
-  const featured = blogs[0]
-  const rest = blogs.slice(1)
+  const allTags = Array.from(new Set(blogs.flatMap((b) => b.tags || []))).sort()
+
+  const suggestions = searchDraft.trim()
+    ? allTags.filter((t) => t.includes(searchDraft.trim().toLowerCase()) && !chips.includes(t))
+    : []
+
+  const matchesChips = (blog) => {
+    if (chips.length === 0) return true
+    const haystack = [blog.title, htmlToPlainText(blog.content), ...(blog.tags || [])]
+      .join(' ').toLowerCase()
+    return chips.some((chip) => haystack.includes(chip.toLowerCase()))
+  }
+
+  const filteredBlogs = blogs.filter(matchesChips)
+  const searching = chips.length > 0
+  const featured = searching ? null : blogs[0]
+  const rest = searching ? filteredBlogs : blogs.slice(1)
+
+  const addChip = (value) => {
+    const clean = value.trim().toLowerCase()
+    if (!clean || chips.includes(clean)) return
+    setChips((prev) => [...prev, clean])
+    setSearchDraft('')
+    setShowSuggestions(false)
+    router.replace('/blog', { scroll: false })
+  }
+  const removeChip = (chip) => {
+    setChips((prev) => prev.filter((c) => c !== chip))
+    router.replace('/blog', { scroll: false })
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)' }}>
@@ -110,8 +148,75 @@ export default function BlogPage() {
             Tips, wins, and lessons — written by the students, educators, and organizations trading skills right here.
           </p>
           {!loading && blogs.length > 0 && (
-            <div style={{ marginTop: '1.5rem', color: 'var(--text-3)', fontSize: '0.8rem', fontWeight: 600 }}>
-              {blogs.length} {blogs.length === 1 ? 'post' : 'posts'} published
+            <form
+              onSubmit={(e) => { e.preventDefault(); addChip(searchDraft) }}
+              style={{ position: 'relative', marginTop: '2rem', textAlign: 'left' }}
+            >
+              <div
+                className="form-input"
+                style={{
+                  display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.4rem',
+                  paddingLeft: '2.5rem', position: 'relative', minHeight: 46, height: 'auto',
+                  paddingTop: chips.length ? '0.4rem' : undefined, paddingBottom: chips.length ? '0.4rem' : undefined,
+                  background: 'var(--surface)',
+                }}
+              >
+                <Search size={15} style={{ position: 'absolute', left: '0.9rem', top: chips.length ? '1.15rem' : '50%', transform: 'translateY(-50%)', color: 'var(--text-3)', pointerEvents: 'none' }} />
+                {chips.map((chip) => (
+                  <span
+                    key={chip}
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: 'var(--brand-light)', color: 'var(--brand)',
+                      border: '1px solid var(--brand)', borderRadius: 999, padding: '0.2rem 0.6rem', fontSize: '0.78rem', fontWeight: 600, whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {chip}
+                    <button type="button" onClick={() => removeChip(chip)} style={{ background: 'none', border: 'none', color: 'var(--brand)', cursor: 'pointer', display: 'flex', padding: 0 }}>
+                      <X size={11} />
+                    </button>
+                  </span>
+                ))}
+                <input
+                  type="text"
+                  placeholder={chips.length ? 'Add another tag or word...' : 'Search posts or tags...'}
+                  value={searchDraft}
+                  onChange={(e) => { setSearchDraft(e.target.value); setShowSuggestions(true) }}
+                  onFocus={() => setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Backspace' && !searchDraft && chips.length) removeChip(chips[chips.length - 1])
+                  }}
+                  style={{ flex: 1, minWidth: 140, border: 'none', outline: 'none', background: 'transparent', color: 'var(--text)', fontSize: '0.9rem', padding: '0.2rem 0' }}
+                />
+              </div>
+
+              {showSuggestions && suggestions.length > 0 && (
+                <div style={{
+                  position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '0.4rem', background: 'var(--surface)',
+                  border: '1px solid var(--border)', borderRadius: 'var(--radius, 8px)', boxShadow: '0 8px 24px rgba(0,0,0,0.14)',
+                  zIndex: 30, overflow: 'hidden',
+                }}>
+                  {suggestions.map((tag) => (
+                    <button
+                      key={tag} type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => addChip(tag)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', textAlign: 'left',
+                        padding: '0.55rem 0.9rem', border: 'none', borderBottom: '1px solid var(--border)', background: 'none',
+                        cursor: 'pointer', fontSize: '0.83rem', color: 'var(--text)',
+                      }}
+                    >
+                      <Tag size={12} style={{ color: 'var(--text-3)' }} /> {tag}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </form>
+          )}
+          {!loading && blogs.length > 0 && (
+            <div style={{ marginTop: '1rem', color: 'var(--text-3)', fontSize: '0.8rem', fontWeight: 600 }}>
+              {searching
+                ? `${filteredBlogs.length} matching ${filteredBlogs.length === 1 ? 'post' : 'posts'}`
+                : `${blogs.length} ${blogs.length === 1 ? 'post' : 'posts'} published`}
             </div>
           )}
         </div>
@@ -124,15 +229,26 @@ export default function BlogPage() {
           <div style={{ textAlign: 'center', color: 'var(--text-3)', padding: '3rem 0' }}>
             No blogs yet. Be the first to share something!
           </div>
+        ) : searching && filteredBlogs.length === 0 ? (
+          <div style={{ textAlign: 'center', color: 'var(--text-3)', padding: '3rem 0' }}>
+            No posts match {chips.map((c) => `"${c}"`).join(', ')}.{' '}
+            <button
+              onClick={() => { setChips([]); router.replace('/blog', { scroll: false }) }}
+              style={{ color: 'var(--brand)', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+            >
+              Clear search
+            </button>
+          </div>
         ) : (
           <>
             {featured && (
-              <div
-                onClick={() => setSelected(featured)}
+              <Link
+                href={`/blog/${featured.id}`}
                 onMouseMove={handleTiltMove}
                 onMouseLeave={handleTiltLeave}
                 className="eh-reveal eh-featured-card"
                 style={{
+                  display: 'block', textDecoration: 'none', color: 'inherit',
                   cursor: 'pointer', borderRadius: 'var(--radius-lg)', padding: 'clamp(1.75rem, 4vw, 2.75rem)',
                   marginBottom: '2.5rem', position: 'relative', overflow: 'hidden',
                   background: 'linear-gradient(135deg, var(--brand) 0%, var(--brand-mid, var(--brand)) 100%)',
@@ -154,11 +270,28 @@ export default function BlogPage() {
                     {featured.title}
                   </h2>
                   <p style={{
-                    fontSize: '0.95rem', lineHeight: 1.7, opacity: 0.92, marginBottom: '1.5rem', maxWidth: 640,
+                    fontSize: '0.95rem', lineHeight: 1.7, opacity: 0.92, marginBottom: '1.25rem', maxWidth: 640,
                     display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden'
                   }}>
                     {htmlToPlainText(featured.content)}
                   </p>
+                  {featured.tags?.length > 0 && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '1.25rem' }}>
+                      {featured.tags.map((tag) => (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); addChip(tag) }}
+                          style={{
+                            fontSize: '0.72rem', fontWeight: 600, color: 'white', background: 'rgba(255,255,255,0.18)',
+                            border: '1px solid rgba(255,255,255,0.4)', borderRadius: 999, padding: '0.15rem 0.6rem', cursor: 'pointer',
+                          }}
+                        >
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                     <div style={{
                       width: 34, height: 34, borderRadius: '50%', background: 'rgba(255,255,255,0.22)',
@@ -175,7 +308,7 @@ export default function BlogPage() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             )}
 
             {rest.length > 0 && (
@@ -183,13 +316,14 @@ export default function BlogPage() {
                 {rest.map((blog, i) => {
                   const accent = ACCENTS[i % ACCENTS.length]
                   return (
-                    <div
+                    <Link
                       key={blog.id}
-                      onClick={() => setSelected(blog)}
+                      href={`/blog/${blog.id}`}
                       onMouseMove={handleTiltMove}
                       onMouseLeave={handleTiltLeave}
                       className="eh-reveal eh-blog-card"
                       style={{
+                        display: 'block', textDecoration: 'none', color: 'inherit',
                         background: 'var(--surface)', border: '1px solid var(--border)', borderTop: `3px solid ${accent}`,
                         borderRadius: 'var(--radius-lg)', padding: '1.5rem', cursor: 'pointer', position: 'relative',
                         overflow: 'hidden', willChange: 'transform',
@@ -202,11 +336,28 @@ export default function BlogPage() {
                         {blog.title}
                       </h3>
                       <p style={{
-                        color: 'var(--text-2)', fontSize: '0.84rem', lineHeight: 1.6, marginBottom: '1.1rem', position: 'relative',
+                        color: 'var(--text-2)', fontSize: '0.84rem', lineHeight: 1.6, marginBottom: '0.9rem', position: 'relative',
                         display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden'
                       }}>
                         {htmlToPlainText(blog.content)}
                       </p>
+                      {blog.tags?.length > 0 && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginBottom: '1.1rem', position: 'relative' }}>
+                          {blog.tags.map((tag) => (
+                            <button
+                              key={tag}
+                              type="button"
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); addChip(tag) }}
+                              style={{
+                                fontSize: '0.7rem', fontWeight: 600, color: accent, background: 'var(--surface-2)',
+                                border: `1px solid ${accent}`, borderRadius: 999, padding: '0.12rem 0.55rem', cursor: 'pointer',
+                              }}
+                            >
+                              {tag}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', position: 'relative' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
                           <div style={{
@@ -224,7 +375,7 @@ export default function BlogPage() {
                           Read <ArrowRight size={12} />
                         </span>
                       </div>
-                    </div>
+                    </Link>
                   )
                 })}
               </div>
@@ -232,8 +383,6 @@ export default function BlogPage() {
           </>
         )}
       </div>
-
-      <BlogModal blog={selected} onClose={() => setSelected(null)} />
 
       <style>{`
         .eh-blog-hero-bg {
@@ -348,5 +497,13 @@ export default function BlogPage() {
         }
       `}</style>
     </div>
+  )
+}
+
+export default function BlogPage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: 'var(--bg)' }}><LoadingScreen text="Loading blogs..." /></div>}>
+      <BlogPageInner />
+    </Suspense>
   )
 }
