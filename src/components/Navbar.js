@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import Logo from '@/components/Logo'
 import {
   LayoutDashboard, Store, PlusCircle, ClipboardList, ArrowLeftRight,
-  Heart, Zap, User, Award, Bell, Sun, Moon, Menu, X, LogOut, ChevronDown, MessageSquare, Bookmark, Users, Shield
+  Heart, Zap, User, Award, Bell, Sun, Moon, Menu, X, LogOut, ChevronDown, MessageSquare, Bookmark, Users, Shield, GraduationCap
 } from 'lucide-react'
 
 export default function Navbar() {
@@ -129,16 +129,17 @@ export default function Navbar() {
   const links = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/marketplace', label: 'Marketplace', icon: Store },
-    { href: '/post-request', label: 'Post Request', icon: PlusCircle },
     { href: '/my-requests', label: 'My Requests', icon: ClipboardList },
-    { href: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
-    { href: '/funding-requests', label: 'Funding', icon: Heart },
+    { href: '/my-enrollments', label: 'My Enrolled Programs', icon: GraduationCap },
     { href: '/buy-sparks', label: 'Buy Sparks', icon: Zap },
   ]
 
   const isActive = (href) => pathname === href
 
   const dropdownLinks = [
+    { href: '/post-request', label: 'Post Request', icon: PlusCircle },
+    { href: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
+    { href: '/funding-requests', label: 'Funding', icon: Heart },
     { href: '/profile', label: 'My Profile', icon: User },
     { href: '/saved', label: 'Saved', icon: Bookmark },
     { href: '/badges', label: 'Badges', icon: Award },
