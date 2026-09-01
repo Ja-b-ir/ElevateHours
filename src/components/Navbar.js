@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import Logo from '@/components/Logo'
 import {
   LayoutDashboard, Store, PlusCircle, ClipboardList, ArrowLeftRight,
-  Heart, Zap, User, Award, Bell, Sun, Moon, Menu, X, LogOut, ChevronDown, MessageSquare, Bookmark, Users, Shield, GraduationCap
+  Heart, Zap, Award, Bell, Sun, Moon, Menu, X, LogOut, ChevronDown, MessageSquare, Bookmark, Users, Shield, GraduationCap
 } from 'lucide-react'
 
 export default function Navbar() {
@@ -140,7 +140,6 @@ export default function Navbar() {
     { href: '/post-request', label: 'Post Request', icon: PlusCircle },
     { href: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
     { href: '/funding-requests', label: 'Funding', icon: Heart },
-    { href: '/profile', label: 'My Profile', icon: User },
     { href: '/saved', label: 'Saved', icon: Bookmark },
     { href: '/badges', label: 'Badges', icon: Award },
     { href: '/notifications', label: 'Notifications', icon: Bell },
@@ -297,10 +296,32 @@ export default function Navbar() {
                   borderRadius: 'var(--radius)', boxShadow: 'var(--shadow-lg)',
                   minWidth: 200, zIndex: 9999, overflow: 'hidden'
                 }}>
-                  <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border)' }}>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text)' }}>{profile?.full_name}</div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-3)', marginTop: '0.1rem' }}>{profile?.account_type}</div>
-                  </div>
+                  <button
+                    onClick={() => { setDropdownOpen(false); window.location.href = '/profile'; }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '0.65rem', width: '100%',
+                      padding: '0.75rem 1rem', background: 'none', border: 'none',
+                      borderBottom: '1px solid var(--border)', cursor: 'pointer', textAlign: 'left'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-3)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                  >
+                    <div style={{
+                      width: 36, height: 36, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
+                      background: profile?.avatar_url ? undefined : 'linear-gradient(135deg, var(--brand), var(--brand-mid))',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.9rem', fontWeight: 800,
+                    }}>
+                      {profile?.avatar_url ? (
+                        <img src={profile.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        profile?.full_name?.[0]?.toUpperCase() || 'U'
+                      )}
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{profile?.full_name}</div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-3)', marginTop: '0.1rem' }}>{profile?.account_type}</div>
+                    </div>
+                  </button>
                   {dropdownLinks.map(({ href, label, icon: Icon }) => (
                     <button
                       key={href}
