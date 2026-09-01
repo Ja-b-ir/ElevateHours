@@ -6,10 +6,13 @@ import RichTextEditor from '@/components/RichTextEditor'
 import { sanitizeHtml, countWords, htmlToPlainText } from '@/lib/sanitizeHtml'
 
 const MAX_WORDS = 1000
+const MAX_TAGS = 5
 
 export default function DashboardBlogPage() {
   const [title, setTitle] = useState('')
   const [contentHtml, setContentHtml] = useState('')
+  const [tags, setTags] = useState([])
+  const [tagDraft, setTagDraft] = useState('')
   const [editorKey, setEditorKey] = useState(0)
   const [editingId, setEditingId] = useState(null)
   const [posting, setPosting] = useState(false)
@@ -38,6 +41,8 @@ export default function DashboardBlogPage() {
     setEditingId(null)
     setTitle('')
     setContentHtml('')
+    setTags([])
+    setTagDraft('')
     setEditorKey((k) => k + 1)
     setError('')
   }
@@ -46,9 +51,18 @@ export default function DashboardBlogPage() {
     setEditingId(blog.id)
     setTitle(blog.title)
     setContentHtml(blog.content)
+    setTags(blog.tags || [])
+    setTagDraft('')
     setEditorKey((k) => k + 1)
     setError('')
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const addTag = () => {
+    const clean = tagDraft.trim().toLowerCase().replace(/\s+/g, '-')
+    if (!clean || tags.includes(clean) || tags.length >= MAX_TAGS) { setTagDraft(''); return }
+    setTags((prev) => [...prev, clean])
+    setTagDraft('')
   }
 
   const handleSubmit = async (e) => {
@@ -67,7 +81,7 @@ export default function DashboardBlogPage() {
     if (editingId) {
       const { error: updateError } = await supabase
         .from('blogs')
-        .update({ title: title.trim(), content: cleanHtml })
+        .update({ title: title.trim(), content: cleanHtml, tags })
         .eq('id', editingId)
         .eq('author_id', user.id)
 
@@ -92,6 +106,7 @@ export default function DashboardBlogPage() {
         author_name: authorName,
         title: title.trim(),
         content: cleanHtml,
+        tags,
       })
 
       if (insertError) {
@@ -143,6 +158,45 @@ export default function DashboardBlogPage() {
           </div>
         </div>
 
+        <div className="form-group">
+          <label className="form-label">Tags (up to {MAX_TAGS})</label>
+          <div style={{
+            display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.4rem',
+            border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: '0.5rem 0.7rem',
+          }}>
+            {tags.map((tag) => (
+              <span
+                key={tag}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: 'var(--brand-light)', color: 'var(--brand)',
+                  borderRadius: 999, padding: '0.2rem 0.6rem', fontSize: '0.78rem', fontWeight: 600,
+                }}
+              >
+                {tag}
+                <button
+                  type="button" onClick={() => setTags((prev) => prev.filter((t) => t !== tag))}
+                  style={{ background: 'none', border: 'none', color: 'var(--brand)', cursor: 'pointer', display: 'flex', padding: 0 }}
+                >
+                  <XIcon size={11} />
+                </button>
+              </span>
+            ))}
+            {tags.length < MAX_TAGS && (
+              <input
+                type="text" value={tagDraft}
+                onChange={(e) => setTagDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTag() }
+                  if (e.key === 'Backspace' && !tagDraft && tags.length) setTags((prev) => prev.slice(0, -1))
+                }}
+                onBlur={addTag}
+                placeholder={tags.length === 0 ? 'e.g. career, mentorship — press Enter to add' : 'Add another...'}
+                style={{ flex: 1, minWidth: 140, border: 'none', outline: 'none', background: 'transparent', fontSize: '0.85rem', padding: '0.2rem 0' }}
+              />
+            )}
+          </div>
+        </div>
+
         {error && <div className="alert alert-error">{error}</div>}
 
         <div style={{ display: 'flex', gap: '0.75rem' }}>
@@ -182,6 +236,15 @@ export default function DashboardBlogPage() {
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)', marginBottom: '0.2rem' }}>{blog.title}</div>
                 <div style={{ fontSize: '0.78rem', color: 'var(--text-3)' }}>{new Date(blog.created_at).toLocaleDateString()}</div>
+                {blog.tags?.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginTop: '0.4rem' }}>
+                    {blog.tags.map((tag) => (
+                      <span key={tag} style={{ fontSize: '0.7rem', color: 'var(--brand)', background: 'var(--brand-light)', borderRadius: 999, padding: '0.1rem 0.5rem', fontWeight: 600 }}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
                 <button
