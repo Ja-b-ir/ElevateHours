@@ -49,9 +49,16 @@ function BlogPageInner() {
 
   const [blogs, setBlogs] = useState([])
   const [loading, setLoading] = useState(true)
+  const [homeHref, setHomeHref] = useState('/')
   const [chips, setChips] = useState([])
   const [searchDraft, setSearchDraft] = useState('')
   const [showSuggestions, setShowSuggestions] = useState(false)
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setHomeHref('/dashboard')
+    })
+  }, [])
 
   useEffect(() => {
     const tagFromUrl = searchParams.get('tag')
@@ -119,8 +126,8 @@ function BlogPageInner() {
     <div style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)' }}>
       <nav style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 100, backdropFilter: 'blur(12px)' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Logo height={40} linkTo="/" />
-          <Link href="/" style={{ color: 'var(--text-2)', fontSize: '0.875rem', fontWeight: 600, textDecoration: 'none' }}>Back to Home</Link>
+          <Logo height={40} linkTo={homeHref} />
+          <Link href={homeHref} style={{ color: 'var(--text-2)', fontSize: '0.875rem', fontWeight: 600, textDecoration: 'none' }}>Back to Home</Link>
         </div>
       </nav>
 
