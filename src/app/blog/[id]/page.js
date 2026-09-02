@@ -30,11 +30,18 @@ export default function BlogPostPage() {
 
   const [blog, setBlog] = useState(null)
   const [author, setAuthor] = useState(null)
+  const [homeHref, setHomeHref] = useState('/')
   const [more, setMore] = useState([])
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [progress, setProgress] = useState(0)
   const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setHomeHref('/dashboard')
+    })
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -114,7 +121,7 @@ export default function BlogPostPage() {
       <div style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)' }}>
         <nav style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
           <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem', height: 60, display: 'flex', alignItems: 'center' }}>
-            <Logo height={40} linkTo="/" />
+            <Logo height={40} linkTo={homeHref} />
           </div>
         </nav>
         <div style={{ maxWidth: 480, margin: '0 auto', padding: '6rem 1.5rem', textAlign: 'center' }}>
@@ -136,7 +143,7 @@ export default function BlogPostPage() {
 
       <nav style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 100, backdropFilter: 'blur(12px)' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Logo height={40} linkTo="/" />
+          <Logo height={40} linkTo={homeHref} />
           <Link href="/blog" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-2)', fontSize: '0.875rem', fontWeight: 600, textDecoration: 'none' }}>
             <ArrowLeft size={15} /> All posts
           </Link>
