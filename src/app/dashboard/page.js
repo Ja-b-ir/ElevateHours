@@ -1,5 +1,6 @@
 'use client'
 import BlogPromoCard from '@/components/BlogPromoCard'
+import LiveBlogTicker from '@/components/LiveBlogTicker'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
@@ -447,6 +448,8 @@ export default function Dashboard() {
         </div>
 
         <BlogPromoCard />
+
+        <LiveBlogTicker />
 
         {/* Activity Streak */}
         <div className="eh-dash-fade-in" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', marginBottom: '1.5rem' }}>
