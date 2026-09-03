@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Logo from '@/components/Logo'
 import { Sun, Moon, ArrowRight, Check, ChevronRight, Zap, MessageCircle, Award, Star, Code, Palette, Film, GraduationCap, PenLine, BarChart3, Mail, Send, Facebook, Youtube, Globe } from 'lucide-react'
@@ -87,10 +88,27 @@ const labelStyle = {
 }
 
 export default function LandingPage() {
+  const router = useRouter()
+  const [checkingAuth, setCheckingAuth] = useState(true)
   const [tiers, setTiers] = useState([])
   const [theme, setTheme] = useState('light')
   const [tiersLoaded, setTiersLoaded] = useState(false)
   const heroRef = useRef(null)
+
+  // If already logged in, this is your feed/dashboard, not a marketing page —
+  // send straight there instead of showing the logged-out landing content.
+  useEffect(() => {
+    let cancelled = false
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (cancelled) return
+      if (user) {
+        router.replace('/dashboard')
+      } else {
+        setCheckingAuth(false)
+      }
+    })
+    return () => { cancelled = true }
+  }, [router])
 
   // Contact form state
   const [contactForm, setContactForm] = useState({ name: '', email: '', subject: '', message: '' })
@@ -137,7 +155,7 @@ export default function LandingPage() {
     return () => hero.removeEventListener('mousemove', handleMove)
   }, [])
   const [themeLoaded, setThemeLoaded] = useState(false)
-  const pageLoading = !tiersLoaded || !themeLoaded
+  const pageLoading = checkingAuth || !tiersLoaded || !themeLoaded
 
   useEffect(() => {
     supabase.from('tier_reference').select('*').order('multiplier').then(({ data }) => {
