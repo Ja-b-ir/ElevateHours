@@ -3,7 +3,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
-import { Mail, MessageCircle, MessageSquare, CheckCircle2, BarChart3, Star, Zap, Award, AlertTriangle, Globe, Clock, Flag, X, Camera, Loader2 } from 'lucide-react'
+import { Mail, MessageCircle, MessageSquare, CheckCircle2, BarChart3, Star, Zap, Award, AlertTriangle, Globe, Clock, Flag, X, Camera, Loader2, Bookmark } from 'lucide-react'
 
 const COUNTRIES = [
   'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia',
@@ -38,6 +38,7 @@ function ProfileContent() {
   const searchParams = useSearchParams()
   const viewId = searchParams.get('id')
   const [currentUser, setCurrentUser] = useState(null)
+  const [isPersonSaved, setIsPersonSaved] = useState(false)
   const [profile, setProfile] = useState(null)
   const [skills, setSkills] = useState([])
   const [reviewStats, setReviewStats] = useState({ count: 0, average: 0 })
@@ -116,6 +117,10 @@ function ProfileContent() {
         .select('*, badge:badges(badge_name, description, badge_type)')
         .eq('profile_id', targetId)
       setBadges(badgeData || [])
+      if (viewId && viewId !== user.id) {
+        const { data: savedRow } = await supabase.from('saved_people').select('id').eq('user_id', user.id).eq('saved_user_id', viewId).maybeSingle()
+        setIsPersonSaved(!!savedRow)
+      }
       if (!viewId || viewId === user.id) {
         const { data: pending } = await supabase
           .from('country_change_requests')
@@ -257,6 +262,17 @@ function ProfileContent() {
     if (!profile?.country_updated_at) return 0
     const diffDays = (new Date() - new Date(profile.country_updated_at)) / 86400000
     return Math.max(0, Math.ceil(COOLDOWN_DAYS - diffDays))
+  }
+
+  const toggleSavePerson = async () => {
+    if (!currentUser || !profile) return
+    if (isPersonSaved) {
+      setIsPersonSaved(false)
+      await supabase.from('saved_people').delete().eq('user_id', currentUser.id).eq('saved_user_id', profile.id)
+    } else {
+      setIsPersonSaved(true)
+      await supabase.from('saved_people').insert({ user_id: currentUser.id, saved_user_id: profile.id })
+    }
   }
 
   const submitReport = async () => {
@@ -450,6 +466,17 @@ function ProfileContent() {
                   <MessageCircle size={18} />
                 </a>
               )}
+              <button
+                onClick={toggleSavePerson}
+                title={isPersonSaved ? 'Remove from saved' : 'Save ' + profile.full_name}
+                style={{
+                  width: 44, height: 44, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: isPersonSaved ? 'var(--brand-light)' : 'transparent', color: 'var(--brand)',
+                  border: '1.5px solid var(--brand)', cursor: 'pointer',
+                }}
+              >
+                <Bookmark size={18} fill={isPersonSaved ? 'var(--brand)' : 'none'} />
+              </button>
               <button
                 onClick={function() { setShowReportModal(true) }}
                 title={'Report ' + profile.full_name}
