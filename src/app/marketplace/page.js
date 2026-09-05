@@ -53,6 +53,7 @@ function MarketplaceContent() {
   const [success, setSuccess] = useState('')
   const [myName, setMyName] = useState('')
   const [savedIds, setSavedIds] = useState(new Set())
+  const [savedPeopleIds, setSavedPeopleIds] = useState(new Set())
   const [programs, setPrograms] = useState([])
   const [myEnrollments, setMyEnrollments] = useState(new Set())
   const [joiningProgram, setJoiningProgram] = useState(null)
@@ -81,6 +82,8 @@ function MarketplaceContent() {
       setMyApplications(new Set(apps?.map(a => a.transaction_id) || []))
       const { data: saved } = await supabase.from('saved_opportunities').select('transaction_id').eq('user_id', user.id)
       setSavedIds(new Set(saved?.map(s => s.transaction_id) || []))
+      const { data: savedPeople } = await supabase.from('saved_people').select('saved_user_id').eq('user_id', user.id)
+      setSavedPeopleIds(new Set(savedPeople?.map(s => s.saved_user_id) || []))
       const { data: myEnroll } = await supabase.from('program_enrollments').select('program_id').eq('student_id', user.id)
       setMyEnrollments(new Set((myEnroll || []).map(e => e.program_id)))
       const { data: myProgApps } = await supabase.from('program_applications').select('program_id').eq('applicant_id', user.id)
@@ -203,6 +206,17 @@ function MarketplaceContent() {
     } else {
       setSavedIds(prev => new Set([...prev, txnId]))
       await supabase.from('saved_opportunities').insert({ user_id: user.id, transaction_id: txnId })
+    }
+  }
+
+  const toggleSavedPerson = async (personId) => {
+    const isSaved = savedPeopleIds.has(personId)
+    if (isSaved) {
+      setSavedPeopleIds(prev => { const next = new Set(prev); next.delete(personId); return next })
+      await supabase.from('saved_people').delete().eq('user_id', user.id).eq('saved_user_id', personId)
+    } else {
+      setSavedPeopleIds(prev => new Set([...prev, personId]))
+      await supabase.from('saved_people').insert({ user_id: user.id, saved_user_id: personId })
     }
   }
 
@@ -529,13 +543,20 @@ function MarketplaceContent() {
                     <div className="avatar avatar-md" style={{ background: p.avatar_url ? undefined : ['var(--brand)', 'var(--green)', 'var(--amber)'][i % 3], color: 'white', overflow: 'hidden' }}>
                       {p.avatar_url ? <img src={p.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : p.full_name?.[0]?.toUpperCase()}
                     </div>
-                    <div>
+                    <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
                         <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{p.full_name}</span>
                         {p.account_type === 'Educator' && <span className="badge badge-brand">Educator</span>}
                       </div>
                       <div style={{ color: 'var(--text-3)', fontSize: '0.75rem' }}>{p.tier_level || 'Tier 1: Foundational'}</div>
                     </div>
+                    <button
+                      onClick={() => toggleSavedPerson(p.id)}
+                      title={savedPeopleIds.has(p.id) ? 'Unsave' : 'Save this person'}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: savedPeopleIds.has(p.id) ? 'var(--brand)' : 'var(--text-3)', padding: 0, flexShrink: 0, display: 'flex' }}
+                    >
+                      <Bookmark size={17} fill={savedPeopleIds.has(p.id) ? 'var(--brand)' : 'none'} />
+                    </button>
                   </div>
 
                   {p.account_type === 'Educator' && p.teaching_focus && (
