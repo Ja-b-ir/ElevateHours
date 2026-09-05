@@ -3,23 +3,30 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
-import { Bookmark, Clock, Zap, ChevronRight, Check } from 'lucide-react'
+import Link from 'next/link'
+import { Bookmark, Clock, Zap, ChevronRight, Check, Users } from 'lucide-react'
 
-export default function SavedOpportunities() {
+export default function SavedPage() {
   const router = useRouter()
   const [user, setUser] = useState(null)
+  const [tab, setTab] = useState('people') // 'people' | 'posts'
+  const [loading, setLoading] = useState(true)
+
+  // Posts tab state
   const [saved, setSaved] = useState([])
   const [myApplications, setMyApplications] = useState(new Set())
-  const [loading, setLoading] = useState(true)
   const [applying, setApplying] = useState(null)
   const [success, setSuccess] = useState('')
+
+  // People tab state
+  const [savedPeople, setSavedPeople] = useState([])
 
   useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/auth/login'); return }
       setUser(user)
-      await fetchSaved(user.id)
+      await Promise.all([fetchSavedPosts(user.id), fetchSavedPeople(user.id)])
       const { data: apps } = await supabase.from('applications').select('transaction_id').eq('applicant_id', user.id)
       setMyApplications(new Set(apps?.map(a => a.transaction_id) || []))
       setLoading(false)
@@ -27,7 +34,7 @@ export default function SavedOpportunities() {
     init()
   }, [])
 
-  const fetchSaved = async (uid) => {
+  const fetchSavedPosts = async (uid) => {
     const { data: savedRows } = await supabase.from('saved_opportunities').select('transaction_id').eq('user_id', uid)
     const ids = (savedRows || []).map(s => s.transaction_id)
     if (ids.length === 0) { setSaved([]); return }
@@ -38,9 +45,23 @@ export default function SavedOpportunities() {
     setSaved(txns || [])
   }
 
+  const fetchSavedPeople = async (uid) => {
+    const { data: rows } = await supabase.from('saved_people').select('saved_user_id, created_at').eq('user_id', uid).order('created_at', { ascending: false })
+    const ids = (rows || []).map(r => r.saved_user_id)
+    if (ids.length === 0) { setSavedPeople([]); return }
+    const { data: peopleData } = await supabase.from('profiles').select('id, full_name, account_type, tier_level, avatar_url, teaching_focus').in('id', ids)
+    const peopleMap = Object.fromEntries((peopleData || []).map(p => [p.id, p]))
+    setSavedPeople(ids.map(id => peopleMap[id]).filter(Boolean))
+  }
+
   const removeSaved = async (txnId) => {
     setSaved(prev => prev.filter(t => t.id !== txnId))
     await supabase.from('saved_opportunities').delete().eq('user_id', user.id).eq('transaction_id', txnId)
+  }
+
+  const unsavePerson = async (personId) => {
+    setSavedPeople(prev => prev.filter(p => p.id !== personId))
+    await supabase.from('saved_people').delete().eq('user_id', user.id).eq('saved_user_id', personId)
   }
 
   const applyToTransaction = async (txn) => {
@@ -72,69 +93,129 @@ export default function SavedOpportunities() {
     return 'badge badge-tier3'
   }
 
-  if (loading) return <div><Navbar /><div className="loading-wrap"><div className="spinner" /> Loading saved opportunities...</div></div>
+  if (loading) return <div><Navbar /><div className="loading-wrap"><div className="spinner" /> Loading saved items...</div></div>
 
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <Navbar />
       <div className="page-wrap">
         <div className="page-header">
-          <h1 className="page-title">Saved Opportunities</h1>
-          <p className="page-subtitle">Opportunities you've bookmarked to revisit later</p>
+          <h1 className="page-title">Saved</h1>
+          <p className="page-subtitle">People and opportunities you've bookmarked to revisit later</p>
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)' }}>
+          {[
+            { key: 'people', label: 'People', count: savedPeople.length },
+            { key: 'posts', label: 'Posts', count: saved.length },
+          ].map(t => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              style={{
+                padding: '0.75rem 1.25rem', border: 'none', background: 'none', cursor: 'pointer',
+                fontSize: '0.9rem', fontWeight: 700, color: tab === t.key ? 'var(--brand)' : 'var(--text-3)',
+                borderBottom: tab === t.key ? '2px solid var(--brand)' : '2px solid transparent', marginBottom: -1,
+              }}
+            >
+              {t.label} {t.count > 0 && <span style={{ opacity: 0.7 }}>({t.count})</span>}
+            </button>
+          ))}
         </div>
 
         {success && <div className="alert alert-success"><Check size={15} /> {success}</div>}
 
-        {saved.length === 0 ? (
-          <div className="card empty-state">
-            <Bookmark size={40} style={{ margin: '0 auto 1rem', color: 'var(--border-2)' }} />
-            <h3>No saved opportunities yet</h3>
-            <p>Tap the bookmark icon on any listing in the <a href="/marketplace" style={{ color: 'var(--brand)', fontWeight: 700 }}>Marketplace</a> to save it here.</p>
-          </div>
-        ) : (
-          <div className="grid-auto">
-            {saved.map(txn => {
-              const applied = myApplications.has(txn.id)
-              return (
-                <div key={txn.id} className="card" style={{ border: applied ? '1.5px solid var(--brand)' : '1px solid var(--border)', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.625rem' }}>
-                    <h3 style={{ fontSize: '0.9rem', flex: 1, color: 'var(--text)' }}>{txn.skill?.skill_name}</h3>
-                    <span className={tierBadgeClass(txn.tier?.tier_name)}>{txn.tier?.tier_name?.split(':')[0]}</span>
-                    <button
-                      onClick={() => removeSaved(txn.id)}
-                      title="Remove from saved"
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--brand)', padding: 0, flexShrink: 0, display: 'flex' }}
-                    >
-                      <Bookmark size={17} fill="var(--brand)" />
-                    </button>
-                  </div>
-                  <p style={{ color: 'var(--text-2)', fontSize: '0.8rem', lineHeight: 1.6, flex: 1, marginBottom: '1rem' }}>
-                    {txn.description || 'No description provided.'}
-                  </p>
-                  <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--surface-3)', padding: '0.25rem 0.625rem', borderRadius: 'var(--radius-sm)', fontSize: '0.75rem', color: 'var(--text-2)', fontWeight: 600 }}>
-                      <Clock size={10} /> {txn.agreed_hours}h
-                    </span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--amber-light)', color: 'var(--amber-dark)', padding: '0.25rem 0.625rem', borderRadius: 'var(--radius-sm)', fontSize: '0.75rem', fontWeight: 700 }}>
-                      <Zap size={11} /> {txn.total_sparks_transferred || 0} SPK
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>by {txn.receiver?.full_name}</span>
-                    {applied ? (
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--brand-light)', color: 'var(--brand)', padding: '0.4rem 0.875rem', borderRadius: 'var(--radius-sm)', fontWeight: 700, fontSize: '0.78rem', border: '1px solid var(--brand)' }}>
-                        <Check size={11} /> Applied
-                      </span>
-                    ) : (
-                      <button onClick={() => applyToTransaction(txn)} disabled={applying === txn.id} className="btn btn-primary btn-sm">
-                        {applying === txn.id ? 'Applying...' : 'Apply'} <ChevronRight size={12} />
-                      </button>
-                    )}
-                  </div>
+        {tab === 'people' && (
+          savedPeople.length === 0 ? (
+            <div className="card empty-state">
+              <Users size={40} style={{ margin: '0 auto 1rem', color: 'var(--border-2)' }} />
+              <h3>No saved people yet</h3>
+              <p>Tap the bookmark icon on someone's profile, or on their card in the <a href="/marketplace" style={{ color: 'var(--brand)', fontWeight: 700 }}>Marketplace</a>, to save them here. You'll be notified when they post something new.</p>
+            </div>
+          ) : (
+            <div className="grid-auto">
+              {savedPeople.map(p => (
+                <div key={p.id} className="card" style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
+                  <Link href={`/profile?id=${p.id}`} style={{ display: 'flex', alignItems: 'center', gap: '0.875rem', flex: 1, textDecoration: 'none', color: 'inherit', minWidth: 0 }}>
+                    <div className="avatar avatar-md" style={{ background: p.avatar_url ? undefined : 'linear-gradient(135deg, var(--brand), var(--brand-mid, var(--brand)))', color: 'white', overflow: 'hidden', flexShrink: 0 }}>
+                      {p.avatar_url ? <img src={p.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : p.full_name?.[0]?.toUpperCase()}
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                        <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{p.full_name}</span>
+                        {p.account_type === 'Educator' && <span className="badge badge-brand">Educator</span>}
+                        {p.account_type === 'Organization' && <span className="badge badge-brand">Organization</span>}
+                      </div>
+                      <div style={{ color: 'var(--text-3)', fontSize: '0.75rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {p.teaching_focus || p.tier_level || 'Tier 1: Foundational'}
+                      </div>
+                    </div>
+                  </Link>
+                  <button
+                    onClick={() => unsavePerson(p.id)}
+                    title="Remove from saved"
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--brand)', padding: 0, flexShrink: 0, display: 'flex' }}
+                  >
+                    <Bookmark size={18} fill="var(--brand)" />
+                  </button>
                 </div>
-              )
-            })}
-          </div>
+              ))}
+            </div>
+          )
+        )}
+
+        {tab === 'posts' && (
+          saved.length === 0 ? (
+            <div className="card empty-state">
+              <Bookmark size={40} style={{ margin: '0 auto 1rem', color: 'var(--border-2)' }} />
+              <h3>No saved opportunities yet</h3>
+              <p>Tap the bookmark icon on any listing in the <a href="/marketplace" style={{ color: 'var(--brand)', fontWeight: 700 }}>Marketplace</a> to save it here.</p>
+            </div>
+          ) : (
+            <div className="grid-auto">
+              {saved.map(txn => {
+                const applied = myApplications.has(txn.id)
+                return (
+                  <div key={txn.id} className="card" style={{ border: applied ? '1.5px solid var(--brand)' : '1px solid var(--border)', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.625rem' }}>
+                      <h3 style={{ fontSize: '0.9rem', flex: 1, color: 'var(--text)' }}>{txn.skill?.skill_name}</h3>
+                      <span className={tierBadgeClass(txn.tier?.tier_name)}>{txn.tier?.tier_name?.split(':')[0]}</span>
+                      <button
+                        onClick={() => removeSaved(txn.id)}
+                        title="Remove from saved"
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--brand)', padding: 0, flexShrink: 0, display: 'flex' }}
+                      >
+                        <Bookmark size={17} fill="var(--brand)" />
+                      </button>
+                    </div>
+                    <p style={{ color: 'var(--text-2)', fontSize: '0.8rem', lineHeight: 1.6, flex: 1, marginBottom: '1rem' }}>
+                      {txn.description || 'No description provided.'}
+                    </p>
+                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--surface-3)', padding: '0.25rem 0.625rem', borderRadius: 'var(--radius-sm)', fontSize: '0.75rem', color: 'var(--text-2)', fontWeight: 600 }}>
+                        <Clock size={10} /> {txn.agreed_hours}h
+                      </span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--amber-light)', color: 'var(--amber-dark)', padding: '0.25rem 0.625rem', borderRadius: 'var(--radius-sm)', fontSize: '0.75rem', fontWeight: 700 }}>
+                        <Zap size={11} /> {txn.total_sparks_transferred || 0} SPK
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>by {txn.receiver?.full_name}</span>
+                      {applied ? (
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--brand-light)', color: 'var(--brand)', padding: '0.4rem 0.875rem', borderRadius: 'var(--radius-sm)', fontWeight: 700, fontSize: '0.78rem', border: '1px solid var(--brand)' }}>
+                          <Check size={11} /> Applied
+                        </span>
+                      ) : (
+                        <button onClick={() => applyToTransaction(txn)} disabled={applying === txn.id} className="btn btn-primary btn-sm">
+                          {applying === txn.id ? 'Applying...' : 'Apply'} <ChevronRight size={12} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )
         )}
       </div>
     </div>
