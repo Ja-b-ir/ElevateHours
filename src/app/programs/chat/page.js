@@ -80,6 +80,18 @@ export default function ProgramsPage() {
     setJoining(null)
   }
 
+  const leaveProgram = async (program) => {
+    if (!confirm(`Leave "${program.title}"?`)) return
+    setJoining(program.id)
+    try {
+      const { error } = await supabase.from('program_enrollments').delete().eq('program_id', program.id).eq('student_id', user.id)
+      if (error) throw error
+      setMyEnrollments(prev => { const next = new Set(prev); next.delete(program.id); return next })
+      setPrograms(prev => prev.map(p => p.id === program.id ? { ...p, enrolledCount: Math.max(0, p.enrolledCount - 1) } : p))
+    } catch (err) { console.error(err) }
+    setJoining(null)
+  }
+
   const formatCost = (p) => {
     if (!p.cost_type || p.cost_type === 'Free') return 'Free'
     if (!p.cost_amount) return p.cost_type
@@ -165,9 +177,14 @@ export default function ProgramsPage() {
                         {p.group_chat_enabled && (
                           <a href={'/programs/chat?id=' + p.id} style={{ fontSize: '0.78rem', color: 'var(--brand)', fontWeight: 700, textDecoration: 'underline' }}>Chat</a>
                         )}
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--brand-light)', color: 'var(--brand)', padding: '0.4rem 0.875rem', borderRadius: 'var(--radius-sm)', fontWeight: 700, fontSize: '0.78rem', border: '1px solid var(--brand)' }}>
-                          <Check size={11} /> Enrolled
-                        </span>
+                        <button
+                          onClick={() => leaveProgram(p)}
+                          disabled={joining === p.id}
+                          title="Click to leave this program"
+                          style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--brand-light)', color: 'var(--brand)', padding: '0.4rem 0.875rem', borderRadius: 'var(--radius-sm)', fontWeight: 700, fontSize: '0.78rem', border: '1px solid var(--brand)', cursor: 'pointer' }}
+                        >
+                          <Check size={11} /> {joining === p.id ? 'Leaving...' : 'Enrolled'}
+                        </button>
                       </div>
                     ) : full ? (
                       <span style={{ fontSize: '0.78rem', color: 'var(--text-3)', fontWeight: 600 }}>Full</span>
