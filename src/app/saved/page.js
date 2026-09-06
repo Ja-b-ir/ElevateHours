@@ -86,6 +86,17 @@ export default function SavedPage() {
     setApplying(null)
   }
 
+  const withdrawApplication = async (txnId) => {
+    if (!confirm('Withdraw your application?')) return
+    setApplying(txnId)
+    try {
+      const { error } = await supabase.from('applications').delete().eq('transaction_id', txnId).eq('applicant_id', user.id)
+      if (error) throw error
+      setMyApplications(prev => { const next = new Set(prev); next.delete(txnId); return next })
+    } catch (err) { console.error(err) }
+    setApplying(null)
+  }
+
   const tierBadgeClass = (tierName) => {
     if (!tierName) return 'badge badge-gray'
     if (tierName.includes('1')) return 'badge badge-tier1'
@@ -202,9 +213,14 @@ export default function SavedPage() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>by {txn.receiver?.full_name}</span>
                       {applied ? (
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--brand-light)', color: 'var(--brand)', padding: '0.4rem 0.875rem', borderRadius: 'var(--radius-sm)', fontWeight: 700, fontSize: '0.78rem', border: '1px solid var(--brand)' }}>
-                          <Check size={11} /> Applied
-                        </span>
+                        <button
+                          onClick={() => withdrawApplication(txn.id)}
+                          disabled={applying === txn.id}
+                          title="Click to withdraw your application"
+                          style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--brand-light)', color: 'var(--brand)', padding: '0.4rem 0.875rem', borderRadius: 'var(--radius-sm)', fontWeight: 700, fontSize: '0.78rem', border: '1px solid var(--brand)', cursor: 'pointer' }}
+                        >
+                          <Check size={11} /> {applying === txn.id ? 'Withdrawing...' : 'Applied'}
+                        </button>
                       ) : (
                         <button onClick={() => applyToTransaction(txn)} disabled={applying === txn.id} className="btn btn-primary btn-sm">
                           {applying === txn.id ? 'Applying...' : 'Apply'} <ChevronRight size={12} />
