@@ -242,6 +242,17 @@ export default function Dashboard() {
     setJoiningProgram(null)
   }
 
+  const leaveProgram = async (program) => {
+    if (!confirm(`Leave "${program.title}"?`)) return
+    setJoiningProgram(program.id)
+    try {
+      const { error } = await supabase.from('program_enrollments').delete().eq('program_id', program.id).eq('student_id', profile.id)
+      if (error) throw error
+      setMyEnrollments(prev => { const next = new Set(prev); next.delete(program.id); return next })
+    } catch (err) { console.error(err) }
+    setJoiningProgram(null)
+  }
+
   const statusColor = (status) => {
     const map = {
       'Open': 'var(--green)', 'In Progress': 'var(--blue)',
@@ -541,9 +552,14 @@ export default function Dashboard() {
                                   {prog.group_chat_enabled && (
                                     <a href={'/programs/chat?id=' + prog.id} style={{ fontSize: '0.72rem', color: 'var(--brand)', fontWeight: 700, textDecoration: 'underline' }}>Chat</a>
                                   )}
-                                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--brand-light)', color: 'var(--brand)', padding: '0.4rem 0.75rem', borderRadius: 'var(--radius-sm)', fontWeight: 700, fontSize: '0.75rem' }}>
-                                    <Check size={11} /> Enrolled
-                                  </span>
+                                  <button
+                                    onClick={() => leaveProgram(prog)}
+                                    disabled={joiningProgram === prog.id}
+                                    title="Click to leave this program"
+                                    style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--brand-light)', color: 'var(--brand)', padding: '0.4rem 0.75rem', borderRadius: 'var(--radius-sm)', fontWeight: 700, fontSize: '0.75rem', border: '1px solid var(--brand)', cursor: 'pointer' }}
+                                  >
+                                    <Check size={11} /> {joiningProgram === prog.id ? 'Leaving...' : 'Enrolled'}
+                                  </button>
                                 </>
                               ) : (
                                 <button onClick={() => joinProgram(prog)} disabled={joiningProgram === prog.id} className="btn btn-primary btn-sm">
