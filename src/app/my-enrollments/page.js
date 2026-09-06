@@ -8,13 +8,16 @@ import { GraduationCap, Briefcase, MessageSquare, Zap, Calendar } from 'lucide-r
 
 export default function MyEnrollments() {
   const router = useRouter()
+  const [user, setUser] = useState(null)
   const [enrollments, setEnrollments] = useState([])
   const [loading, setLoading] = useState(true)
+  const [leaving, setLeaving] = useState(null)
 
   useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/auth/login'); return }
+      setUser(user)
 
       const { data: myEnroll } = await supabase
         .from('program_enrollments')
@@ -54,6 +57,17 @@ export default function MyEnrollments() {
     }
     init()
   }, [])
+
+  const leaveProgram = async (program) => {
+    if (!confirm(`Leave "${program.title}"? You can re-join later if it's still open.`)) return
+    setLeaving(program.id)
+    try {
+      const { error } = await supabase.from('program_enrollments').delete().eq('program_id', program.id).eq('student_id', user.id)
+      if (error) throw error
+      setEnrollments(prev => prev.filter(e => e.program.id !== program.id))
+    } catch (err) { console.error(err) }
+    setLeaving(null)
+  }
 
   if (loading) return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
@@ -117,6 +131,14 @@ export default function MyEnrollments() {
                       <a href={'/profile?id=' + p.creator_id} className="btn btn-secondary btn-sm">
                         View Educator
                       </a>
+                      <button
+                        onClick={() => leaveProgram(p)}
+                        disabled={leaving === p.id}
+                        className="btn btn-secondary btn-sm"
+                        style={{ color: 'var(--red, #d33)', borderColor: 'var(--red, #d33)' }}
+                      >
+                        {leaving === p.id ? 'Leaving...' : 'Leave'}
+                      </button>
                     </div>
                   </div>
                 </div>
