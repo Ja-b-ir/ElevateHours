@@ -174,6 +174,31 @@ function MarketplaceContent() {
     setJoiningProgram(null)
   }
 
+  const leaveProgram = async (program) => {
+    if (!confirm(`Leave "${program.title}"?`)) return
+    setJoiningProgram(program.id)
+    try {
+      const { error } = await supabase.from('program_enrollments').delete().eq('program_id', program.id).eq('student_id', user.id)
+      if (error) throw error
+      setMyEnrollments(prev => { const next = new Set(prev); next.delete(program.id); return next })
+      setPrograms(prev => prev.map(p => p.id === program.id ? { ...p, enrolledCount: Math.max(0, p.enrolledCount - 1) } : p))
+    } catch (err) { console.error(err) }
+    setJoiningProgram(null)
+  }
+
+  const withdrawProgramApplication = async (program) => {
+    if (!confirm(`Withdraw your application to "${program.title}"?`)) return
+    setJoiningProgram(program.id)
+    try {
+      const { error } = await supabase.from('program_applications').delete().eq('program_id', program.id).eq('applicant_id', user.id)
+      if (error) throw error
+      setAppliedProgramIds(prev => { const next = new Set(prev); next.delete(program.id); return next })
+    } catch (err) { console.error(err) }
+    setJoiningProgram(null)
+  }
+
+
+
   const applyToTransaction = async (txnId) => {
     setApplying(txnId)
     try {
@@ -194,6 +219,17 @@ function MarketplaceContent() {
 
       setSuccess('Application submitted!')
       setTimeout(() => setSuccess(''), 3000)
+    } catch (err) { console.error(err) }
+    setApplying(null)
+  }
+
+  const withdrawApplication = async (txnId) => {
+    if (!confirm('Withdraw your application?')) return
+    setApplying(txnId)
+    try {
+      const { error } = await supabase.from('applications').delete().eq('transaction_id', txnId).eq('applicant_id', user.id)
+      if (error) throw error
+      setMyApplications(prev => { const next = new Set(prev); next.delete(txnId); return next })
     } catch (err) { console.error(err) }
     setApplying(null)
   }
@@ -510,9 +546,14 @@ function MarketplaceContent() {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <a href={'/profile?id=' + txn.receiver_id} style={{ fontSize: '0.75rem', color: 'var(--text-3)', textDecoration: 'underline' }}>by {txn.receiver?.full_name}</a>
                         {applied ? (
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--brand-light)', color: 'var(--brand)', padding: '0.4rem 0.875rem', borderRadius: 'var(--radius-sm)', fontWeight: 700, fontSize: '0.78rem', border: '1px solid var(--brand)' }}>
-                            <Check size={11} /> Applied
-                          </span>
+                          <button
+                            onClick={() => withdrawApplication(txn.id)}
+                            disabled={applying === txn.id}
+                            title="Click to withdraw your application"
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--brand-light)', color: 'var(--brand)', padding: '0.4rem 0.875rem', borderRadius: 'var(--radius-sm)', fontWeight: 700, fontSize: '0.78rem', border: '1px solid var(--brand)', cursor: 'pointer' }}
+                          >
+                            <Check size={11} /> {applying === txn.id ? 'Withdrawing...' : 'Applied'}
+                          </button>
                         ) : (
                           <button onClick={() => applyToTransaction(txn.id)} disabled={applying === txn.id} className="btn btn-primary btn-sm">
                             {applying === txn.id ? 'Applying...' : 'Apply'} <ChevronRight size={12} />
@@ -670,17 +711,27 @@ function MarketplaceContent() {
                           {p.group_chat_enabled && (
                             <a href={'/programs/chat?id=' + p.id} style={{ fontSize: '0.75rem', color: 'var(--brand)', fontWeight: 700, textDecoration: 'underline' }}>Chat</a>
                           )}
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--brand-light)', color: 'var(--brand)', padding: '0.4rem 0.875rem', borderRadius: 'var(--radius-sm)', fontWeight: 700, fontSize: '0.78rem', border: '1px solid var(--brand)' }}>
-                            <Check size={11} /> Enrolled
-                          </span>
+                          <button
+                            onClick={() => leaveProgram(p)}
+                            disabled={joiningProgram === p.id}
+                            title="Click to leave this program"
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--brand-light)', color: 'var(--brand)', padding: '0.4rem 0.875rem', borderRadius: 'var(--radius-sm)', fontWeight: 700, fontSize: '0.78rem', border: '1px solid var(--brand)', cursor: 'pointer' }}
+                          >
+                            <Check size={11} /> {joiningProgram === p.id ? 'Leaving...' : 'Enrolled'}
+                          </button>
                         </div>
                       ) : full ? (
                         <span style={{ fontSize: '0.78rem', color: 'var(--text-3)', fontWeight: 600 }}>Full</span>
                       ) : (p.application_form && p.application_form.length > 0) ? (
                         appliedProgramIds.has(p.id) ? (
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--surface-3)', color: 'var(--text-2)', padding: '0.4rem 0.875rem', borderRadius: 'var(--radius-sm)', fontWeight: 700, fontSize: '0.78rem' }}>
-                            <Check size={11} /> Applied
-                          </span>
+                          <button
+                            onClick={() => withdrawProgramApplication(p)}
+                            disabled={joiningProgram === p.id}
+                            title="Click to withdraw your application"
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--surface-3)', color: 'var(--text-2)', padding: '0.4rem 0.875rem', borderRadius: 'var(--radius-sm)', fontWeight: 700, fontSize: '0.78rem', border: '1px solid var(--border)', cursor: 'pointer' }}
+                          >
+                            <Check size={11} /> {joiningProgram === p.id ? 'Withdrawing...' : 'Applied'}
+                          </button>
                         ) : (
                           <button onClick={() => setApplyingFormProgram(p)} className="btn btn-primary btn-sm">
                             Apply
