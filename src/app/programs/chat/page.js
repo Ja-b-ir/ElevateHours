@@ -8,6 +8,7 @@ import { GraduationCap, Briefcase, Users, Check, Zap } from 'lucide-react'
 export default function ProgramsPage() {
   const router = useRouter()
   const [user, setUser] = useState(null)
+  const [myAccountType, setMyAccountType] = useState('')
   const [programs, setPrograms] = useState([])
   const [myEnrollments, setMyEnrollments] = useState(new Set())
   const [loading, setLoading] = useState(true)
@@ -19,6 +20,8 @@ export default function ProgramsPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/auth/login'); return }
       setUser(user)
+      const { data: myProf } = await supabase.from('profiles').select('account_type').eq('id', user.id).single()
+      setMyAccountType(myProf?.account_type || 'Personal')
 
       const { data: progs } = await supabase
         .from('programs')
@@ -172,7 +175,14 @@ export default function ProgramsPage() {
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>by {p.creator?.full_name || 'Unknown'}</span>
-                    {enrolled ? (
+                    {myAccountType === 'Organization' && !enrolled ? (
+                      <span
+                        title="Organizations host programs, but don't enroll as a student in someone else's"
+                        style={{ fontSize: '0.78rem', color: 'var(--text-3)', fontStyle: 'italic' }}
+                      >
+                        Not available for Organizations
+                      </span>
+                    ) : enrolled ? (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         {p.group_chat_enabled && (
                           <a href={'/programs/chat?id=' + p.id} style={{ fontSize: '0.78rem', color: 'var(--brand)', fontWeight: 700, textDecoration: 'underline' }}>Chat</a>
