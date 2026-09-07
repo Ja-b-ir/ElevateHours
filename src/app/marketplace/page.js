@@ -52,6 +52,7 @@ function MarketplaceContent() {
   const [applying, setApplying] = useState(null)
   const [success, setSuccess] = useState('')
   const [myName, setMyName] = useState('')
+  const [myAccountType, setMyAccountType] = useState('')
   const [savedIds, setSavedIds] = useState(new Set())
   const [savedPeopleIds, setSavedPeopleIds] = useState(new Set())
   const [programs, setPrograms] = useState([])
@@ -74,8 +75,9 @@ function MarketplaceContent() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/auth/login'); return }
       setUser(user)
-      const { data: myProf } = await supabase.from('profiles').select('full_name').eq('id', user.id).single()
+      const { data: myProf } = await supabase.from('profiles').select('full_name, account_type').eq('id', user.id).single()
       setMyName(myProf?.full_name || 'Someone')
+      setMyAccountType(myProf?.account_type || 'Personal')
       const { data: tierData } = await supabase.from('tier_reference').select('*').order('multiplier')
       setTiers(tierData || [])
       const { data: apps } = await supabase.from('applications').select('transaction_id').eq('applicant_id', user.id)
@@ -554,6 +556,13 @@ function MarketplaceContent() {
                           >
                             <Check size={11} /> {applying === txn.id ? 'Withdrawing...' : 'Applied'}
                           </button>
+                        ) : (myAccountType === 'Organization' && txn.track === 'Education') ? (
+                          <span
+                            title="Organizations can apply for Work opportunities, but not Education requests"
+                            style={{ fontSize: '0.75rem', color: 'var(--text-3)', fontStyle: 'italic' }}
+                          >
+                            Not available for Organizations
+                          </span>
                         ) : (
                           <button onClick={() => applyToTransaction(txn.id)} disabled={applying === txn.id} className="btn btn-primary btn-sm">
                             {applying === txn.id ? 'Applying...' : 'Apply'} <ChevronRight size={12} />
@@ -706,7 +715,14 @@ function MarketplaceContent() {
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <a href={'/profile?id=' + p.creator_id} style={{ fontSize: '0.75rem', color: 'var(--text-3)', textDecoration: 'underline' }}>by {p.creator?.full_name || 'Unknown'}</a>
-                      {enrolled ? (
+                      {myAccountType === 'Organization' && !enrolled && !appliedProgramIds.has(p.id) ? (
+                        <span
+                          title="Organizations host programs, but don't enroll as a student in someone else's"
+                          style={{ fontSize: '0.75rem', color: 'var(--text-3)', fontStyle: 'italic' }}
+                        >
+                          Not available for Organizations
+                        </span>
+                      ) : enrolled ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                           {p.group_chat_enabled && (
                             <a href={'/programs/chat?id=' + p.id} style={{ fontSize: '0.75rem', color: 'var(--brand)', fontWeight: 700, textDecoration: 'underline' }}>Chat</a>
