@@ -3,7 +3,8 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
-import { Mail, MessageCircle, MessageSquare, CheckCircle2, BarChart3, Star, Zap, Award, AlertTriangle, Globe, Clock, Flag, X, Camera, Loader2, Bookmark } from 'lucide-react'
+import { Mail, MessageCircle, MessageSquare, CheckCircle2, BarChart3, Star, Zap, Award, AlertTriangle, Globe, Clock, Flag, X, Camera, Loader2, Bookmark, PenLine, ArrowRight } from 'lucide-react'
+import { htmlToPlainText } from '@/lib/sanitizeHtml'
 
 const COUNTRIES = [
   'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia',
@@ -43,6 +44,7 @@ function ProfileContent() {
   const [skills, setSkills] = useState([])
   const [reviewStats, setReviewStats] = useState({ count: 0, average: 0 })
   const [badges, setBadges] = useState([])
+  const [blogPosts, setBlogPosts] = useState([])
   const [editing, setEditing] = useState(false)
   const [editForm, setEditForm] = useState({})
   const [loading, setLoading] = useState(true)
@@ -117,6 +119,12 @@ function ProfileContent() {
         .select('*, badge:badges(badge_name, description, badge_type)')
         .eq('profile_id', targetId)
       setBadges(badgeData || [])
+      const { data: blogData } = await supabase
+        .from('blogs')
+        .select('id, title, content, created_at, tags')
+        .eq('author_id', targetId)
+        .order('created_at', { ascending: false })
+      setBlogPosts(blogData || [])
       if (viewId && viewId !== user.id) {
         const { data: savedRow } = await supabase.from('saved_people').select('id').eq('user_id', user.id).eq('saved_user_id', viewId).maybeSingle()
         setIsPersonSaved(!!savedRow)
@@ -829,6 +837,58 @@ function ProfileContent() {
           }}>
             <Star size={15} /> Reviews
           </a>
+        </div>
+
+        {/* Blog Posts */}
+        <div style={{ background: 'var(--surface)', borderRadius: 16, padding: '1.5rem', marginBottom: '1.5rem', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <h2 style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <PenLine size={16} /> Blog Posts {blogPosts.length > 0 && <span style={{ color: 'var(--text-3)', fontWeight: 600 }}>({blogPosts.length})</span>}
+            </h2>
+            {isOwnProfile && (
+              <a href="/dashboard/blog" style={{ fontSize: '0.8rem', color: 'var(--brand)', fontWeight: 700, textDecoration: 'none' }}>
+                Write a post →
+              </a>
+            )}
+          </div>
+          {blogPosts.length === 0 ? (
+            <p style={{ color: 'var(--text-2)', fontSize: '0.875rem' }}>
+              {isOwnProfile ? (
+                <>No posts yet — <a href="/dashboard/blog" style={{ color: 'var(--brand)', fontWeight: 600 }}>share something with the community</a>.</>
+              ) : (
+                `${profile.full_name} hasn't posted anything yet.`
+              )}
+            </p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {blogPosts.map(post => (
+                <a
+                  key={post.id}
+                  href={`/blog/${post.id}`}
+                  style={{
+                    display: 'block', padding: '0.9rem 1rem', borderRadius: 10, border: '1px solid var(--border)',
+                    textDecoration: 'none', color: 'inherit', background: 'var(--surface-2)',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem' }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.25rem' }}>{post.title}</div>
+                      <p style={{
+                        fontSize: '0.8rem', color: 'var(--text-2)', lineHeight: 1.5, margin: 0,
+                        display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                      }}>
+                        {htmlToPlainText(post.content)}
+                      </p>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-3)', marginTop: '0.4rem' }}>
+                        {new Date(post.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </div>
+                    </div>
+                    <ArrowRight size={14} style={{ color: 'var(--text-3)', flexShrink: 0, marginTop: '0.2rem' }} />
+                  </div>
+                </a>
+              ))}
+            </div>
+          )}
         </div>
 
 
