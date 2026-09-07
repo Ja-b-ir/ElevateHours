@@ -1,215 +1,232 @@
 'use client'
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useRef, useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
-import { GraduationCap, Briefcase, Users, Check, Zap } from 'lucide-react'
+import LoadingScreen from '@/components/LoadingScreen'
+import { ArrowLeft, Send, Lock, Settings } from 'lucide-react'
 
-export default function ProgramsPage() {
+function initials(name) {
+  if (!name) return '?'
+  const parts = name.trim().split(/\s+/)
+  return ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase()
+}
+
+function ProgramChatInner() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const programId = searchParams.get('id')
+
   const [user, setUser] = useState(null)
-  const [myAccountType, setMyAccountType] = useState('')
-  const [programs, setPrograms] = useState([])
-  const [myEnrollments, setMyEnrollments] = useState(new Set())
+  const [program, setProgram] = useState(null)
+  const [isCreator, setIsCreator] = useState(false)
+  const [messages, setMessages] = useState([])
+  const [senders, setSenders] = useState({})
   const [loading, setLoading] = useState(true)
-  const [joining, setJoining] = useState(null)
-  const [success, setSuccess] = useState('')
+  const [accessDenied, setAccessDenied] = useState(false)
+  const [draft, setDraft] = useState('')
+  const [sending, setSending] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+
+  const scrollRef = useRef(null)
+  const channelRef = useRef(null)
 
   useEffect(() => {
-    const init = async () => {
+    let cancelled = false
+
+    const load = async () => {
+      if (!programId) { setAccessDenied(true); setLoading(false); return }
+
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/auth/login'); return }
+      if (cancelled) return
       setUser(user)
-      const { data: myProf } = await supabase.from('profiles').select('account_type').eq('id', user.id).single()
-      setMyAccountType(myProf?.account_type || 'Personal')
 
-      const { data: progs } = await supabase
-        .from('programs')
-        .select('*')
-        .eq('status', 'Open')
-        .order('created_at', { ascending: false })
+      const { data: prog } = await supabase.from('programs').select('*').eq('id', programId).maybeSingle()
+      if (!prog) { setAccessDenied(true); setLoading(false); return }
 
-      const creatorIds = Array.from(new Set((progs || []).map(p => p.creator_id)))
-      let creatorById = {}
-      if (creatorIds.length > 0) {
-        const { data: creators } = await supabase.from('profiles').select('id, full_name, account_type').in('id', creatorIds)
-        creatorById = Object.fromEntries((creators || []).map(c => [c.id, c]))
+      const creator = prog.creator_id === user.id
+      let enrolled = false
+      if (!creator) {
+        const { data: enrollment } = await supabase.from('program_enrollments').select('id').eq('program_id', programId).eq('student_id', user.id).maybeSingle()
+        enrolled = !!enrollment
       }
+      if (!creator && !enrolled) { setAccessDenied(true); setLoading(false); return }
+      if (!prog.group_chat_enabled) { setAccessDenied(true); setLoading(false); return }
 
-      const progIds = (progs || []).map(p => p.id)
-      let enrollCounts = {}
-      if (progIds.length > 0) {
-        const { data: allEnrollments } = await supabase.from('program_enrollments').select('program_id').in('program_id', progIds)
-        for (const e of allEnrollments || []) enrollCounts[e.program_id] = (enrollCounts[e.program_id] || 0) + 1
+      setProgram(prog)
+      setIsCreator(creator)
+
+      const { data: msgs } = await supabase.from('program_messages').select('*').eq('program_id', programId).order('created_at', { ascending: true })
+      setMessages(msgs || [])
+
+      const senderIds = Array.from(new Set((msgs || []).map(m => m.sender_id)))
+      if (senderIds.length > 0) {
+        const { data: profiles } = await supabase.from('profiles').select('id, full_name, avatar_url').in('id', senderIds)
+        setSenders(Object.fromEntries((profiles || []).map(p => [p.id, p])))
       }
-
-      setPrograms((progs || []).map(p => ({ ...p, creator: creatorById[p.creator_id], enrolledCount: enrollCounts[p.id] || 0 })))
-
-      const { data: myEnroll } = await supabase.from('program_enrollments').select('program_id').eq('student_id', user.id)
-      setMyEnrollments(new Set((myEnroll || []).map(e => e.program_id)))
 
       setLoading(false)
+
+      const channel = supabase
+        .channel(`program_chat_${programId}`)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'program_messages', filter: `program_id=eq.${programId}` }, async (payload) => {
+          setMessages(prev => [...prev, payload.new])
+          setSenders(prev => {
+            if (prev[payload.new.sender_id]) return prev
+            supabase.from('profiles').select('id, full_name, avatar_url').eq('id', payload.new.sender_id).maybeSingle()
+              .then(({ data }) => { if (data) setSenders(p => ({ ...p, [data.id]: data })) })
+            return prev
+          })
+        })
+        .subscribe()
+      channelRef.current = channel
     }
-    init()
-  }, [])
 
-  const joinProgram = async (program) => {
-    setJoining(program.id)
-    try {
-      const { error } = await supabase.from('program_enrollments').insert({ program_id: program.id, student_id: user.id })
-      if (error) {
-        if (error.message?.includes('PROGRAM_FULL')) {
-          alert('This program just reached its capacity — no more spots available.')
-          setPrograms(prev => prev.map(p => p.id === program.id ? { ...p, status: 'Closed' } : p).filter(p => p.status === 'Open'))
-          setJoining(null)
-          return
-        }
-        throw error
-      }
-      setMyEnrollments(prev => new Set([...prev, program.id]))
-      setPrograms(prev => prev.map(p => p.id === program.id ? { ...p, enrolledCount: p.enrolledCount + 1 } : p))
-
-      await supabase.from('notifications').insert({
-        user_id: program.creator_id,
-        title: 'New Enrollment',
-        message: `Someone joined your program "${program.title}".`,
-        type: 'application',
-        related_id: program.id
-      })
-
-      setSuccess('Enrolled successfully!')
-      setTimeout(() => setSuccess(''), 3000)
-    } catch (err) { console.error(err) }
-    setJoining(null)
-  }
-
-  const leaveProgram = async (program) => {
-    if (!confirm(`Leave "${program.title}"?`)) return
-    setJoining(program.id)
-    try {
-      const { error } = await supabase.from('program_enrollments').delete().eq('program_id', program.id).eq('student_id', user.id)
-      if (error) throw error
-      setMyEnrollments(prev => { const next = new Set(prev); next.delete(program.id); return next })
-      setPrograms(prev => prev.map(p => p.id === program.id ? { ...p, enrolledCount: Math.max(0, p.enrolledCount - 1) } : p))
-    } catch (err) { console.error(err) }
-    setJoining(null)
-  }
-
-  const formatCost = (p) => {
-    if (!p.cost_type || p.cost_type === 'Free') return 'Free'
-    if (!p.cost_amount) return p.cost_type
-    const period = p.cost_type.replace('Per ', '').toLowerCase()
-    if (p.cost_payment_method === 'Sparks') {
-      return <>{p.cost_amount} <Zap size={10} style={{ display: 'inline', verticalAlign: -1 }} fill="currentColor" /> / {period}</>
+    load()
+    return () => {
+      cancelled = true
+      if (channelRef.current) supabase.removeChannel(channelRef.current)
     }
-    return `${p.cost_amount} ${p.cost_currency || 'USD'} / ${period}`
+  }, [programId])
+
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+  }, [messages])
+
+  const canSend = isCreator || program?.chat_students_can_send
+
+  const handleSend = async (e) => {
+    e.preventDefault()
+    if (!draft.trim() || sending || !canSend) return
+    setSending(true)
+    const content = draft.trim()
+    setDraft('')
+    const { error } = await supabase.from('program_messages').insert({ program_id: programId, sender_id: user.id, content })
+    if (error) console.error('Message failed to send', error)
+    setSending(false)
   }
 
-  const formatPay = (p) => {
-    if (!p.is_paid) return 'Unpaid'
-    if (!p.pay_amount) return 'Paid'
-    const period = p.pay_type === 'One-time' ? 'one-time' : p.pay_type?.replace('Per ', '').toLowerCase()
-    if (p.pay_payment_method === 'Sparks') {
-      return <>Paid — {p.pay_amount} <Zap size={10} style={{ display: 'inline', verticalAlign: -1 }} fill="currentColor" /> / {period}</>
-    }
-    return `Paid — ${p.pay_amount} ${p.pay_currency || 'USD'}/${period}`
+  const toggleStudentsCanSend = async () => {
+    const next = !program.chat_students_can_send
+    setProgram(p => ({ ...p, chat_students_can_send: next }))
+    await supabase.from('programs').update({ chat_students_can_send: next }).eq('id', programId)
   }
 
-  const formatDuration = (p) => {
-    if (!p.start_date && !p.end_date) return null
-    const fmt = (d) => new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
-    if (p.start_date && p.end_date) return `${fmt(p.start_date)} – ${fmt(p.end_date)}`
-    if (p.start_date) return `Starts ${fmt(p.start_date)}`
-    return `Ends ${fmt(p.end_date)}`
-  }
+  if (loading) return <div><Navbar /><LoadingScreen text="Loading chat..." /></div>
 
-  if (loading) return <div><Navbar /><div className="loading-wrap"><div className="spinner" /> Loading programs...</div></div>
+  if (accessDenied) {
+    return (
+      <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+        <Navbar />
+        <div className="page-wrap" style={{ maxWidth: 480, textAlign: 'center', paddingTop: '4rem' }}>
+          <Lock size={40} style={{ margin: '0 auto 1rem', color: 'var(--border-2)' }} />
+          <h2 style={{ fontWeight: 800, marginBottom: '0.5rem' }}>Can't open this chat</h2>
+          <p style={{ color: 'var(--text-2)', marginBottom: '1.5rem' }}>
+            Either this chat doesn't exist, group chat isn't enabled for it, or you're not enrolled in this program.
+          </p>
+          <a href="/group-chats" style={{ color: 'var(--brand)', fontWeight: 700, textDecoration: 'none' }}>← Back to Group Chats</a>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+    <div style={{ background: 'var(--bg)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Navbar />
-      <div className="page-wrap">
-        <div className="page-header">
-          <h1 className="page-title">Programs</h1>
-          <p className="page-subtitle">Courses and internships from educators and organizations — free to join</p>
+      <div style={{ maxWidth: 700, margin: '0 auto', width: '100%', flex: 1, display: 'flex', flexDirection: 'column', padding: '1.25rem 1.5rem' }}>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+          <a href="/group-chats" style={{ display: 'flex', color: 'var(--text-2)' }}><ArrowLeft size={20} /></a>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 800, fontSize: '1rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{program.title}</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>Group Chat</div>
+          </div>
+          {isCreator && (
+            <button onClick={() => setShowSettings(s => !s)} title="Chat settings" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-2)', display: 'flex' }}>
+              <Settings size={19} />
+            </button>
+          )}
         </div>
 
-        {success && <div className="alert alert-success"><Check size={15} /> {success}</div>}
-
-        {programs.length === 0 ? (
-          <div className="card empty-state">
-            <GraduationCap size={40} style={{ margin: '0 auto 1rem', color: 'var(--border-2)' }} />
-            <h3>No programs open right now</h3>
-            <p>Check back soon for new courses and internships.</p>
+        {isCreator && showSettings && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 10, padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.85rem' }}>
+            <span>Allow students to send messages</span>
+            <button
+              onClick={toggleStudentsCanSend}
+              style={{
+                width: 42, height: 24, borderRadius: 999, border: 'none', cursor: 'pointer', position: 'relative',
+                background: program.chat_students_can_send ? 'var(--brand)' : 'var(--border)', transition: 'background 0.15s',
+              }}
+            >
+              <span style={{
+                position: 'absolute', top: 2, left: program.chat_students_can_send ? 20 : 2, width: 20, height: 20,
+                borderRadius: '50%', background: 'white', transition: 'left 0.15s',
+              }} />
+            </button>
           </div>
-        ) : (
-          <div className="grid-auto">
-            {programs.map(p => {
-              const enrolled = myEnrollments.has(p.id)
-              const full = p.capacity && p.enrolledCount >= p.capacity
-              const TypeIcon = p.program_type === 'Internship' ? Briefcase : GraduationCap
-              return (
-                <div key={p.id} className="card" style={{ display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.625rem', flexWrap: 'wrap' }}>
-                    <span className={`badge ${p.program_type === 'Internship' ? 'badge-purple' : 'badge-blue'}`}>
-                      <TypeIcon size={10} style={{ marginRight: 3, verticalAlign: -1 }} />{p.program_type}
-                    </span>
-                    {p.level && <span className="badge badge-gray">{p.level}</span>}
-                    <span className={p.cost_type === 'Free' || !p.cost_type ? 'badge badge-green' : 'badge badge-amber'}>{formatCost(p)}</span>
-                    {p.program_type === 'Internship' && (
-                      <span className={p.is_paid ? 'badge badge-green' : 'badge badge-gray'}>{formatPay(p)}</span>
-                    )}
-                    {p.interview_required && <span className="badge badge-red">Interview Required</span>}
-                  </div>
-                  {formatDuration(p) && (
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-3)', marginBottom: '0.5rem' }}>{formatDuration(p)}</div>
-                  )}
-                  <h3 style={{ fontSize: '0.95rem', marginBottom: '0.5rem', color: 'var(--text)' }}>{p.title}</h3>
-                  <p style={{ color: 'var(--text-2)', fontSize: '0.8rem', lineHeight: 1.6, flex: 1, marginBottom: '1rem' }}>
-                    {p.description || 'No description provided.'}
-                  </p>
-                  <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', color: 'var(--text-3)', marginBottom: '1rem' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                      <Users size={11} /> {p.enrolledCount}{p.capacity ? ' / ' + p.capacity : ''} enrolled
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>by {p.creator?.full_name || 'Unknown'}</span>
-                    {myAccountType === 'Organization' && !enrolled ? (
-                      <span
-                        title="Organizations host programs, but don't enroll as a student in someone else's"
-                        style={{ fontSize: '0.78rem', color: 'var(--text-3)', fontStyle: 'italic' }}
-                      >
-                        Not available for Organizations
-                      </span>
-                    ) : enrolled ? (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        {p.group_chat_enabled && (
-                          <a href={'/programs/chat?id=' + p.id} style={{ fontSize: '0.78rem', color: 'var(--brand)', fontWeight: 700, textDecoration: 'underline' }}>Chat</a>
-                        )}
-                        <button
-                          onClick={() => leaveProgram(p)}
-                          disabled={joining === p.id}
-                          title="Click to leave this program"
-                          style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--brand-light)', color: 'var(--brand)', padding: '0.4rem 0.875rem', borderRadius: 'var(--radius-sm)', fontWeight: 700, fontSize: '0.78rem', border: '1px solid var(--brand)', cursor: 'pointer' }}
-                        >
-                          <Check size={11} /> {joining === p.id ? 'Leaving...' : 'Enrolled'}
-                        </button>
-                      </div>
-                    ) : full ? (
-                      <span style={{ fontSize: '0.78rem', color: 'var(--text-3)', fontWeight: 600 }}>Full</span>
-                    ) : (
-                      <button onClick={() => joinProgram(p)} disabled={joining === p.id} className="btn btn-primary btn-sm">
-                        {joining === p.id ? 'Joining...' : 'Join'}
-                      </button>
-                    )}
+        )}
+
+        <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.6rem', paddingBottom: '1rem', minHeight: 300 }}>
+          {messages.length === 0 && (
+            <div style={{ textAlign: 'center', color: 'var(--text-3)', fontSize: '0.85rem', marginTop: '2rem' }}>
+              No messages yet — {isCreator ? 'say hello to the group!' : 'be the first to say hello!'}
+            </div>
+          )}
+          {messages.map(m => {
+            const mine = m.sender_id === user.id
+            const sender = senders[m.sender_id]
+            return (
+              <div key={m.id} style={{ display: 'flex', gap: '0.6rem', flexDirection: mine ? 'row-reverse' : 'row', alignItems: 'flex-end' }}>
+                <div style={{
+                  width: 28, height: 28, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
+                  background: sender?.avatar_url ? undefined : 'linear-gradient(135deg, var(--brand), var(--brand-mid, var(--brand)))',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.65rem', fontWeight: 700,
+                }}>
+                  {sender?.avatar_url ? <img src={sender.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials(sender?.full_name)}
+                </div>
+                <div style={{ maxWidth: '72%' }}>
+                  {!mine && <div style={{ fontSize: '0.7rem', color: 'var(--text-3)', marginBottom: '0.15rem', marginLeft: '0.2rem' }}>{sender?.full_name || 'Someone'}</div>}
+                  <div style={{
+                    padding: '0.55rem 0.8rem', borderRadius: 14, fontSize: '0.85rem', lineHeight: 1.45,
+                    background: mine ? 'var(--brand)' : 'var(--surface-2)', color: mine ? 'white' : 'var(--text)',
+                    borderBottomRightRadius: mine ? 4 : 14, borderBottomLeftRadius: mine ? 14 : 4,
+                  }}>
+                    {m.content}
                   </div>
                 </div>
-              )
-            })}
+              </div>
+            )
+          })}
+        </div>
+
+        {canSend ? (
+          <form onSubmit={handleSend} style={{ display: 'flex', gap: '0.6rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
+            <input
+              value={draft} onChange={e => setDraft(e.target.value)} placeholder="Type a message..."
+              style={{ flex: 1, padding: '0.7rem 1rem', borderRadius: 10, border: '1px solid var(--border)', fontSize: '0.9rem', background: 'var(--surface)', color: 'var(--text)' }}
+            />
+            <button
+              type="submit" disabled={sending || !draft.trim()}
+              style={{ width: 44, height: 44, borderRadius: 10, border: 'none', background: 'var(--brand)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, opacity: sending || !draft.trim() ? 0.6 : 1 }}
+            >
+              <Send size={17} />
+            </button>
+          </form>
+        ) : (
+          <div style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-3)', padding: '0.75rem', borderTop: '1px solid var(--border)' }}>
+            Only the educator can post in this chat right now.
           </div>
         )}
       </div>
     </div>
+  )
+}
+
+export default function ProgramChatPage() {
+  return (
+    <Suspense fallback={<div><Navbar /><LoadingScreen text="Loading chat..." /></div>}>
+      <ProgramChatInner />
+    </Suspense>
   )
 }
