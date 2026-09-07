@@ -9,6 +9,7 @@ import { Bookmark, Clock, Zap, ChevronRight, Check, Users } from 'lucide-react'
 export default function SavedPage() {
   const router = useRouter()
   const [user, setUser] = useState(null)
+  const [myAccountType, setMyAccountType] = useState('')
   const [tab, setTab] = useState('people') // 'people' | 'posts'
   const [loading, setLoading] = useState(true)
 
@@ -26,6 +27,8 @@ export default function SavedPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/auth/login'); return }
       setUser(user)
+      const { data: myProf } = await supabase.from('profiles').select('account_type').eq('id', user.id).single()
+      setMyAccountType(myProf?.account_type || 'Personal')
       await Promise.all([fetchSavedPosts(user.id), fetchSavedPeople(user.id)])
       const { data: apps } = await supabase.from('applications').select('transaction_id').eq('applicant_id', user.id)
       setMyApplications(new Set(apps?.map(a => a.transaction_id) || []))
@@ -221,6 +224,13 @@ export default function SavedPage() {
                         >
                           <Check size={11} /> {applying === txn.id ? 'Withdrawing...' : 'Applied'}
                         </button>
+                      ) : (myAccountType === 'Organization' && txn.track === 'Education') ? (
+                        <span
+                          title="Organizations can apply for Work opportunities, but not Education requests"
+                          style={{ fontSize: '0.75rem', color: 'var(--text-3)', fontStyle: 'italic' }}
+                        >
+                          Not available for Organizations
+                        </span>
                       ) : (
                         <button onClick={() => applyToTransaction(txn)} disabled={applying === txn.id} className="btn btn-primary btn-sm">
                           {applying === txn.id ? 'Applying...' : 'Apply'} <ChevronRight size={12} />
