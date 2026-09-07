@@ -300,3 +300,8 @@ button { cursor: pointer; font-family: inherit; border: none; transition: all va
 /* Smooth theme transitions */
 *, *::before, *::after { transition: background-color var(--transition), border-color var(--transition), color 0.05s; }
 button, a { transition: all var(--transition) !important; }
+
+/* Impact Report printing — hide everything except the report itself */
+@media print {
+  .no-print { display: none !important; }
+}
