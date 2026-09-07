@@ -8,7 +8,7 @@ import Navbar from '@/components/Navbar'
 import LoadingScreen from '@/components/LoadingScreen'
 import {
   TrendingUp, Users, Clock, Zap, ArrowRight, Briefcase,
-  GraduationCap, Plus, BarChart3, Award, Target, ChevronRight, Gift, Flame, Check, User, X
+  GraduationCap, Plus, BarChart3, Award, Target, ChevronRight, Gift, Flame, Check, User, X, Star
 } from 'lucide-react'
 
 const TIERS = [
@@ -729,6 +729,10 @@ function OrgDashboard({ profile }) {
   const [programs, setPrograms] = useState([])
   const [loading, setLoading] = useState(true)
   const [bannerDismissed, setBannerDismissed] = useState(profile?.welcome_banner_dismissed)
+  const [trustScore, setTrustScore] = useState(profile?.organization_trust_score || 0)
+  const [impact, setImpact] = useState({ giftsGiven: 0, hoursFunded: 0, peopleHelped: 0 })
+  const [talentPipeline, setTalentPipeline] = useState([])
+  const isOrg = profile?.account_type === 'Organization'
 
   const dismissWelcomeBanner = async () => {
     setBannerDismissed(true)
@@ -745,6 +749,42 @@ function OrgDashboard({ profile }) {
         for (const e of allEnrollments || []) counts[e.program_id] = (counts[e.program_id] || 0) + 1
       }
       setPrograms((progs || []).map(p => ({ ...p, enrolledCount: counts[p.id] || 0 })))
+
+      if (isOrg) {
+        const [{ data: confirmedTxns }, { data: gifts }, { data: savedPeopleRows }] = await Promise.all([
+          supabase.from('transactions').select('id, provider_id, agreed_hours').eq('receiver_id', profile.id).eq('status', 'Confirmed'),
+          supabase.from('gifts').select('amount').eq('donor_id', profile.id),
+          supabase.from('saved_people').select('saved_user_id, created_at').eq('user_id', profile.id).order('created_at', { ascending: false }).limit(6),
+        ])
+
+        const completedJobs = confirmedTxns?.length || 0
+        const totalGiftsGiven = (gifts || []).reduce((sum, g) => sum + (g.amount || 0), 0)
+        const hoursFunded = (confirmedTxns || []).reduce((sum, t) => sum + (t.agreed_hours || 0), 0)
+        const distinctWorkersHelped = new Set((confirmedTxns || []).map(t => t.provider_id).filter(Boolean)).size
+        const totalStudentsSoFar = Object.values(counts).reduce((a, b) => a + b, 0)
+        const tenureMonths = profile.created_at
+          ? Math.max(0, (Date.now() - new Date(profile.created_at).getTime()) / (1000 * 60 * 60 * 24 * 30))
+          : 0
+
+        const score = Math.min(100, Math.round(
+          completedJobs * 8 +
+          totalStudentsSoFar * 3 +
+          Math.min(totalGiftsGiven / 50, 20) +
+          Math.min(tenureMonths, 24)
+        ))
+        setTrustScore(score)
+        supabase.from('profiles').update({ organization_trust_score: score }).eq('id', profile.id).then(() => {})
+
+        setImpact({ giftsGiven: totalGiftsGiven, hoursFunded, peopleHelped: distinctWorkersHelped + totalStudentsSoFar })
+
+        const ids = (savedPeopleRows || []).map(r => r.saved_user_id)
+        if (ids.length > 0) {
+          const { data: peopleData } = await supabase.from('profiles').select('id, full_name, account_type, tier_level, avatar_url').in('id', ids)
+          const peopleMap = Object.fromEntries((peopleData || []).map(p => [p.id, p]))
+          setTalentPipeline(ids.map(id => peopleMap[id]).filter(Boolean))
+        }
+      }
+
       setLoading(false)
     }
     load()
@@ -764,9 +804,9 @@ function OrgDashboard({ profile }) {
 
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
-      <Navbar />
+      <div className="no-print"><Navbar /></div>
 
-      <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)', position: 'relative', overflow: 'hidden' }}>
+      <div className="no-print" style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)', position: 'relative', overflow: 'hidden' }}>
         <div className="eh-dash-decor" aria-hidden="true">
           <div className="eh-dash-blob" style={{ top: -80, right: '10%', background: 'var(--amber)' }} />
         </div>
@@ -798,7 +838,7 @@ function OrgDashboard({ profile }) {
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '2rem 1.5rem' }}>
 
         {!bannerDismissed && (
-          <div className="eh-dash-fade-in" style={{
+          <div className="eh-dash-fade-in no-print" style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem',
             background: 'var(--brand-light)', border: '1px solid var(--brand)', borderRadius: 'var(--radius-lg)',
             padding: '1rem 1.25rem', marginBottom: '1.5rem', flexWrap: 'wrap'
@@ -827,7 +867,22 @@ function OrgDashboard({ profile }) {
           </div>
         )}
 
-        <div className="eh-dash-fade-in" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+        <div className="eh-dash-fade-in no-print" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+          {isOrg && (
+            <div
+              onMouseEnter={cardHover} onMouseLeave={cardLeave}
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', transition: 'transform 0.25s ease, box-shadow 0.25s ease' }}>
+              <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <Star size={11} /> Trust Score
+              </div>
+              <div style={{ fontSize: '1.75rem', fontWeight: 900, color: trustScore >= 60 ? 'var(--green)' : trustScore >= 30 ? 'var(--amber)' : 'var(--text)' }}>
+                {trustScore}<span style={{ fontSize: '1rem', color: 'var(--text-3)', fontWeight: 700 }}> / 100</span>
+              </div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-3)', marginTop: '0.3rem' }}>
+                Based on completed jobs, program reach, and community giving
+              </div>
+            </div>
+          )}
           <div
             onMouseEnter={cardHover} onMouseLeave={cardLeave}
             style={{ background: 'linear-gradient(135deg, var(--brand) 0%, var(--brand-mid) 100%)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', color: 'white', transition: 'transform 0.25s ease, box-shadow 0.25s ease' }}>
@@ -866,7 +921,78 @@ function OrgDashboard({ profile }) {
           </div>
         </div>
 
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+        {isOrg && (
+          <div className="no-print" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', marginBottom: '1.5rem' }}>
+            <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '0.15rem' }}>Your Talent Pipeline</h2>
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-3)' }}>People you're tracking for future roles or collaboration</p>
+              </div>
+              <a href="/saved" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: 'var(--brand)', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none' }}>
+                View all <ArrowRight size={13} />
+              </a>
+            </div>
+            <div style={{ padding: '1.25rem 1.5rem' }}>
+              {talentPipeline.length === 0 ? (
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-3)' }}>
+                  No one saved yet — bookmark people from <a href="/marketplace" style={{ color: 'var(--brand)', fontWeight: 600 }}>Find Talent</a> or their profile page to build your pipeline.
+                </p>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.875rem' }}>
+                  {talentPipeline.map(p => (
+                    <a key={p.id} href={`/profile?id=${p.id}`} style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', textDecoration: 'none', color: 'inherit', padding: '0.5rem', borderRadius: 'var(--radius-sm)' }}>
+                      <div style={{ width: 38, height: 38, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', background: p.avatar_url ? undefined : 'linear-gradient(135deg, var(--brand), var(--brand-mid))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: '0.85rem' }}>
+                        {p.avatar_url ? <img src={p.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : p.full_name?.[0]?.toUpperCase()}
+                      </div>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontWeight: 700, fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.full_name}</div>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-3)' }}>{p.tier_level || p.account_type}</div>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {isOrg && (
+          <div id="impact-report" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', marginBottom: '1.5rem' }}>
+            <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <div>
+                <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '0.15rem' }}>Community Impact Report</h2>
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-3)' }}>Your organization's contribution so far — useful for CSR reporting</p>
+              </div>
+              <button
+                onClick={() => window.print()}
+                className="no-print"
+                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 0.9rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--brand)', background: 'var(--brand-light)', color: 'var(--brand)', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}
+              >
+                Print / Save as PDF
+              </button>
+            </div>
+            <div style={{ padding: '1.25rem 1.5rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1.25rem' }}>
+              <div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--brand)' }}>{impact.peopleHelped}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>People helped</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--green)' }}>{impact.hoursFunded}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>Hours of work funded</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--amber-dark, var(--amber))' }}>{impact.giftsGiven}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>SPK gifted to funding requests</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--text)' }}>{programs.length}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>Programs run</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="no-print" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
           <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '0.15rem' }}>Your Programs</h2>
