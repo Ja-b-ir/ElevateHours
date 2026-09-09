@@ -725,6 +725,26 @@ export default function Dashboard() {
   )
 }
 
+function SectionHeader({ icon: Icon, iconColor, title, subtitle, action }) {
+  return (
+    <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div style={{
+          width: 34, height: 34, borderRadius: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: `${iconColor}1a`, color: iconColor,
+        }}>
+          <Icon size={16} />
+        </div>
+        <div>
+          <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '0.1rem' }}>{title}</h2>
+          {subtitle && <p style={{ fontSize: '0.78rem', color: 'var(--text-3)' }}>{subtitle}</p>}
+        </div>
+      </div>
+      {action}
+    </div>
+  )
+}
+
 function OrgDashboard({ profile }) {
   const [programs, setPrograms] = useState([])
   const [loading, setLoading] = useState(true)
@@ -733,6 +753,9 @@ function OrgDashboard({ profile }) {
   const [impact, setImpact] = useState({ giftsGiven: 0, hoursFunded: 0, peopleHelped: 0 })
   const [talentPipeline, setTalentPipeline] = useState([])
   const isOrg = profile?.account_type === 'Organization'
+  const isEducator = profile?.account_type === 'Educator'
+  const [teachingStats, setTeachingStats] = useState({ avgRating: null, reviewCount: 0 })
+  const [skillsTaught, setSkillsTaught] = useState([])
 
   const dismissWelcomeBanner = async () => {
     setBannerDismissed(true)
@@ -783,6 +806,20 @@ function OrgDashboard({ profile }) {
           const peopleMap = Object.fromEntries((peopleData || []).map(p => [p.id, p]))
           setTalentPipeline(ids.map(id => peopleMap[id]).filter(Boolean))
         }
+      }
+
+      if (isEducator) {
+        const [{ data: reviews }, { data: skillsOffered }] = await Promise.all([
+          supabase.from('endorsements').select('rating').eq('recipient_id', profile.id),
+          supabase.from('profile_skills_offered').select('skill:skills_catalog(skill_name, track, tier:tier_reference(tier_name))').eq('profile_id', profile.id),
+        ])
+
+        const ratings = (reviews || []).map(r => r.rating).filter(r => typeof r === 'number')
+        setTeachingStats({
+          avgRating: ratings.length ? (ratings.reduce((a, b) => a + b, 0) / ratings.length) : null,
+          reviewCount: ratings.length,
+        })
+        setSkillsTaught((skillsOffered || []).map(s => s.skill).filter(Boolean))
       }
 
       setLoading(false)
@@ -883,6 +920,28 @@ function OrgDashboard({ profile }) {
               </div>
             </div>
           )}
+          {isEducator && (
+            <div
+              onMouseEnter={cardHover} onMouseLeave={cardLeave}
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', transition: 'transform 0.25s ease, box-shadow 0.25s ease' }}>
+              <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <Star size={11} /> Teaching Rating
+              </div>
+              {teachingStats.reviewCount > 0 ? (
+                <>
+                  <div style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    {teachingStats.avgRating.toFixed(1)}
+                    <Star size={16} style={{ color: 'var(--amber)' }} fill="var(--amber)" />
+                  </div>
+                  <a href={`/reviews?id=${profile.id}`} style={{ fontSize: '0.72rem', color: 'var(--brand)', fontWeight: 600, textDecoration: 'none' }}>
+                    {teachingStats.reviewCount} review{teachingStats.reviewCount !== 1 ? 's' : ''} →
+                  </a>
+                </>
+              ) : (
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-3)' }}>No reviews yet</div>
+              )}
+            </div>
+          )}
           <div
             onMouseEnter={cardHover} onMouseLeave={cardLeave}
             style={{ background: 'linear-gradient(135deg, var(--brand) 0%, var(--brand-mid) 100%)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', color: 'white', transition: 'transform 0.25s ease, box-shadow 0.25s ease' }}>
@@ -923,15 +982,11 @@ function OrgDashboard({ profile }) {
 
         {isOrg && (
           <div className="no-print" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', marginBottom: '1.5rem' }}>
-            <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '0.15rem' }}>Your Talent Pipeline</h2>
-                <p style={{ fontSize: '0.78rem', color: 'var(--text-3)' }}>People you're tracking for future roles or collaboration</p>
-              </div>
-              <a href="/saved" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: 'var(--brand)', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none' }}>
-                View all <ArrowRight size={13} />
-              </a>
-            </div>
+            <SectionHeader
+              icon={Users} iconColor="var(--brand)"
+              title="Your Talent Pipeline" subtitle="People you're tracking for future roles or collaboration"
+              action={<a href="/saved" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: 'var(--brand)', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none' }}>View all <ArrowRight size={13} /></a>}
+            />
             <div style={{ padding: '1.25rem 1.5rem' }}>
               {talentPipeline.length === 0 ? (
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-3)' }}>
@@ -956,21 +1011,51 @@ function OrgDashboard({ profile }) {
           </div>
         )}
 
+        {isEducator && (
+          <div className="no-print" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', marginBottom: '1.5rem' }}>
+            <SectionHeader
+              icon={Award} iconColor="var(--amber)"
+              title="Skills You Teach" subtitle="What students see when they find you in the Marketplace"
+              action={<a href="/profile" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: 'var(--brand)', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none' }}>Edit skills <ArrowRight size={13} /></a>}
+            />
+            <div style={{ padding: '1.25rem 1.5rem' }}>
+              {skillsTaught.length === 0 ? (
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-3)' }}>
+                  You haven't listed any skills yet — add some on <a href="/profile" style={{ color: 'var(--brand)', fontWeight: 600 }}>your profile</a> so students can find you.
+                </p>
+              ) : (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  {skillsTaught.map((s, i) => (
+                    <span key={i} style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem', fontWeight: 600,
+                      color: 'var(--brand)', background: 'var(--brand-light)', border: '1px solid var(--brand)',
+                      borderRadius: 999, padding: '0.3rem 0.8rem',
+                    }}>
+                      {s.skill_name}
+                      {s.tier?.tier_name && <span style={{ opacity: 0.7, fontWeight: 500 }}>· {s.tier.tier_name.split(':')[0]}</span>}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {isOrg && (
           <div id="impact-report" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', marginBottom: '1.5rem' }}>
-            <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
-              <div>
-                <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '0.15rem' }}>Community Impact Report</h2>
-                <p style={{ fontSize: '0.78rem', color: 'var(--text-3)' }}>Your organization's contribution so far — useful for CSR reporting</p>
-              </div>
-              <button
-                onClick={() => window.print()}
-                className="no-print"
-                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 0.9rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--brand)', background: 'var(--brand-light)', color: 'var(--brand)', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}
-              >
-                Print / Save as PDF
-              </button>
-            </div>
+            <SectionHeader
+              icon={BarChart3} iconColor="var(--green)"
+              title="Community Impact Report" subtitle="Your organization's contribution so far — useful for CSR reporting"
+              action={
+                <button
+                  onClick={() => window.print()}
+                  className="no-print"
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 0.9rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--brand)', background: 'var(--brand-light)', color: 'var(--brand)', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}
+                >
+                  Print / Save as PDF
+                </button>
+              }
+            />
             <div style={{ padding: '1.25rem 1.5rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1.25rem' }}>
               <div>
                 <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--brand)' }}>{impact.peopleHelped}</div>
@@ -993,15 +1078,11 @@ function OrgDashboard({ profile }) {
         )}
 
         <div className="no-print" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
-          <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '0.15rem' }}>Your Programs</h2>
-              <p style={{ fontSize: '0.78rem', color: 'var(--text-3)' }}>Courses and internships you've created</p>
-            </div>
-            <a href="/my-programs" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: 'var(--brand)', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none' }}>
-              Manage all <ArrowRight size={13} />
-            </a>
-          </div>
+          <SectionHeader
+            icon={GraduationCap} iconColor="var(--brand)"
+            title="Your Programs" subtitle="Courses and internships you've created"
+            action={<a href="/my-programs" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: 'var(--brand)', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none' }}>Manage all <ArrowRight size={13} /></a>}
+          />
 
           <div style={{ padding: '1.25rem 1.5rem' }}>
             {programs.length === 0 ? (
