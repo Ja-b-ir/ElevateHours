@@ -126,11 +126,15 @@ export default function Navbar() {
     window.location.href = '/'
   }
 
+  const isTeachingAccount = profile?.account_type === 'Educator' || profile?.account_type === 'Organization'
+
   const links = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/marketplace', label: 'Marketplace', icon: Store },
     { href: '/my-requests', label: 'My Requests', icon: ClipboardList },
-    { href: '/my-enrollments', label: 'My Enrolled Programs', icon: GraduationCap },
+    isTeachingAccount
+      ? { href: '/my-programs', label: 'My Programs', icon: GraduationCap }
+      : { href: '/my-enrollments', label: 'My Enrolled Programs', icon: GraduationCap },
     { href: '/buy-sparks', label: 'Buy Sparks', icon: Zap },
   ]
 
