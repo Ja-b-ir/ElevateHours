@@ -19,6 +19,12 @@ export default function MyEnrollments() {
       if (!user) { router.push('/auth/login'); return }
       setUser(user)
 
+      const { data: myProf } = await supabase.from('profiles').select('account_type').eq('id', user.id).single()
+      if (myProf?.account_type === 'Educator' || myProf?.account_type === 'Organization') {
+        router.push('/my-programs')
+        return
+      }
+
       const { data: myEnroll } = await supabase
         .from('program_enrollments')
         .select('program_id, enrolled_at')
