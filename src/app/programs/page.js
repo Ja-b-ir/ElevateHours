@@ -9,6 +9,7 @@ export default function ProgramsPage() {
   const router = useRouter()
   const [user, setUser] = useState(null)
   const [myAccountType, setMyAccountType] = useState('')
+  const isTeachingAccount = myAccountType === 'Educator' || myAccountType === 'Organization'
   const [programs, setPrograms] = useState([])
   const [myEnrollments, setMyEnrollments] = useState(new Set())
   const [loading, setLoading] = useState(true)
@@ -170,12 +171,12 @@ export default function ProgramsPage() {
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>by {p.creator?.full_name || 'Unknown'}</span>
-                    {myAccountType === 'Organization' && !enrolled ? (
+                    {isTeachingAccount && !enrolled ? (
                       <span
-                        title="Organizations host programs, but don't enroll as a student in someone else's"
+                        title="Educators and Organizations host programs, but don't enroll as a student in someone else's"
                         style={{ fontSize: '0.78rem', color: 'var(--text-3)', fontStyle: 'italic' }}
                       >
-                        Not available for Organizations
+                        Not available for this account type
                       </span>
                     ) : enrolled ? (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
