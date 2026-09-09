@@ -53,6 +53,7 @@ function MarketplaceContent() {
   const [success, setSuccess] = useState('')
   const [myName, setMyName] = useState('')
   const [myAccountType, setMyAccountType] = useState('')
+  const isTeachingAccount = myAccountType === 'Educator' || myAccountType === 'Organization'
   const [savedIds, setSavedIds] = useState(new Set())
   const [savedPeopleIds, setSavedPeopleIds] = useState(new Set())
   const [programs, setPrograms] = useState([])
@@ -715,12 +716,12 @@ function MarketplaceContent() {
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <a href={'/profile?id=' + p.creator_id} style={{ fontSize: '0.75rem', color: 'var(--text-3)', textDecoration: 'underline' }}>by {p.creator?.full_name || 'Unknown'}</a>
-                      {myAccountType === 'Organization' && !enrolled && !appliedProgramIds.has(p.id) ? (
+                      {isTeachingAccount && !enrolled && !appliedProgramIds.has(p.id) ? (
                         <span
-                          title="Organizations host programs, but don't enroll as a student in someone else's"
+                          title="Educators and Organizations host programs, but don't enroll as a student in someone else's"
                           style={{ fontSize: '0.75rem', color: 'var(--text-3)', fontStyle: 'italic' }}
                         >
-                          Not available for Organizations
+                          Not available for this account type
                         </span>
                       ) : enrolled ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
