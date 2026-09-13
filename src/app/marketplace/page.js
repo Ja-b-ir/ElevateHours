@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
 import LoadingScreen from '@/components/LoadingScreen'
 import DynamicApplicationForm from '@/components/DynamicApplicationForm'
-import { Search, Clock, Users, Briefcase, GraduationCap, ChevronRight, Check, Zap, MessageCircle, Mail, Bookmark, Award, X, Sparkles, TrendingUp } from 'lucide-react'
+import { Search, Clock, Users, Briefcase, GraduationCap, ChevronRight, Check, Zap, MessageCircle, Mail, Bookmark, Award, X, Sparkles, TrendingUp, BookOpen } from 'lucide-react'
 
 function isRecent(dateStr, days = 3) {
   if (!dateStr) return false
@@ -19,7 +19,7 @@ function MarketplaceContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const tabParam = searchParams.get('tab')
-  const TAB_MAP = { education: 'Find Education', work: 'Find Work', courses: 'Courses', internships: 'Internships' }
+  const TAB_MAP = { education: 'Find Education', work: 'Find Work', courses: 'Courses', internships: 'Internships', 'education-programs': 'Education Programs' }
   const initialTab = TAB_MAP[tabParam] || 'Find Work'
 
   const [user, setUser] = useState(null)
@@ -65,6 +65,7 @@ function MarketplaceContent() {
   const tabs = [
     { key: 'Find Work', label: 'Find Work', icon: Briefcase },
     { key: 'Find Education', label: 'Find Education', icon: GraduationCap },
+    { key: 'Education Programs', label: 'Education Programs', icon: BookOpen },
     { key: 'Courses', label: 'Courses', icon: GraduationCap },
     { key: 'Internships', label: 'Internships', icon: Award },
     { key: 'Find Help (Work)', label: 'Find Talent', icon: Users },
@@ -117,8 +118,8 @@ function MarketplaceContent() {
       if (filterTier) query = query.eq('tier_id', filterTier)
       const { data } = await query.order('created_at', { ascending: false })
       setTransactions(data || [])
-    } else if (activeTab === 'Courses' || activeTab === 'Internships') {
-      const programType = activeTab === 'Courses' ? 'Course' : 'Internship'
+    } else if (activeTab === 'Education Programs' || activeTab === 'Courses' || activeTab === 'Internships') {
+      const programType = activeTab === 'Education Programs' ? 'Education' : activeTab === 'Courses' ? 'Course' : 'Internship'
       const { data: progs } = await supabase.from('programs').select('*').eq('status', 'Open').eq('program_type', programType).order('created_at', { ascending: false })
       const creatorIds = Array.from(new Set((progs || []).map(p => p.creator_id)))
       let creatorById = {}
@@ -272,7 +273,7 @@ function MarketplaceContent() {
   const filteredPrograms = programs.filter(p => matchesChips([p.title, p.description]))
 
   const isListTab = activeTab === 'Find Work' || activeTab === 'Find Education'
-  const isProgramsTab = activeTab === 'Courses' || activeTab === 'Internships'
+  const isProgramsTab = activeTab === 'Education Programs' || activeTab === 'Courses' || activeTab === 'Internships'
   const isProfileTab = activeTab === 'Find Help (Work)' || activeTab === 'Find Help (Education)'
 
   // Client-side sorting — the underlying Supabase query already orders by
