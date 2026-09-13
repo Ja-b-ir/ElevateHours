@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
 import LoadingScreen from '@/components/LoadingScreen'
 import FormBuilder from '@/components/FormBuilder'
-import { GraduationCap, Briefcase, ClipboardList } from 'lucide-react'
+import { GraduationCap, Briefcase, ClipboardList, BookOpen } from 'lucide-react'
 
 const CURRENCIES = ['USD', 'BDT', 'EUR', 'GBP', 'INR', 'PKR', 'AUD', 'CAD']
 
@@ -94,18 +94,19 @@ export default function CreateProgram() {
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label className="form-label">Program Type</label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
                 {[
+                  { value: 'Education', label: 'Education', icon: BookOpen },
                   { value: 'Course', label: 'Course', icon: GraduationCap },
                   { value: 'Internship', label: 'Internship', icon: Briefcase },
                 ].map(opt => (
                   <button key={opt.value} type="button" onClick={() => setForm({ ...form, program_type: opt.value })} style={{
-                    padding: '1rem', borderRadius: 'var(--radius)', border: `2px solid ${form.program_type === opt.value ? 'var(--brand)' : 'var(--border)'}`,
+                    padding: '1rem 0.75rem', borderRadius: 'var(--radius)', border: `2px solid ${form.program_type === opt.value ? 'var(--brand)' : 'var(--border)'}`,
                     background: form.program_type === opt.value ? 'var(--brand-light)' : 'var(--surface-2)',
-                    cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.625rem', transition: 'all var(--transition)'
+                    cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', transition: 'all var(--transition)'
                   }}>
                     <opt.icon size={18} style={{ color: form.program_type === opt.value ? 'var(--brand)' : 'var(--text-3)' }} />
-                    <span style={{ fontWeight: 700, fontSize: '0.9rem', color: form.program_type === opt.value ? 'var(--brand)' : 'var(--text)' }}>{opt.label}</span>
+                    <span style={{ fontWeight: 700, fontSize: '0.85rem', color: form.program_type === opt.value ? 'var(--brand)' : 'var(--text)' }}>{opt.label}</span>
                   </button>
                 ))}
               </div>
