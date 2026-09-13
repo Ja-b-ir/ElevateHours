@@ -4,10 +4,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
 import ProgramApplicationsList from '@/components/ProgramApplicationsList'
-import { GraduationCap, Briefcase, Users, Plus, X, MessageSquare, Zap, ClipboardList, BookOpen } from 'lucide-react'
-
-const TYPE_ICON = { Education: BookOpen, Course: GraduationCap, Internship: Briefcase }
-const TYPE_BADGE = { Education: 'badge-green', Course: 'badge-blue', Internship: 'badge-purple' }
+import { GraduationCap, Briefcase, Users, Plus, X, MessageSquare, Zap, ClipboardList } from 'lucide-react'
 
 export default function MyPrograms() {
   const router = useRouter()
@@ -115,7 +112,7 @@ export default function MyPrograms() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {programs.map(p => {
-              const TypeIcon = TYPE_ICON[p.program_type] || GraduationCap
+              const TypeIcon = p.program_type === 'Internship' ? Briefcase : GraduationCap
               const isExpanded = expanded === p.id
               const hasApplicationForm = p.application_form && p.application_form.length > 0
               const isApplicationsExpanded = expandedApplications === p.id
@@ -125,7 +122,7 @@ export default function MyPrograms() {
                     <div style={{ flex: 1, minWidth: 200 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
                         <h3 style={{ fontSize: '1rem', color: 'var(--text)' }}>{p.title}</h3>
-                        <span className={`badge ${TYPE_BADGE[p.program_type] || 'badge-blue'}`}>
+                        <span className={`badge ${p.program_type === 'Internship' ? 'badge-purple' : 'badge-blue'}`}>
                           <TypeIcon size={10} style={{ marginRight: 3, verticalAlign: -1 }} />{p.program_type}
                         </span>
                         {p.level && <span className="badge badge-gray">{p.level}</span>}
