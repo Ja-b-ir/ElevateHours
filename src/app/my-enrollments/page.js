@@ -55,6 +55,7 @@ export default function MyEnrollments() {
           const program = progsById[e.program_id]
           if (!program) return null // program may have been deleted since enrolling
           return {
+            kind: 'program',
             enrolled_at: e.enrolled_at,
             program,
             creator: creatorsById[program.creator_id],
@@ -62,7 +63,24 @@ export default function MyEnrollments() {
         })
         .filter(Boolean)
 
-      setEnrollments(merged)
+      // Education-track marketplace transactions this person took on as the
+      // provider (via Find Education → Apply) also count as "Education"
+      // involvement here, alongside actual Education-type programs.
+      const { data: eduTxns } = await supabase
+        .from('transactions')
+        .select('*, skill:skills_catalog(skill_name), receiver:profiles!transactions_receiver_id_fkey(id, full_name)')
+        .eq('provider_id', user.id)
+        .eq('track', 'Education')
+        .order('created_at', { ascending: false })
+
+      const txnItems = (eduTxns || []).map(t => ({
+        kind: 'transaction',
+        enrolled_at: t.created_at,
+        transaction: t,
+      }))
+
+      const combined = [...merged, ...txnItems].sort((a, b) => new Date(b.enrolled_at) - new Date(a.enrolled_at))
+      setEnrollments(combined)
       setLoading(false)
     }
     init()
@@ -74,18 +92,20 @@ export default function MyEnrollments() {
     try {
       const { error } = await supabase.from('program_enrollments').delete().eq('program_id', program.id).eq('student_id', user.id)
       if (error) throw error
-      setEnrollments(prev => prev.filter(e => e.program.id !== program.id))
+      setEnrollments(prev => prev.filter(e => e.kind !== 'program' || e.program.id !== program.id))
     } catch (err) { console.error(err) }
     setLeaving(null)
   }
 
+  const typeOf = (item) => item.kind === 'transaction' ? 'Education' : item.program.program_type
+
   const counts = {
     All: enrollments.length,
-    Education: enrollments.filter(e => e.program.program_type === 'Education').length,
-    Course: enrollments.filter(e => e.program.program_type === 'Course').length,
-    Internship: enrollments.filter(e => e.program.program_type === 'Internship').length,
+    Education: enrollments.filter(e => typeOf(e) === 'Education').length,
+    Course: enrollments.filter(e => typeOf(e) === 'Course').length,
+    Internship: enrollments.filter(e => typeOf(e) === 'Internship').length,
   }
-  const visibleEnrollments = tab === 'All' ? enrollments : enrollments.filter(e => e.program.program_type === tab)
+  const visibleEnrollments = tab === 'All' ? enrollments : enrollments.filter(e => typeOf(e) === tab)
 
   if (loading) return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
@@ -137,7 +157,42 @@ export default function MyEnrollments() {
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {visibleEnrollments.map(({ program: p, creator, enrolled_at }) => {
+            {visibleEnrollments.map((item) => {
+              if (item.kind === 'transaction') {
+                const t = item.transaction
+                return (
+                  <div key={'t-' + t.id} className="card">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem' }}>
+                      <div style={{ flex: 1, minWidth: 200 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                          <h3 style={{ fontSize: '1rem', color: 'var(--text)' }}>{t.skill?.skill_name || 'Education request'}</h3>
+                          <span className="badge badge-green">
+                            <BookOpen size={10} style={{ marginRight: 3, verticalAlign: -1 }} />Education
+                          </span>
+                          <span className={t.status === 'Confirmed' ? 'badge badge-confirmed' : 'badge badge-gray'}>{t.status}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', color: 'var(--text-3)', marginBottom: '0.6rem', flexWrap: 'wrap' }}>
+                          <Calendar size={12} /> Applied {new Date(item.enrolled_at).toLocaleDateString()}
+                          {t.receiver?.full_name && <> · requested by {t.receiver.full_name}</>}
+                          <Zap size={11} style={{ marginLeft: '0.3rem' }} /> {t.total_sparks_transferred || 0} SPK
+                        </div>
+                        <p style={{ color: 'var(--text-3)', fontSize: '0.78rem', fontStyle: 'italic' }}>
+                          From a one-off Find Education request, not a structured program.
+                        </p>
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0, flexWrap: 'wrap' }}>
+                        {t.receiver?.id && (
+                          <a href={'/profile?id=' + t.receiver.id} className="btn btn-secondary btn-sm">View Requester</a>
+                        )}
+                        <a href="/transactions" className="btn btn-primary btn-sm">Manage in Transactions</a>
+                      </div>
+                    </div>
+                  </div>
+                )
+              }
+
+              const p = item.program
+              const creator = item.creator
               const TypeIcon = TYPE_ICON[p.program_type] || GraduationCap
               return (
                 <div key={p.id} className="card">
@@ -152,7 +207,7 @@ export default function MyEnrollments() {
                       </div>
 
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', color: 'var(--text-3)', marginBottom: '0.6rem' }}>
-                        <Calendar size={12} /> Enrolled {new Date(enrolled_at).toLocaleDateString()}
+                        <Calendar size={12} /> Enrolled {new Date(item.enrolled_at).toLocaleDateString()}
                         {creator?.full_name && <> · by {creator.full_name}</>}
                       </div>
 
