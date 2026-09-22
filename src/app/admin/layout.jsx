@@ -3,13 +3,14 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
-import { MessageSquare, Mail, Users, LayoutDashboard, LogOut, ShieldAlert, ClipboardList, Bell, Zap } from 'lucide-react'
+import { MessageSquare, Mail, Users, LayoutDashboard, LogOut, ShieldAlert, ClipboardList, Bell, Zap, BarChart3 } from 'lucide-react'
 
 export const AdminContext = createContext(null)
 export const useAdmin = () => useContext(AdminContext)
 
 const NAV_ITEMS = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard, permission: null },
+  { href: '/admin/analytics', label: 'Analytics', icon: BarChart3, permission: 'analytics' },
   { href: '/admin/users', label: 'Users', icon: Users, permission: 'users' },
   { href: '/admin/reports', label: 'Reports', icon: ShieldAlert, permission: 'reports' },
   { href: '/admin/requests', label: 'Requests & Posts', icon: ClipboardList, permission: 'content' },
