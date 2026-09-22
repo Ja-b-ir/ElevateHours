@@ -13,6 +13,7 @@ const ALL_PERMISSIONS = [
   { key: 'notifications', label: 'Send Notifications' },
   { key: 'reports', label: 'Reports' },
   { key: 'content', label: 'Requests & Posts' },
+  { key: 'analytics', label: 'Analytics' },
 ]
 
 const inputStyle = {
