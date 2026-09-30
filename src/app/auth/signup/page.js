@@ -52,31 +52,20 @@ function SignupContent() {
         // Validate the referral code actually belongs to a real profile before trusting it
         let referrerId = null
         if (refCode && refCode !== data.user.id) {
-          const { data: referrerProfile } = await supabase.from('profiles').select('id, full_name, sparks_earned').eq('id', refCode).single()
+          const { data: referrerProfile } = await supabase.from('profiles').select('id').eq('id', refCode).single()
           if (referrerProfile) referrerId = referrerProfile.id
         }
 
+        // Sparks (the welcome bonus, the extra referred-signup bonus, and the
+        // referrer's 100 SPK) are all credited server-side by database
+        // triggers the moment referred_by is set below — not by this client
+        // code, which can't safely write to another user's balance anyway.
         const { error: profileError } = await supabase.from('profiles').upsert({
           id: data.user.id, email: form.email, full_name: form.full_name, account_type: form.account_type,
           whatsapp_number: form.whatsapp_number, country: form.country, country_updated_at: new Date().toISOString(),
-          sparks_purchased_total: referrerId ? 300 : 250, // +50 bonus for being referred
           referred_by: referrerId
         })
         if (profileError) throw profileError
-
-        if (referrerId) {
-          const { data: referrerProfile } = await supabase.from('profiles').select('sparks_earned').eq('id', referrerId).single()
-          await supabase.from('profiles').update({
-            sparks_earned: (referrerProfile?.sparks_earned || 0) + 100
-          }).eq('id', referrerId)
-
-          await supabase.from('notifications').insert({
-            user_id: referrerId,
-            title: 'Referral Bonus!',
-            message: `${form.full_name} joined using your referral link. You earned 100 SPK!`,
-            type: 'gift',
-          })
-        }
 
         window.location.href = '/dashboard'
       } else { setError('Signup failed. Please try again.') }
