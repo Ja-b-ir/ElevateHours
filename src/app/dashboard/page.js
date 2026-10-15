@@ -81,112 +81,6 @@ function TierRing({ percent, color = 'var(--amber)' }) {
 const cardHover = (e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 12px 28px rgba(0,0,0,0.1)' }
 const cardLeave = (e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none' }
 
-
-function DashboardPolishStyles() {
-  return (
-    <style jsx global>{`
-      .eh-modern-dashboard {
-        --eh-ink: #172b26;
-        --eh-muted: #73817b;
-        --eh-line: #e5ece7;
-        --eh-paper: #f6f8f5;
-        --eh-card: #ffffff;
-        --eh-green: #176b4d;
-        --eh-green-dark: #104d38;
-        --eh-lime: #d9f36a;
-        background: var(--eh-paper) !important;
-        color: var(--eh-ink);
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      }
-      .eh-modern-dashboard * { box-sizing: border-box; }
-      .eh-modern-dashboard a, .eh-modern-dashboard button { -webkit-tap-highlight-color: transparent; }
-      .eh-modern-dashboard a { transition: color .18s ease, background .18s ease, border-color .18s ease, transform .18s ease, box-shadow .18s ease; }
-      .eh-modern-dashboard h1, .eh-modern-dashboard h2, .eh-modern-dashboard h3 { letter-spacing: -.035em !important; }
-      .eh-modern-dashboard > div[style*="border-bottom"] {
-        background: linear-gradient(115deg, #ffffff 0%, #f2f8f3 72%, #f0f7e7 100%) !important;
-        border-bottom: 1px solid var(--eh-line) !important;
-      }
-      .eh-modern-dashboard [style*="max-width: 1280px"] {
-        max-width: 1320px !important;
-        padding-left: clamp(1rem, 3vw, 2.5rem) !important;
-        padding-right: clamp(1rem, 3vw, 2.5rem) !important;
-      }
-      .eh-modern-dashboard [style*="var(--radius-lg)"] {
-        border-radius: 22px !important;
-        border-color: var(--eh-line) !important;
-        box-shadow: 0 4px 18px rgba(27, 58, 43, .035);
-      }
-      .eh-modern-dashboard [style*="var(--radius-lg)"]:hover {
-        box-shadow: 0 16px 38px rgba(27, 58, 43, .075);
-      }
-      .eh-modern-dashboard [style*="background: var(--surface)"] {
-        background: var(--eh-card) !important;
-      }
-      .eh-modern-dashboard [style*="background: var(--surface-2)"] {
-        background: #f8faf8 !important;
-      }
-      .eh-modern-dashboard [style*="background: var(--surface-3)"] {
-        background: #f0f4f1 !important;
-      }
-      .eh-modern-dashboard [style*="color: var(--text)"] { color: var(--eh-ink) !important; }
-      .eh-modern-dashboard [style*="color: var(--text-2)"],
-      .eh-modern-dashboard [style*="color: var(--text-3)"] { color: var(--eh-muted) !important; }
-      .eh-modern-dashboard [style*="border: 1px solid var(--border)"],
-      .eh-modern-dashboard [style*="border: 1px solid var(--eh-line)"] {
-        border-color: var(--eh-line) !important;
-      }
-      .eh-modern-dashboard [style*="linear-gradient(135deg, var(--brand)"] {
-        background: linear-gradient(135deg, #176b4d 0%, #104d38 100%) !important;
-      }
-      .eh-modern-dashboard [style*="var(--brand-light)"] {
-        background-color: #eaf5ed !important;
-      }
-      .eh-modern-dashboard [style*="var(--brand)"] { --eh-brand: #176b4d; }
-      .eh-modern-dashboard [style*="border-radius: var(--radius-sm)"] { border-radius: 12px !important; }
-      .eh-modern-dashboard .dash-grid { gap: 1.35rem !important; }
-      .eh-modern-dashboard .eh-dash-fade-in { animation-duration: .65s; }
-      .eh-modern-dashboard [style*="grid-template-columns: repeat(auto-fit"] { gap: 1.15rem !important; }
-      .eh-modern-dashboard [style*="padding: 1.5rem"] { padding: clamp(1.1rem, 2vw, 1.6rem) !important; }
-      .eh-modern-dashboard [style*="display: flex; border-bottom"] button {
-        padding-top: .95rem !important;
-        padding-bottom: .95rem !important;
-      }
-      .eh-modern-dashboard button { font-family: inherit; }
-      .eh-modern-dashboard button:focus-visible,
-      .eh-modern-dashboard a:focus-visible {
-        outline: 3px solid rgba(23,107,77,.32);
-        outline-offset: 3px;
-      }
-      .eh-modern-dashboard [style*="background: var(--brand)"][style*="color: white"],
-      .eh-modern-dashboard a[style*="background: var(--brand)"] {
-        background: #176b4d !important;
-        box-shadow: 0 6px 16px rgba(23,107,77,.16);
-      }
-      .eh-modern-dashboard a[style*="background: var(--brand)"]:hover,
-      .eh-modern-dashboard a[style*="background: linear-gradient"] :hover {
-        transform: translateY(-1px);
-      }
-      .eh-modern-dashboard .eh-dash-blob { opacity: .08 !important; }
-      .eh-modern-dashboard .eh-dash-blob:first-child { background: #cde7a1 !important; }
-      .eh-modern-dashboard .team-panel { box-shadow: -24px 0 80px rgba(20,45,32,.16) !important; }
-      @media (max-width: 900px) {
-        .eh-modern-dashboard .dash-grid { grid-template-columns: minmax(0, 1fr) !important; }
-      }
-      @media (max-width: 640px) {
-        .eh-modern-dashboard [style*="max-width: 1280px"] { padding-left: 1rem !important; padding-right: 1rem !important; }
-        .eh-modern-dashboard [style*="padding: 2rem 1.5rem"] { padding: 1.25rem 1rem !important; }
-        .eh-modern-dashboard [style*="display: flex; justify-content: space-between"] { gap: .85rem; }
-        .eh-modern-dashboard [style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: repeat(2, minmax(0,1fr)) !important; }
-      }
-      @media (prefers-reduced-motion: reduce) {
-        .eh-modern-dashboard *, .eh-modern-dashboard *::before, .eh-modern-dashboard *::after {
-          animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important;
-        }
-      }
-    `}</style>
-  )
-}
-
 export default function Dashboard() {
   const router = useRouter()
   const [profile, setProfile] = useState(null)
@@ -293,8 +187,7 @@ export default function Dashboard() {
   }, [])
 
   if (loading) return (
-    <div className="eh-modern-dashboard" style={{ background: 'var(--bg)', minHeight: '100vh' }}>
-      <DashboardPolishStyles />
+    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <Navbar />
       <LoadingScreen text="Loading your dashboard..." />
     </div>
@@ -388,447 +281,77 @@ export default function Dashboard() {
   const tierPct = Math.min(100, (((profile?.sparks_earned || 0) - tierInfo(profile?.sparks_earned || 0).min) / ((tierInfo(profile?.sparks_earned || 0).next || 1) - tierInfo(profile?.sparks_earned || 0).min)) * 100)
 
   return (
-    <div className="eh-modern-dashboard" style={{ background: 'var(--bg)', minHeight: '100vh' }}>
-      <DashboardPolishStyles />
+    <div className="eh-workspace">
       <Navbar />
-
-      <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)', position: 'relative', overflow: 'hidden' }}>
-        <div className="eh-dash-decor" aria-hidden="true">
-          <div className="eh-dash-blob" style={{ top: -80, right: '10%', background: 'var(--brand)' }} />
-        </div>
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '1.75rem 1.5rem', position: 'relative' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.3rem', flexWrap: 'wrap' }}>
-                <h1 style={{ fontSize: 'clamp(1.4rem, 3vw, 1.75rem)', fontWeight: 900, letterSpacing: '-0.03em', color: 'var(--text)' }}>
-                  {greeting()}, {profile?.full_name?.split(' ')[0]}
-                </h1>
-                <span style={{
-                  background: profile?.account_type === 'Personal' ? 'var(--brand-light)' : 'var(--amber-light)',
-                  color: profile?.account_type === 'Personal' ? 'var(--brand)' : 'var(--amber-dark)',
-                  padding: '0.2rem 0.75rem', borderRadius: '999px',
-                  fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase'
-                }}>
-                  {profile?.account_type}
-                </span>
-              </div>
-              <p style={{ color: 'var(--text-3)', fontSize: '0.875rem' }}>
-                {profile?.tier_level || 'Tier 1: Foundational'} &nbsp;·&nbsp; Impact Score: {profile?.impact_score || 0} &nbsp;·&nbsp; {profile?.completed_transactions || 0} completed
-              </p>
-            </div>
-            <div style={{ display: 'flex', gap: '0.625rem', flexWrap: 'wrap' }}>
-              <a href="/referrals" style={{
-                display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-                padding: '0.6rem 1.125rem', borderRadius: 'var(--radius-sm)',
-                background: 'linear-gradient(135deg, var(--amber), var(--amber-dark))', color: '#1B1C25',
-                fontSize: '0.825rem', fontWeight: 700, textDecoration: 'none',
-                boxShadow: '0 4px 12px rgba(221,162,45,0.3)'
-              }}>
-                <Gift size={14} /> Invite Friends
-              </a>
-              <a href="/post-request" style={{
-                display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-                padding: '0.6rem 1.125rem', borderRadius: 'var(--radius-sm)',
-                background: 'var(--brand)', color: 'white',
-                fontSize: '0.825rem', fontWeight: 600, textDecoration: 'none',
-                boxShadow: '0 4px 12px rgba(13,115,119,0.25)'
-              }}>
-                <Plus size={14} /> Post Request
-              </a>
-              <a href="/marketplace" style={{
-                display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-                padding: '0.6rem 1.125rem', borderRadius: 'var(--radius-sm)',
-                background: 'var(--surface-3)', color: 'var(--text)',
-                border: '1px solid var(--border)', fontSize: '0.825rem', fontWeight: 600, textDecoration: 'none'
-              }}>
-                Browse <ChevronRight size={14} />
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '2rem 1.5rem' }}>
-
-        {!profile?.welcome_banner_dismissed && (
-          <div className="eh-dash-fade-in" style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem',
-            background: 'var(--brand-light)', border: '1px solid var(--brand)', borderRadius: 'var(--radius-lg)',
-            padding: '1rem 1.25rem', marginBottom: '1.5rem', flexWrap: 'wrap'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <User size={16} style={{ color: 'white' }} />
-              </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--text)' }}>Welcome to ElevateHours!</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-2)' }}>Complete your profile — add your bio, skills, and institution so others can find and trust you.</div>
-              </div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
-              <a href="/profile" style={{ background: 'var(--brand)', color: 'white', padding: '0.5rem 1rem', borderRadius: 'var(--radius-sm)', fontSize: '0.8rem', fontWeight: 700, textDecoration: 'none' }}>
-                Complete Profile
-              </a>
-              <button onClick={dismissWelcomeBanner} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', display: 'flex', padding: 0 }} title="Dismiss">
-                <X size={18} />
-              </button>
-            </div>
-          </div>
-        )}
-
-        <div className="eh-dash-fade-in" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
-
-          <div
-            onMouseEnter={cardHover} onMouseLeave={cardLeave}
-            style={{
-              background: 'linear-gradient(135deg, var(--brand) 0%, var(--brand-mid) 100%)',
-              borderRadius: 'var(--radius-lg)', padding: '1.5rem',
-              color: 'white', position: 'relative', overflow: 'hidden', transition: 'transform 0.25s ease, box-shadow 0.25s ease'
-            }}>
-            <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
-            <div style={{ position: 'absolute', bottom: -30, right: 20, width: 140, height: 140, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
-            <div style={{ position: 'relative' }}>
-              <div style={{ fontSize: '0.7rem', fontWeight: 700, opacity: 0.7, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <Zap size={11} /> Total Usable Balance
-              </div>
-              <div style={{ fontSize: 'clamp(2rem, 4vw, 2.75rem)', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: '0.4rem' }}>
-                <AnimatedStat value={total} />
-              </div>
-              <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>SPK &nbsp;·&nbsp; ≈ ${(total * 0.10).toFixed(2)} USD</div>
-            </div>
-          </div>
-
-          <div
-            onMouseEnter={cardHover} onMouseLeave={cardLeave}
-            style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', position: 'relative', overflow: 'hidden', transition: 'transform 0.25s ease, box-shadow 0.25s ease' }}>
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'var(--brand)', borderRadius: '16px 16px 0 0' }} />
-            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>Permanent Balance</div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 900, letterSpacing: '-0.03em', color: 'var(--text)', lineHeight: 1, marginBottom: '0.3rem' }}><AnimatedStat value={permanent} /></div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>SPK · Earned + Purchased</div>
-            <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem' }}>
-              <div>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-3)', marginBottom: '0.15rem' }}>Earned</div>
-                <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--green)' }}>{(profile?.sparks_earned || 0).toLocaleString()}</div>
-              </div>
-              <div>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-3)', marginBottom: '0.15rem' }}>Spent</div>
-                <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--red)' }}>{(profile?.sparks_spent || 0).toLocaleString()}</div>
-              </div>
-              <div>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-3)', marginBottom: '0.15rem' }}>Bought</div>
-                <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--blue)' }}>{(profile?.sparks_purchased_total || 0).toLocaleString()}</div>
-              </div>
-            </div>
-          </div>
-
-          <div
-            onMouseEnter={cardHover} onMouseLeave={cardLeave}
-            style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', position: 'relative', overflow: 'hidden', transition: 'transform 0.25s ease, box-shadow 0.25s ease' }}>
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'var(--green)', borderRadius: '16px 16px 0 0' }} />
-            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>Gifted Balance</div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 900, letterSpacing: '-0.03em', color: 'var(--text)', lineHeight: 1, marginBottom: '0.3rem' }}><AnimatedStat value={profile?.active_gifts_received || 0} /></div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>SPK · Expires in 30 days</div>
-            <div style={{ marginTop: '1rem', padding: '0.5rem 0.75rem', background: 'var(--green-light)', borderRadius: 'var(--radius-sm)', display: 'inline-flex', alignItems: 'center', gap: '0.375rem' }}>
-              <TrendingUp size={11} style={{ color: 'var(--green)' }} />
-              <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--green)' }}>Community supported</span>
-            </div>
-          </div>
-
-          <div
-            onMouseEnter={cardHover} onMouseLeave={cardLeave}
-            style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', position: 'relative', overflow: 'hidden', transition: 'transform 0.25s ease, box-shadow 0.25s ease' }}>
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'var(--amber)', borderRadius: '16px 16px 0 0' }} />
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
-              <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Tier Progress</div>
-              <Award size={15} style={{ color: 'var(--amber)' }} />
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              {tierInfo(profile?.sparks_earned || 0).next ? (
-                <TierRing percent={tierPct} />
-              ) : (
-                <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--green-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Award size={20} style={{ color: 'var(--green)' }} />
-                </div>
-              )}
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--text)', marginBottom: '0.3rem' }}>
-                  {tierInfo(profile?.sparks_earned || 0).name}
-                </div>
-                {tierInfo(profile?.sparks_earned || 0).next ? (
-                  <div style={{ fontSize: '0.72rem', color: 'var(--text-3)' }}>
-                    {(profile?.sparks_earned || 0).toLocaleString()} / {tierInfo(profile?.sparks_earned || 0).next.toLocaleString()} SPK
-                  </div>
-                ) : (
-                  <div style={{ fontSize: '0.75rem', color: 'var(--green)', fontWeight: 600 }}>Highest tier reached</div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <BlogPromoCard />
-
-        <LiveBlogTicker />
-
-        {/* Activity Streak */}
-        <div className="eh-dash-fade-in" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', marginBottom: '1.5rem' }}>
-          <ActivityStreak streakDays={streakDays} />
-        </div>
-
-        <div className="dash-grid eh-dash-fade-in" style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '1.5rem', alignItems: 'start' }}>
-
-          <div>
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
-              <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '0.15rem' }}>Open Opportunities</h2>
-                  <p style={{ fontSize: '0.78rem', color: 'var(--text-3)' }}>Latest requests from the community</p>
-                </div>
-                <a href={viewAllHref} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: 'var(--brand)', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none' }}>
-                  View all <ArrowRight size={13} />
-                </a>
-              </div>
-
-              <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', padding: '0 1.5rem', flexWrap: 'wrap' }}>
-                {['Work', 'Education', 'Courses', 'Internships'].map(tab => (
-                  <button key={tab} onClick={() => setActiveTab(tab)} style={{
-                    display: 'flex', alignItems: 'center', gap: '0.4rem',
-                    padding: '0.75rem 0', marginRight: '1.25rem',
-                    background: 'none', border: 'none',
-                    borderBottom: `2px solid ${activeTab === tab ? 'var(--brand)' : 'transparent'}`,
-                    color: activeTab === tab ? 'var(--brand)' : 'var(--text-3)',
-                    fontWeight: 600, cursor: 'pointer', fontSize: '0.825rem',
-                    fontFamily: 'inherit', transition: 'all 0.15s'
-                  }}>
-                    {tab === 'Work' ? <Briefcase size={13} /> : tab === 'Internships' ? <Award size={13} /> : <GraduationCap size={13} />}
-                    {tab}
-                  </button>
-                ))}
-              </div>
-
-              <div style={{ padding: '1.25rem 1.5rem' }}>
-                {filtered.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-3)' }}>
-                    <Users size={36} style={{ margin: '0 auto 0.875rem', opacity: 0.3 }} />
-                    <p style={{ fontWeight: 600, marginBottom: '0.25rem', color: 'var(--text-2)' }}>No open {activeTab.toLowerCase()} right now</p>
-                    <p style={{ fontSize: '0.8rem' }}>Check the marketplace or post a request.</p>
-                  </div>
-                ) : (
-                  <>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                      {isProgramTab ? filtered.map(prog => {
-                        const enrolled = myEnrollments.has(prog.id)
-                        const full = prog.capacity && false // capacity enforcement is server-side; UI just disables after join
-                        return (
-                          <div key={prog.id}
-                            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--brand)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(13,115,119,0.08)' }}
-                            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none' }}
-                            style={{
-                            padding: '1.125rem', background: 'var(--surface-2)',
-                            borderRadius: 'var(--radius)', border: '1px solid var(--border)',
-                            display: 'flex', justifyContent: 'space-between',
-                            alignItems: 'flex-start', gap: '1rem', transition: 'border-color 0.15s, box-shadow 0.15s'
-                          }}>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.375rem', flexWrap: 'wrap' }}>
-                                <span style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--text)' }}>{prog.title}</span>
-                                {prog.level && <span style={{ background: 'var(--surface-3)', color: 'var(--text-2)', padding: '0.15rem 0.55rem', borderRadius: '999px', fontSize: '0.68rem', fontWeight: 700 }}>{prog.level}</span>}
-                                {prog.interview_required && <span style={{ background: 'var(--red-light)', color: 'var(--red)', padding: '0.15rem 0.55rem', borderRadius: '999px', fontSize: '0.68rem', fontWeight: 700 }}>Interview Required</span>}
-                              </div>
-                              <p style={{ fontSize: '0.78rem', color: 'var(--text-3)', lineHeight: 1.5, marginBottom: '0.625rem' }}>
-                                {prog.description?.slice(0, 90)}{prog.description?.length > 90 ? '...' : ''}
-                              </p>
-                              <div style={{ fontSize: '0.75rem', color: 'var(--text-3)', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                                {activeTab === 'Internships' ? (
-                                  !prog.is_paid ? 'Unpaid' : !prog.pay_amount ? 'Paid' : (
-                                    prog.pay_payment_method === 'Sparks'
-                                      ? <>Paid — {prog.pay_amount} <Zap size={10} style={{ display: 'inline' }} fill="currentColor" /> / {prog.pay_type === 'One-time' ? 'one-time' : prog.pay_type?.replace('Per ', '').toLowerCase()}</>
-                                      : `Paid — ${prog.pay_amount} ${prog.pay_currency || 'USD'}/${prog.pay_type === 'One-time' ? 'one-time' : prog.pay_type?.replace('Per ', '').toLowerCase()}`
-                                  )
-                                ) : (
-                                  !prog.cost_type || prog.cost_type === 'Free' ? 'Free' : !prog.cost_amount ? prog.cost_type : (
-                                    prog.cost_payment_method === 'Sparks'
-                                      ? <>{prog.cost_amount} <Zap size={10} style={{ display: 'inline' }} fill="currentColor" /> / {prog.cost_type.replace('Per ', '').toLowerCase()}</>
-                                      : `${prog.cost_amount} ${prog.cost_currency || 'USD'} / ${prog.cost_type.replace('Per ', '').toLowerCase()}`
-                                  )
-                                )}
-                              </div>
-                            </div>
-                            <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                              {enrolled ? (
-                                <>
-                                  {prog.group_chat_enabled && (
-                                    <a href={'/programs/chat?id=' + prog.id} style={{ fontSize: '0.72rem', color: 'var(--brand)', fontWeight: 700, textDecoration: 'underline' }}>Chat</a>
-                                  )}
-                                  <button
-                                    onClick={() => leaveProgram(prog)}
-                                    disabled={joiningProgram === prog.id}
-                                    title="Click to leave this program"
-                                    style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--brand-light)', color: 'var(--brand)', padding: '0.4rem 0.75rem', borderRadius: 'var(--radius-sm)', fontWeight: 700, fontSize: '0.75rem', border: '1px solid var(--brand)', cursor: 'pointer' }}
-                                  >
-                                    <Check size={11} /> {joiningProgram === prog.id ? 'Leaving...' : 'Enrolled'}
-                                  </button>
-                                </>
-                              ) : (
-                                <button onClick={() => joinProgram(prog)} disabled={joiningProgram === prog.id} className="btn btn-primary btn-sm">
-                                  {joiningProgram === prog.id ? 'Joining...' : 'Join'}
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        )
-                      }) : filtered.map(txn => {
-                        const tc = tierColor(txn.tier?.tier_name)
-                        return (
-                          <div key={txn.id} style={{
-                            padding: '1.125rem', background: 'var(--surface-2)',
-                            borderRadius: 'var(--radius)', border: '1px solid var(--border)',
-                            display: 'flex', justifyContent: 'space-between',
-                            alignItems: 'flex-start', gap: '1rem', transition: 'border-color 0.15s, box-shadow 0.15s'
-                          }}
-                            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--brand)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(13,115,119,0.08)' }}
-                            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none' }}
-                          >
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.375rem', flexWrap: 'wrap' }}>
-                                <span style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--text)' }}>{txn.skill?.skill_name}</span>
-                                <span style={{ background: tc.bg, color: tc.color, padding: '0.15rem 0.55rem', borderRadius: '999px', fontSize: '0.68rem', fontWeight: 700 }}>
-                                  {txn.tier?.tier_name?.split(':')[0]}
-                                </span>
-                              </div>
-                              <p style={{ fontSize: '0.78rem', color: 'var(--text-3)', lineHeight: 1.5, marginBottom: '0.625rem' }}>
-                                {txn.description?.slice(0, 90)}{txn.description?.length > 90 ? '...' : ''}
-                              </p>
-                              <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', color: 'var(--text-3)' }}>
-                                <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Clock size={11} /> {txn.agreed_hours}h</span>
-                                <span>by {txn.receiver?.full_name}</span>
-                              </div>
-                            </div>
-                            <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                              <div style={{ fontWeight: 900, fontSize: '1rem', color: 'var(--amber)', letterSpacing: '-0.02em' }}>
-                                <Zap size={14} style={{ verticalAlign: -2, marginRight: 2 }} />{txn.total_sparks_transferred || 0}
-                              </div>
-                              <div style={{ fontSize: '0.68rem', color: 'var(--text-3)', marginTop: '0.1rem' }}>SPK</div>
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-
-                    <a href={viewAllHref} style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
-                      marginTop: '1rem', padding: '0.75rem', borderRadius: 'var(--radius-sm)',
-                      border: '1.5px solid var(--border)', background: 'var(--surface-2)',
-                      color: 'var(--text)', fontWeight: 600, fontSize: '0.825rem', textDecoration: 'none'
-                    }}>
-                      View All {activeTab}{isProgramTab ? '' : ' Opportunities'} <ArrowRight size={14} />
-                    </a>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
-              <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--border)' }}>
-                <h3 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text)' }}>Quick Actions</h3>
-              </div>
-              <div style={{ padding: '0.75rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
-                {[
-                  { label: 'Browse Marketplace', href: '/marketplace', icon: Users, accent: 'var(--brand)' },
-                  { label: 'My Enrolled Programs', href: '/my-enrollments', icon: GraduationCap, accent: 'var(--green)' },
-                  { label: 'Post a Request', href: '/post-request', icon: Plus, accent: 'var(--brand-mid)' },
-                  { label: 'My Requests', href: '/my-requests', icon: BarChart3, accent: 'var(--amber)' },
-                  { label: 'Buy Sparks', href: '/buy-sparks', icon: Zap, accent: 'var(--green)' },
-                  { label: 'Community Funding', href: '/funding-requests', icon: TrendingUp, accent: 'var(--red)' },
-                  { label: 'My Transactions', href: '/transactions', icon: ArrowRight, accent: 'var(--purple)' },
-                ].map((action, i) => (
-                  <a key={i} href={action.href} style={{
-                    display: 'flex', flexDirection: 'column', gap: '0.6rem',
-                    padding: '0.9rem 0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)',
-                    color: 'var(--text)', fontSize: '0.78rem', fontWeight: 600,
-                    textDecoration: 'none', transition: 'all 0.2s', background: 'var(--surface-2)'
-                  }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-3)'; e.currentTarget.style.borderColor = action.accent; e.currentTarget.style.transform = 'translateY(-2px)' }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'var(--surface-2)'; e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'none' }}
-                  >
-                    <div style={{ width: 30, height: 30, borderRadius: 'var(--radius-sm)', background: 'var(--surface-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <action.icon size={14} style={{ color: action.accent }} />
-                    </div>
-                    <span style={{ lineHeight: 1.3 }}>{action.label}</span>
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
-              <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text)' }}>Recent Activity</h3>
-                <a href="/transactions" style={{ fontSize: '0.75rem', color: 'var(--brand)', fontWeight: 600, textDecoration: 'none' }}>View all</a>
-              </div>
-              <div style={{ padding: '0.75rem' }}>
-                {recentActivity.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--text-3)', fontSize: '0.8rem' }}>No activity yet</div>
-                ) : (
-                  recentActivity.map((txn, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.625rem 0.75rem', borderRadius: 'var(--radius-sm)', transition: 'background 0.15s' }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-3)'}
-                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                    >
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: statusColor(txn.status), flexShrink: 0 }} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{txn.skill?.skill_name}</div>
-                        <div style={{ fontSize: '0.72rem', color: 'var(--text-3)' }}>{txn.status} · {timeAgo(txn.created_at)}</div>
-                      </div>
-                      <div style={{ background: statusBg(txn.status), color: statusColor(txn.status), padding: '0.15rem 0.5rem', borderRadius: '999px', fontSize: '0.68rem', fontWeight: 700, whiteSpace: 'nowrap' }}>
-                        {txn.status}
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @media (max-width: 900px) {
-          .dash-grid { grid-template-columns: 1fr !important; }
-        }
-        .eh-dash-decor {
-          position: absolute;
-          inset: 0;
-          overflow: hidden;
-          pointer-events: none;
-          z-index: 0;
-        }
-        .eh-dash-blob {
-          position: absolute;
-          width: 280px;
-          height: 280px;
-          border-radius: 50%;
-          filter: blur(90px);
-          opacity: 0.1;
-          animation: eh-dash-blob-float 20s ease-in-out infinite;
-        }
-        @keyframes eh-dash-blob-float {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          50% { transform: translate(20px, 16px) scale(1.1); }
-        }
-        .eh-dash-fade-in {
-          animation: eh-dash-fade-in-kf 0.5s cubic-bezier(0.16,1,0.3,1) both;
-        }
-        @keyframes eh-dash-fade-in-kf {
-          from { opacity: 0; transform: translateY(12px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .eh-dash-blob, .eh-dash-fade-in { animation: none !important; }
-        }
+        .eh-workspace{--eh-ink:#172b27;--eh-muted:#71817b;--eh-line:#e4ebe6;--eh-paper:#fff;--eh-canvas:#f5f8f5;--eh-green:#176b53;--eh-green2:#dff4e8;--eh-lime:#d6f36a;min-height:100vh;background:var(--eh-canvas);color:var(--eh-ink);font-family:inherit}
+        .eh-workspace *{box-sizing:border-box}.eh-workspace a{transition:transform .18s ease,background .18s ease,border-color .18s ease}.eh-workspace a:focus-visible,.eh-workspace button:focus-visible{outline:3px solid #91c9ad;outline-offset:3px}
+        .eh-shell{width:min(1440px,100%);margin:0 auto;padding:28px clamp(16px,3vw,42px) 48px}.eh-topline{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:28px;flex-wrap:wrap}.eh-eyebrow{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--eh-green);display:flex;align-items:center;gap:8px}.eh-eyebrow:before{content:'';width:20px;height:2px;background:var(--eh-lime);display:inline-block}.eh-title{font-size:clamp(28px,3vw,42px);letter-spacing:-.055em;line-height:1.05;font-weight:850;margin:10px 0 8px;color:var(--eh-ink)}.eh-subtitle{color:var(--eh-muted);font-size:14px;line-height:1.6;margin:0}.eh-top-actions{display:flex;gap:10px;flex-wrap:wrap}.eh-btn{border:1px solid var(--eh-line);border-radius:12px;padding:11px 15px;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;font-size:13px;font-weight:750;background:white;color:var(--eh-ink);cursor:pointer}.eh-btn-primary{background:var(--eh-green);color:#fff;border-color:var(--eh-green);box-shadow:0 7px 18px #176b5322}.eh-btn-primary:hover{background:#105840;transform:translateY(-1px)}.eh-btn:hover{border-color:#a9c7b7;transform:translateY(-1px)}
+        .eh-welcome{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 20px;background:#eff8ee;border:1px solid #dcebd7;border-radius:18px;margin-bottom:22px}.eh-welcome-copy{display:flex;gap:13px;align-items:center}.eh-welcome-icon{width:42px;height:42px;border-radius:14px;background:#d7edcf;display:grid;place-items:center;color:var(--eh-green);flex-shrink:0}.eh-welcome strong{display:block;font-size:14px;margin-bottom:4px}.eh-welcome p{margin:0;font-size:12px;color:#5e7567;line-height:1.5}.eh-close{border:0;background:transparent;color:#6b8073;cursor:pointer;padding:7px}
+        .eh-stat-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:14px;margin-bottom:22px}.eh-stat{background:var(--eh-paper);border:1px solid var(--eh-line);border-radius:19px;padding:20px;min-width:0;box-shadow:0 2px 6px #20382b05}.eh-stat-primary{background:var(--eh-green);color:#fff;border-color:var(--eh-green);position:relative;overflow:hidden}.eh-stat-primary:after{content:'✳';position:absolute;right:14px;bottom:-28px;font-size:116px;color:#ffffff12;line-height:1}.eh-stat-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--eh-muted);display:flex;align-items:center;gap:8px}.eh-stat-primary .eh-stat-label{color:#d4e8df}.eh-stat-number{font-size:clamp(27px,3vw,38px);font-weight:850;letter-spacing:-.06em;line-height:1.1;margin:17px 0 8px}.eh-stat-primary .eh-stat-number{position:relative;z-index:1}.eh-stat-foot{font-size:12px;color:var(--eh-muted)}.eh-stat-primary .eh-stat-foot{color:#c8e1d6}.eh-stat-split{display:flex;gap:14px;flex-wrap:wrap;margin-top:15px}.eh-stat-split span{font-size:11px;color:#d5e8df}.eh-stat-split b{display:block;font-size:13px;color:#fff;margin-top:3px}
+        .eh-content-grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,.8fr);gap:20px;align-items:start}.eh-panel{background:var(--eh-paper);border:1px solid var(--eh-line);border-radius:20px;overflow:hidden;box-shadow:0 3px 10px #20382b04}.eh-panel-head{padding:21px 22px 17px;display:flex;align-items:flex-start;justify-content:space-between;gap:14px;border-bottom:1px solid #edf1ee}.eh-panel-head h2,.eh-panel-head h3{font-size:17px;letter-spacing:-.03em;margin:0 0 5px;font-weight:800}.eh-panel-head p{font-size:12px;color:var(--eh-muted);margin:0;line-height:1.5}.eh-text-link{font-size:12px;font-weight:800;color:var(--eh-green);text-decoration:none;white-space:nowrap;display:inline-flex;gap:5px;align-items:center}.eh-tabs{display:flex;gap:6px;padding:14px 20px;border-bottom:1px solid #edf1ee;overflow-x:auto}.eh-tab{border:0;background:transparent;color:#71817b;padding:9px 12px;border-radius:10px;font-size:12px;font-weight:750;white-space:nowrap;cursor:pointer}.eh-tab-active{background:#e8f5ec;color:var(--eh-green)}.eh-feed{padding:8px 14px 16px}.eh-opportunity{display:flex;align-items:flex-start;gap:14px;padding:17px 8px;border-bottom:1px solid #f0f3f0}.eh-opportunity:last-child{border-bottom:0}.eh-op-icon{width:42px;height:42px;flex-shrink:0;border-radius:14px;background:#edf7ef;color:var(--eh-green);display:grid;place-items:center}.eh-op-body{min-width:0;flex:1}.eh-op-title{font-size:14px;font-weight:800;line-height:1.4;color:var(--eh-ink);margin:0 0 5px}.eh-op-desc{font-size:12px;color:var(--eh-muted);line-height:1.6;margin:0 0 10px}.eh-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:var(--eh-muted);font-size:11px}.eh-pill{display:inline-flex;align-items:center;gap:5px;background:#f1f5f1;color:#64776b;padding:5px 8px;border-radius:7px;font-size:10px;font-weight:800}.eh-reward{font-size:13px;font-weight:850;color:#a36d0c;white-space:nowrap}.eh-join{display:inline-flex;align-items:center;gap:5px;border:0;background:var(--eh-green);color:white;padding:8px 11px;border-radius:9px;font-size:11px;font-weight:800;cursor:pointer;margin-top:10px}.eh-join:disabled{opacity:.6;cursor:wait}.eh-view-all{display:flex;justify-content:center;align-items:center;gap:8px;margin:0 20px 20px;padding:12px;border-radius:11px;background:#f4f8f4;border:1px solid #e5eee7;text-decoration:none;color:var(--eh-green);font-size:12px;font-weight:800}.eh-empty{padding:42px 18px;text-align:center;color:var(--eh-muted);font-size:13px;line-height:1.7}.eh-empty-icon{margin:0 auto 12px;width:44px;height:44px;display:grid;place-items:center;background:#f0f5f0;color:#7e9988;border-radius:14px}
+        .eh-side-stack{display:flex;flex-direction:column;gap:18px}.eh-actions-grid{padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:9px}.eh-action{min-height:105px;padding:13px;border:1px solid #e8eee9;border-radius:14px;text-decoration:none;color:var(--eh-ink);display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:15px;background:#fbfdfb}.eh-action:hover{background:#f1f8f2;border-color:#c8dfcf;transform:translateY(-2px)}.eh-action-icon{width:32px;height:32px;border-radius:10px;background:#e6f4e9;color:var(--eh-green);display:grid;place-items:center}.eh-action span{font-size:11px;font-weight:800;line-height:1.4}.eh-activity{padding:8px 15px 13px}.eh-activity-row{display:flex;align-items:center;gap:11px;padding:12px 2px;border-bottom:1px solid #f0f3f0}.eh-activity-row:last-child{border-bottom:0}.eh-activity-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}.eh-activity-main{min-width:0;flex:1}.eh-activity-main b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.eh-activity-main small{display:block;font-size:10px;color:var(--eh-muted);margin-top:4px}.eh-status{font-size:9px;font-weight:850;padding:5px 7px;border-radius:7px;white-space:nowrap}.eh-streak{padding:18px 20px}.eh-streak-top{display:flex;justify-content:space-between;gap:12px;align-items:center}.eh-streak-top strong{font-size:14px}.eh-streak-top span{font-size:11px;color:var(--eh-muted)}.eh-week{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin-top:17px}.eh-day{height:31px;border-radius:8px;background:#eff3ef;display:grid;place-items:center;color:#9aaba0;font-size:10px;font-weight:800}.eh-day-active{background:#c9ed8d;color:#315e37}.eh-bottom-note{font-size:11px;color:var(--eh-muted);line-height:1.6;margin-top:14px}.eh-tier{margin-top:18px;padding:15px;background:#f6f9f5;border:1px solid #e8eee7;border-radius:13px}.eh-tier-row{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:11px}.eh-tier-row b{font-size:12px}.eh-tier-track{height:6px;border-radius:10px;background:#e1e9e1;margin-top:11px;overflow:hidden}.eh-tier-fill{height:100%;background:var(--eh-green);border-radius:10px;transition:width .5s ease}
+        @media(max-width:1050px){.eh-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.eh-content-grid{grid-template-columns:minmax(0,1.25fr) minmax(260px,.8fr)}}@media(max-width:780px){.eh-shell{padding:22px 15px 35px}.eh-content-grid{grid-template-columns:1fr}.eh-topline{align-items:flex-start}.eh-top-actions{width:100%}.eh-top-actions .eh-btn{flex:1}.eh-panel-head{padding:18px}.eh-feed{padding:6px 12px 12px}.eh-opportunity{gap:10px}.eh-op-icon{width:36px;height:36px}.eh-opportunity{flex-wrap:wrap}.eh-reward{margin-left:auto}.eh-welcome{align-items:flex-start}.eh-welcome .eh-btn{align-self:center}}@media(max-width:460px){.eh-stat-grid{grid-template-columns:1fr 1fr;gap:9px}.eh-stat{padding:15px;border-radius:15px}.eh-stat-primary{grid-column:1/-1}.eh-stat-number{font-size:28px;margin:12px 0 6px}.eh-stat-label{font-size:9px}.eh-title{font-size:30px}.eh-btn{padding:10px 11px;font-size:12px}.eh-welcome{padding:14px}.eh-welcome-copy{align-items:flex-start}.eh-op-title{font-size:13px}.eh-op-desc{font-size:11px}.eh-actions-grid{gap:7px;padding:11px}.eh-action{padding:11px;min-height:96px}}
+        @media(prefers-reduced-motion:reduce){.eh-workspace *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
       `}</style>
+      <main className="eh-shell">
+        <header className="eh-topline">
+          <div>
+            <div className="eh-eyebrow">Your personal workspace</div>
+            <h1 className="eh-title">{greeting()}, {profile?.full_name?.split(' ')[0] || 'there'}.</h1>
+            <p className="eh-subtitle">A little progress every day adds up. Here’s your learning and opportunity snapshot.</p>
+          </div>
+          <div className="eh-top-actions">
+            <a className="eh-btn" href="/referrals"><Gift size={15} /> Invite friends</a>
+            <a className="eh-btn eh-btn-primary" href="/post-request"><Plus size={16} /> Post a request</a>
+          </div>
+        </header>
+
+        {!profile?.welcome_banner_dismissed && <section className="eh-welcome">
+          <div className="eh-welcome-copy"><div className="eh-welcome-icon"><User size={19} /></div><div><strong>Your journey starts with a complete profile</strong><p>Add your bio, skills, and institution to help people discover and trust you.</p></div></div>
+          <div style={{display:'flex',alignItems:'center',gap:8}}><a className="eh-btn eh-btn-primary" href="/profile">Complete profile <ArrowRight size={14}/></a><button className="eh-close" onClick={dismissWelcomeBanner} aria-label="Dismiss welcome message"><X size={17}/></button></div>
+        </section>}
+
+        <section className="eh-stat-grid" aria-label="Your account summary">
+          <div className="eh-stat eh-stat-primary"><div className="eh-stat-label"><Zap size={13}/> Available Sparks</div><div className="eh-stat-number"><AnimatedStat value={total}/></div><div className="eh-stat-foot">SPK · ≈ ${(total * 0.10).toFixed(2)} USD</div><div className="eh-stat-split"><span>Earned<b>{(profile?.sparks_earned || 0).toLocaleString()}</b></span><span>Spent<b>{(profile?.sparks_spent || 0).toLocaleString()}</b></span><span>Purchased<b>{(profile?.sparks_purchased_total || 0).toLocaleString()}</b></span></div></div>
+          <div className="eh-stat"><div className="eh-stat-label"><TrendingUp size={14}/> Permanent balance</div><div className="eh-stat-number"><AnimatedStat value={permanent}/></div><div className="eh-stat-foot">Earned and purchased Sparks</div></div>
+          <div className="eh-stat"><div className="eh-stat-label"><Gift size={14}/> Gifted balance</div><div className="eh-stat-number"><AnimatedStat value={profile?.active_gifts_received || 0}/></div><div className="eh-stat-foot">Gifted Sparks · expire in 30 days</div></div>
+          <div className="eh-stat"><div className="eh-stat-label"><Award size={14}/> Your tier</div><div className="eh-stat-number" style={{fontSize:22,letterSpacing:'-.04em'}}>{tierInfo(profile?.sparks_earned || 0).name.replace(/^Tier \d+: /,'')}</div><div className="eh-stat-foot">{(profile?.impact_score || 0).toLocaleString()} impact points · {profile?.completed_transactions || 0} completed</div><div className="eh-tier"><div className="eh-tier-row"><b>{tierInfo(profile?.sparks_earned || 0).name}</b><span>{tierInfo(profile?.sparks_earned || 0).next ? `${Math.round(tierPct)}%` : 'Max tier'}</span></div><div className="eh-tier-track"><div className="eh-tier-fill" style={{width:`${tierPct}%`}}/></div></div></div>
+        </section>
+
+        <div className="eh-content-grid">
+          <section className="eh-panel">
+            <div className="eh-panel-head"><div><h2>Find your next opportunity</h2><p>Explore work, learning, and programs that fit your goals.</p></div><a className="eh-text-link" href="/marketplace">Explore all <ArrowRight size={13}/></a></div>
+            <div className="eh-tabs" role="tablist" aria-label="Opportunity type">{['Work','Education','Courses','Internships'].map(tab=><button key={tab} role="tab" aria-selected={activeTab===tab} className={`eh-tab ${activeTab===tab?'eh-tab-active':''}`} onClick={()=>setActiveTab(tab)}>{tab}</button>)}</div>
+            <div className="eh-feed">
+              {filtered.length===0 ? <div className="eh-empty"><div className="eh-empty-icon"><Target size={20}/></div><strong>No {activeTab.toLowerCase()} opportunities just yet</strong><br/>Check back soon or explore the full marketplace for more ways to learn and contribute.</div> : filtered.map((item,i)=>{
+                const program=isProgramTab
+                const enrolled=program && myEnrollments.has(item.id)
+                const tc=program?{bg:'#edf7ef',color:'#176b53'}:tierColor(item.tier?.tier_name)
+                return <article key={item.id || i} className="eh-opportunity">
+                  <div className="eh-op-icon">{program?(activeTab==='Courses'?<GraduationCap size={19}/>:<Briefcase size={19}/>):(activeTab==='Work'?<Briefcase size={18}/>:<GraduationCap size={18}/>)}</div>
+                  <div className="eh-op-body"><h3 className="eh-op-title">{program?item.title:(item.skill?.skill_name || 'Opportunity')}</h3><p className="eh-op-desc">{(program?item.description:item.description)?.slice(0,145) || (program?'A chance to build your skills and connect with the community.':'An opportunity to share your skills and gain practical experience.')}{(program?item.description:item.description)?.length>145?'…':''}</p>
+                    <div className="eh-meta">{program?<><span className="eh-pill">{item.program_type || activeTab.slice(0,-1)}</span>{item.duration&&<span><Clock size={11} style={{verticalAlign:-2,marginRight:3}}/>{item.duration}</span>}{item.enrolledCount!=null&&<span><Users size={11} style={{verticalAlign:-2,marginRight:3}}/>{item.enrolledCount} enrolled</span>}</>:<><span className="eh-pill" style={{background:tc.bg,color:tc.color}}>{item.tier?.tier_name?.split(':')[0] || activeTab}</span><span><Clock size={11} style={{verticalAlign:-2,marginRight:3}}/>{item.agreed_hours || 0} hours</span><span>By {item.receiver?.full_name || 'Community member'}</span></>}</div>
+                    {program && <button className="eh-join" onClick={()=>joinProgram(item)} disabled={!!joiningProgram || enrolled}>{joiningProgram===item.id?'Joining…':enrolled?'Already joined':<>View / join program <ArrowRight size={12}/></>}</button>}
+                  </div>
+                  {!program && <div className="eh-reward"><Zap size={13} style={{verticalAlign:-2,marginRight:3}}/>{(item.total_sparks_transferred || 0).toLocaleString()} <small style={{fontSize:9}}>SPK</small></div>}
+                </article>
+              })}
+            </div>
+            <a className="eh-view-all" href={viewAllHref}>View all {activeTab.toLowerCase()} opportunities <ArrowRight size={14}/></a>
+          </section>
+
+          <aside className="eh-side-stack">
+            <section className="eh-panel"><div className="eh-panel-head"><div><h3>Shortcuts</h3><p>Jump back into what matters.</p></div></div><div className="eh-actions-grid">{[
+              {label:'Browse marketplace',href:'/marketplace',icon:Users},{label:'My programs',href:'/my-enrollments',icon:GraduationCap},{label:'My requests',href:'/my-requests',icon:BarChart3},{label:'Buy Sparks',href:'/buy-sparks',icon:Zap},{label:'My transactions',href:'/transactions',icon:ArrowRight},{label:'Community funding',href:'/funding-requests',icon:TrendingUp}
+            ].map(action=><a key={action.href} className="eh-action" href={action.href}><div className="eh-action-icon"><action.icon size={16}/></div><span>{action.label}</span></a>)}</div></section>
+
+            <section className="eh-panel"><div className="eh-panel-head"><div><h3>Recent activity</h3><p>Your latest community interactions.</p></div><a className="eh-text-link" href="/transactions">All <ArrowRight size={12}/></a></div><div className="eh-activity">{recentActivity.length===0?<div className="eh-empty" style={{padding:'24px 10px'}}>Your activity will appear here as you get started.</div>:recentActivity.map((txn,i)=><div className="eh-activity-row" key={txn.id || i}><span className="eh-activity-dot" style={{background:statusColor(txn.status)}}/><div className="eh-activity-main"><b>{txn.skill?.skill_name || 'Community activity'}</b><small>{timeAgo(txn.created_at)} · {txn.status}</small></div><span className="eh-status" style={{background:statusBg(txn.status),color:statusColor(txn.status)}}>{txn.status}</span></div>)}</div></section>
+
+            <section className="eh-panel"><div className="eh-streak"><div className="eh-streak-top"><div><strong><Flame size={15} style={{verticalAlign:-3,color:'#e9a23b',marginRight:5}}/>Build your streak</strong><div className="eh-bottom-note" style={{marginTop:5}}>Small steps create lasting momentum.</div></div><span>{Object.keys(streakDays).length} active days</span></div><div className="eh-week">{Array.from({length:7},(_,i)=>{const d=new Date();d.setDate(d.getDate()-(6-i));const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;const active=!!streakDays[key];return <div key={key} className={`eh-day ${active?'eh-day-active':''}`} title={`${key}${active?`: ${streakDays[key]} Sparks earned`:''}`}><span>{['S','M','T','W','T','F','S'][d.getDay()]}</span></div>})}</div><p className="eh-bottom-note">Complete work to keep your activity growing. Your recent completed days are highlighted.</p></div></section>
+          </aside>
+        </div>
+      </main>
     </div>
   )
 }
@@ -941,16 +464,14 @@ function OrgDashboard({ profile }) {
   const totalSparks = permanent + (profile?.active_gifts_received || 0)
 
   if (loading) return (
-    <div className="eh-modern-dashboard" style={{ background: 'var(--bg)', minHeight: '100vh' }}>
-      <DashboardPolishStyles />
+    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <Navbar />
       <LoadingScreen text="Loading your dashboard..." />
     </div>
   )
 
   return (
-    <div className="eh-modern-dashboard" style={{ background: 'var(--bg)', minHeight: '100vh' }}>
-      <DashboardPolishStyles />
+    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <div className="no-print"><Navbar /></div>
 
       <div className="no-print" style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)', position: 'relative', overflow: 'hidden' }}>
