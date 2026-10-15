@@ -1290,6 +1290,117 @@ export default function LandingPage() {
             display: none !important;
           }
         }
+
+        /* Modern ElevateHours refresh: crisp surfaces, calmer color, and purposeful motion */
+        :root {
+          --eh-ease: cubic-bezier(.22, 1, .36, 1);
+        }
+        html { scroll-behavior: smooth; }
+        body { -webkit-font-smoothing: antialiased; }
+        .eh-land-nav {
+          height: 72px !important;
+          max-width: 1280px !important;
+        }
+        nav {
+          background: color-mix(in srgb, var(--surface) 86%, transparent) !important;
+          border-bottom-color: color-mix(in srgb, var(--border) 70%, transparent) !important;
+          box-shadow: 0 8px 30px rgba(20, 50, 60, .035);
+        }
+        nav a, footer a { transition: color .2s ease, opacity .2s ease; }
+        nav a:hover, footer a:hover { color: var(--brand) !important; }
+        .eh-btn {
+          transition: transform .25s var(--eh-ease), box-shadow .25s ease, background .25s ease, border-color .25s ease !important;
+          text-decoration: none;
+        }
+        .eh-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 24px rgba(13, 115, 119, .14);
+        }
+        .eh-btn:active { transform: translateY(0) scale(.985); }
+        section { scroll-margin-top: 82px; }
+        section h1, section h2, section h3 { text-wrap: balance; }
+        section h2 { line-height: 1.16 !important; }
+        .eh-hero-bg { opacity: .5; }
+        .eh-hero-gradient-text {
+          background: linear-gradient(100deg, var(--brand) 0%, #28a99a 45%, #5c79dc 100%) !important;
+          -webkit-background-clip: text !important;
+          background-clip: text !important;
+          color: transparent !important;
+          animation: eh-text-shimmer 8s ease-in-out infinite;
+          background-size: 180% 100% !important;
+        }
+        @keyframes eh-text-shimmer {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        .eh-float-card-outer {
+          filter: drop-shadow(0 16px 28px rgba(25, 50, 65, .10));
+          animation-duration: 8s !important;
+        }
+        .eh-float-card-inner {
+          border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+          border-radius: 16px !important;
+          backdrop-filter: blur(18px);
+          box-shadow: 0 8px 28px rgba(20, 40, 55, .055);
+        }
+        .eh-section-decor { opacity: .6; }
+        .eh-section-blob { filter: blur(100px); opacity: .1; }
+        .eh-hover-lift {
+          transition: transform .35s var(--eh-ease), box-shadow .35s ease, border-color .35s ease !important;
+          border-radius: 20px !important;
+        }
+        .eh-hover-lift:hover {
+          transform: translateY(-6px) !important;
+          box-shadow: 0 18px 45px rgba(24, 52, 65, .09);
+          border-color: color-mix(in srgb, var(--brand) 35%, var(--border)) !important;
+        }
+        .reveal {
+          transition-duration: .7s !important;
+          transition-timing-function: var(--eh-ease) !important;
+        }
+        .eh-skill-text-item {
+          padding-top: .65rem;
+          padding-bottom: .65rem;
+        }
+        .eh-skill-name { font-size: clamp(1.05rem, 2vw, 1.45rem) !important; }
+        .eh-skill-rate { letter-spacing: .08em; }
+        .eh-contact-form input:focus, .eh-contact-form select:focus, .eh-contact-form textarea:focus {
+          border-color: var(--brand) !important;
+          box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 13%, transparent);
+          transition: border-color .2s ease, box-shadow .2s ease;
+        }
+        .eh-contact-form input, .eh-contact-form select, .eh-contact-form textarea {
+          min-height: 46px;
+          border-radius: 12px !important;
+        }
+        .eh-contact-form textarea { min-height: 140px; }
+        footer { margin-top: 0; }
+        footer > div { max-width: 1200px !important; }
+        @media (min-width: 901px) {
+          .eh-land-nav { padding-left: 2rem !important; padding-right: 2rem !important; }
+        }
+        @media (max-width: 900px) {
+          .eh-float-card-outer { display: none !important; }
+          section { padding-top: 4rem !important; padding-bottom: 4rem !important; }
+          .eh-contact-grid { grid-template-columns: 1fr !important; }
+        }
+        @media (max-width: 600px) {
+          .eh-land-nav { height: 64px !important; }
+          .eh-land-logo .site-logo-img { height: 32px !important; }
+          section h1 { letter-spacing: -.045em !important; }
+          .eh-contact-form { padding: 1.15rem !important; }
+          .eh-skill-text-item { gap: .55rem !important; padding-left: 1rem !important; padding-right: 1rem !important; }
+          .eh-skill-rate { font-size: .62rem !important; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          html { scroll-behavior: auto; }
+          *, *::before, *::after {
+            animation-duration: .01ms !important;
+            animation-iteration-count: 1 !important;
+            scroll-behavior: auto !important;
+            transition-duration: .01ms !important;
+          }
+        }
       `}</style>
 
       <ChatWidget />
