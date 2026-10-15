@@ -81,6 +81,112 @@ function TierRing({ percent, color = 'var(--amber)' }) {
 const cardHover = (e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 12px 28px rgba(0,0,0,0.1)' }
 const cardLeave = (e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none' }
 
+
+function DashboardPolishStyles() {
+  return (
+    <style jsx global>{`
+      .eh-modern-dashboard {
+        --eh-ink: #172b26;
+        --eh-muted: #73817b;
+        --eh-line: #e5ece7;
+        --eh-paper: #f6f8f5;
+        --eh-card: #ffffff;
+        --eh-green: #176b4d;
+        --eh-green-dark: #104d38;
+        --eh-lime: #d9f36a;
+        background: var(--eh-paper) !important;
+        color: var(--eh-ink);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      .eh-modern-dashboard * { box-sizing: border-box; }
+      .eh-modern-dashboard a, .eh-modern-dashboard button { -webkit-tap-highlight-color: transparent; }
+      .eh-modern-dashboard a { transition: color .18s ease, background .18s ease, border-color .18s ease, transform .18s ease, box-shadow .18s ease; }
+      .eh-modern-dashboard h1, .eh-modern-dashboard h2, .eh-modern-dashboard h3 { letter-spacing: -.035em !important; }
+      .eh-modern-dashboard > div[style*="border-bottom"] {
+        background: linear-gradient(115deg, #ffffff 0%, #f2f8f3 72%, #f0f7e7 100%) !important;
+        border-bottom: 1px solid var(--eh-line) !important;
+      }
+      .eh-modern-dashboard [style*="max-width: 1280px"] {
+        max-width: 1320px !important;
+        padding-left: clamp(1rem, 3vw, 2.5rem) !important;
+        padding-right: clamp(1rem, 3vw, 2.5rem) !important;
+      }
+      .eh-modern-dashboard [style*="var(--radius-lg)"] {
+        border-radius: 22px !important;
+        border-color: var(--eh-line) !important;
+        box-shadow: 0 4px 18px rgba(27, 58, 43, .035);
+      }
+      .eh-modern-dashboard [style*="var(--radius-lg)"]:hover {
+        box-shadow: 0 16px 38px rgba(27, 58, 43, .075);
+      }
+      .eh-modern-dashboard [style*="background: var(--surface)"] {
+        background: var(--eh-card) !important;
+      }
+      .eh-modern-dashboard [style*="background: var(--surface-2)"] {
+        background: #f8faf8 !important;
+      }
+      .eh-modern-dashboard [style*="background: var(--surface-3)"] {
+        background: #f0f4f1 !important;
+      }
+      .eh-modern-dashboard [style*="color: var(--text)"] { color: var(--eh-ink) !important; }
+      .eh-modern-dashboard [style*="color: var(--text-2)"],
+      .eh-modern-dashboard [style*="color: var(--text-3)"] { color: var(--eh-muted) !important; }
+      .eh-modern-dashboard [style*="border: 1px solid var(--border)"],
+      .eh-modern-dashboard [style*="border: 1px solid var(--eh-line)"] {
+        border-color: var(--eh-line) !important;
+      }
+      .eh-modern-dashboard [style*="linear-gradient(135deg, var(--brand)"] {
+        background: linear-gradient(135deg, #176b4d 0%, #104d38 100%) !important;
+      }
+      .eh-modern-dashboard [style*="var(--brand-light)"] {
+        background-color: #eaf5ed !important;
+      }
+      .eh-modern-dashboard [style*="var(--brand)"] { --eh-brand: #176b4d; }
+      .eh-modern-dashboard [style*="border-radius: var(--radius-sm)"] { border-radius: 12px !important; }
+      .eh-modern-dashboard .dash-grid { gap: 1.35rem !important; }
+      .eh-modern-dashboard .eh-dash-fade-in { animation-duration: .65s; }
+      .eh-modern-dashboard [style*="grid-template-columns: repeat(auto-fit"] { gap: 1.15rem !important; }
+      .eh-modern-dashboard [style*="padding: 1.5rem"] { padding: clamp(1.1rem, 2vw, 1.6rem) !important; }
+      .eh-modern-dashboard [style*="display: flex; border-bottom"] button {
+        padding-top: .95rem !important;
+        padding-bottom: .95rem !important;
+      }
+      .eh-modern-dashboard button { font-family: inherit; }
+      .eh-modern-dashboard button:focus-visible,
+      .eh-modern-dashboard a:focus-visible {
+        outline: 3px solid rgba(23,107,77,.32);
+        outline-offset: 3px;
+      }
+      .eh-modern-dashboard [style*="background: var(--brand)"][style*="color: white"],
+      .eh-modern-dashboard a[style*="background: var(--brand)"] {
+        background: #176b4d !important;
+        box-shadow: 0 6px 16px rgba(23,107,77,.16);
+      }
+      .eh-modern-dashboard a[style*="background: var(--brand)"]:hover,
+      .eh-modern-dashboard a[style*="background: linear-gradient"] :hover {
+        transform: translateY(-1px);
+      }
+      .eh-modern-dashboard .eh-dash-blob { opacity: .08 !important; }
+      .eh-modern-dashboard .eh-dash-blob:first-child { background: #cde7a1 !important; }
+      .eh-modern-dashboard .team-panel { box-shadow: -24px 0 80px rgba(20,45,32,.16) !important; }
+      @media (max-width: 900px) {
+        .eh-modern-dashboard .dash-grid { grid-template-columns: minmax(0, 1fr) !important; }
+      }
+      @media (max-width: 640px) {
+        .eh-modern-dashboard [style*="max-width: 1280px"] { padding-left: 1rem !important; padding-right: 1rem !important; }
+        .eh-modern-dashboard [style*="padding: 2rem 1.5rem"] { padding: 1.25rem 1rem !important; }
+        .eh-modern-dashboard [style*="display: flex; justify-content: space-between"] { gap: .85rem; }
+        .eh-modern-dashboard [style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: repeat(2, minmax(0,1fr)) !important; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .eh-modern-dashboard *, .eh-modern-dashboard *::before, .eh-modern-dashboard *::after {
+          animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important;
+        }
+      }
+    `}</style>
+  )
+}
+
 export default function Dashboard() {
   const router = useRouter()
   const [profile, setProfile] = useState(null)
@@ -187,7 +293,8 @@ export default function Dashboard() {
   }, [])
 
   if (loading) return (
-    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+    <div className="eh-modern-dashboard" style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+      <DashboardPolishStyles />
       <Navbar />
       <LoadingScreen text="Loading your dashboard..." />
     </div>
@@ -281,7 +388,8 @@ export default function Dashboard() {
   const tierPct = Math.min(100, (((profile?.sparks_earned || 0) - tierInfo(profile?.sparks_earned || 0).min) / ((tierInfo(profile?.sparks_earned || 0).next || 1) - tierInfo(profile?.sparks_earned || 0).min)) * 100)
 
   return (
-    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+    <div className="eh-modern-dashboard" style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+      <DashboardPolishStyles />
       <Navbar />
 
       <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)', position: 'relative', overflow: 'hidden' }}>
@@ -833,14 +941,16 @@ function OrgDashboard({ profile }) {
   const totalSparks = permanent + (profile?.active_gifts_received || 0)
 
   if (loading) return (
-    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+    <div className="eh-modern-dashboard" style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+      <DashboardPolishStyles />
       <Navbar />
       <LoadingScreen text="Loading your dashboard..." />
     </div>
   )
 
   return (
-    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+    <div className="eh-modern-dashboard" style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+      <DashboardPolishStyles />
       <div className="no-print"><Navbar /></div>
 
       <div className="no-print" style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)', position: 'relative', overflow: 'hidden' }}>
