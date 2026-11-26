@@ -52,24 +52,24 @@ export default function FounderPage() {
           <div className="f-hero-content">
             <div className="f-eyebrow">
               <span className="f-eyebrow-dot" />
-              A LITTLE ABOUT THE FOUNDER
+              FOUNDER & CEO · OFF THE HORIZON
             </div>
 
             <h1>
-              Learning.<br />
-              Building.<br />
-              <span>Figuring things out.</span>
+              Md. Jabir<br />
+              Hossen<span>.</span>
             </h1>
 
             <p className="f-hero-description">
-              I'm Md. Jabir Hossen, a Computer Science graduate
-              interested in technology, entrepreneurship, and
-              building things that can make a difference.
+              I'm a recent Computer Science and Engineering graduate interested in
+              technology and entrepreneurship. I'm developing my skills through
+              hands-on work and trying to apply what I've learned to build useful
+              digital products and create a positive impact.
             </p>
 
             <div className="f-hero-actions">
               <a href="#about" className="f-primary-btn">
-                Get to know me <span>↓</span>
+                A little about me <span>↓</span>
               </a>
               <a
                 href="https://www.linkedin.com/in/md-jabir-hossen/"
@@ -84,7 +84,7 @@ export default function FounderPage() {
             <div className="f-hero-caption">
               <span>BASED IN DHAKA, BANGLADESH</span>
               <span className="f-caption-line" />
-              <span>BUILDING THROUGH LEARNING</span>
+              <span>COMPUTER SCIENCE & ENGINEERING GRADUATE</span>
             </div>
           </div>
 
@@ -101,19 +101,10 @@ export default function FounderPage() {
               <div className="f-photo-fallback">J</div>
               <div className="f-photo-label">
                 <span>Md. Jabir Hossen</span>
-                <span>Founder, Off the Horizon</span>
+                <span>Founder & CEO, Off the Horizon</span>
               </div>
             </div>
 
-            <div className="f-floating-note">
-              <span className="f-note-symbol">✳</span>
-              <div>
-                <strong>Still learning.</strong>
-                <span>Always building.</span>
-              </div>
-            </div>
-
-            <div className="f-visual-index">01 / THE JOURNEY</div>
           </div>
         </div>
 
@@ -126,26 +117,20 @@ export default function FounderPage() {
       {/* Introduction */}
       <section className="f-about section-padding" id="about">
         <div className="f-section-inner">
-          <div className="f-section-label reveal">
-            <span>01</span> / A BIT ABOUT ME
-          </div>
-
           <div className="f-about-grid">
             <div className="f-about-heading reveal">
               <h2>
-                Not an expert.<br />
-                Not a finished story.<br />
-                <span>Just getting started.</span>
+                A recent graduate,<br />
+                exploring what I can<br />
+                <span>build and contribute.</span>
               </h2>
             </div>
 
             <div className="f-about-copy reveal">
               <p className="f-lead">
-                I recently completed my Bachelor's degree in
-                Computer Science and Engineering. Like many
-                fresh graduates, I'm still discovering my strengths,
-                learning new things, and figuring out where I can
-                contribute the most.
+                I recently completed my Bachelor's degree in Computer Science and
+                Engineering. I'm at the beginning of my professional journey,
+                continuing to develop my skills and learning where I can contribute.
               </p>
 
               <p>
@@ -164,10 +149,6 @@ export default function FounderPage() {
                 and continuously improving.
               </p>
 
-              <div className="f-personal-note">
-                <span className="f-note-line" />
-                <span>Currently learning by doing, one project at a time.</span>
-              </div>
             </div>
           </div>
         </div>
@@ -176,59 +157,43 @@ export default function FounderPage() {
       {/* Off the Horizon */}
       <section className="f-organization section-padding">
         <div className="f-section-inner">
-          <div className="f-section-label reveal">
-            <span>02</span> / WHAT I'M WORKING ON
-          </div>
-
           <div className="f-org-intro reveal">
             <div>
               <h2>
-                An idea is only<br />
-                <span>the beginning.</span>
+                A few projects<br />
+                <span>under one roof.</span>
               </h2>
             </div>
             <p>
-              Off the Horizon is the parent organization behind
-              a few initiatives I'm developing. Each has a different
-              purpose, and each gives me an opportunity to learn
-              something new while trying to create something useful.
+              Off the Horizon is the parent organization of ElevateHours, Codescriptors
+              Lab, and Ke Jabe. Each project has a different focus and is at its own
+              stage of development. I'm working on them step by step, learning from
+              feedback and putting my knowledge into practice.
             </p>
           </div>
 
           <div className="f-org-header reveal">
-            <div>
-              <div className="f-org-name">Off the Horizon<span>®</span></div>
-              <div className="f-org-subtitle">An independent initiative · Dhaka, Bangladesh</div>
-            </div>
-            <span className="f-org-tag">THE PARENT ORGANIZATION</span>
+            <img className="f-parent-logo" src="/off-the-horizon-logo.png" alt="Off the Horizon" />
+            <div className="f-org-subtitle">Parent organization · Dhaka, Bangladesh</div>
           </div>
+          <div className="f-org-connector" aria-hidden="true"><span /></div>
 
           <div className="f-projects">
 
             {/* ElevateHours */}
             <article className="f-project-card f-project-blue reveal">
               <div className="f-project-top">
-                <span className="f-project-number">01</span>
                 <span className="f-project-status">
                   <span /> EARLY STAGE
                 </span>
               </div>
 
-              <div className="f-project-icon">
-                <svg viewBox="0 0 48 48" fill="none">
-                  <circle cx="24" cy="24" r="18" stroke="currentColor" strokeWidth="1.6"/>
-                  <path d="M24 12V24L33 30" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                  <path d="M15 35L19 31M33 17L36 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
-              </div>
+              <div className="f-project-logo f-logo-light"><img src="/elevatehours-logo.png" alt="ElevateHours logo" /></div>
 
-              <div className="f-project-category">OPPORTUNITY & SKILL EXCHANGE</div>
+              <div className="f-project-category">LEARNING & OPPORTUNITIES</div>
               <h3>ElevateHours</h3>
               <p>
-                An opportunity platform exploring how students can
-                access affordable learning, practical experience,
-                microjobs, and collaboration opportunities through
-                their skills and time.
+                An early-stage opportunity platform exploring affordable learning, practical experience, microjobs, and collaboration through people’s skills and time.
               </p>
 
               <div className="f-project-bottom">
@@ -237,63 +202,43 @@ export default function FounderPage() {
               </div>
             </article>
 
-            {/* CodeScriptors Lab */}
+            {/* Codescriptors Lab */}
             <article className="f-project-card f-project-dark reveal">
               <div className="f-project-top">
-                <span className="f-project-number">02</span>
-                <span className="f-project-status f-status-active">
-                  <span /> DEVELOPING
-                </span>
+
               </div>
 
-              <div className="f-project-icon">
-                <svg viewBox="0 0 48 48" fill="none">
-                  <rect x="6" y="8" width="36" height="27" rx="4" stroke="currentColor" strokeWidth="1.6"/>
-                  <path d="M17 19L12 23L17 27M31 19L36 23L31 27M27 16L21 30" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M18 40H30M24 35V40" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
-                </svg>
-              </div>
+              <div className="f-project-logo f-logo-dark"><img src="/codescriptors-lab-logo.png" alt="Codescriptors Lab logo" /></div>
 
               <div className="f-project-category">DIGITAL SOLUTIONS</div>
-              <h3>CodeScriptors Lab</h3>
+              <h3>Codescriptors Lab</h3>
               <p>
-                A digital product development initiative focused on
-                creating platforms and technology-based solutions
-                by turning ideas and identified problems into
-                practical digital experiences.
+                A digital solutions initiative that creates different platforms, turning ideas and identified needs into practical digital products.
               </p>
 
               <div className="f-project-bottom">
                 <span>Design · Develop · Experiment</span>
-                <a href="https://thecodescriptors.com/" target="_blank" rel="noopener noreferrer" aria-label="Visit CodeScriptors">↗</a>
+                <a href="https://thecodescriptors.com/" target="_blank" rel="noopener noreferrer" aria-label="Visit Codescriptors Lab">↗</a>
               </div>
             </article>
 
             {/* Ke Jabe */}
             <article className="f-project-card f-project-orange reveal">
               <div className="f-project-top">
-                <span className="f-project-number">03</span>
                 <span className="f-project-status">
                   <span /> EARLY STAGE
                 </span>
               </div>
 
-              <div className="f-project-icon">
-                <svg viewBox="0 0 48 48" fill="none">
-                  <path d="M7 36L19 11L27 25L33 17L42 36H7Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/>
-                  <circle cx="19" cy="11" r="2.5" fill="currentColor"/>
-                  <circle cx="33" cy="17" r="2.5" fill="currentColor"/>
-                  <path d="M12 31H36" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
+              <div className="f-project-logo f-logo-light f-kejabe-logo">
+                <img src="/ke-jabe-logo.png" alt="Ke Jabe logo" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling.style.display = 'block' }} />
+                <span>Ke Jabe</span><small>A Seat for Everyone</small>
               </div>
 
               <div className="f-project-category">TRAVEL & EXPLORATION</div>
               <h3>Ke Jabe</h3>
               <p>
-                A travel companion and trip management platform
-                being developed to help people find tour mates,
-                plan trips, organize tours, and manage their
-                travel experiences.
+                An early-stage platform for finding tour mates, planning trips, organizing tours, and managing travel experiences.
               </p>
 
               <div className="f-project-bottom">
@@ -304,58 +249,18 @@ export default function FounderPage() {
 
           </div>
 
-          <div className="f-project-footnote reveal">
-            <span>✳</span>
-            These are works in progress. The ideas will evolve as I learn,
-            receive feedback, and understand what people actually need.
-          </div>
         </div>
       </section>
 
-      {/* Philosophy */}
+      {/* A note about the work */}
       <section className="f-philosophy section-padding">
         <div className="f-section-inner">
-          <div className="f-section-label reveal">
-            <span>03</span> / A PERSONAL THOUGHT
-          </div>
-
           <div className="f-quote-layout reveal">
-            <div className="f-quote-mark">“</div>
-
             <div className="f-quote-content">
               <h2>
-                I don't need to have everything figured out
-                before I start.
-                <span> I just need to be willing to learn, try, and improve.</span>
+                I’m using what I’ve learned so far to build, experiment, and understand what people need.
+                <span> There’s a lot more for me to learn, and that’s part of the process.</span>
               </h2>
-
-              <div className="f-quote-footer">
-                <div className="f-quote-avatar">J</div>
-                <div>
-                  <strong>Md. Jabir Hossen</strong>
-                  <span>A thought that guides my journey</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="f-quote-decoration">KEEP<br/>EXPLORING.</div>
-          </div>
-
-          <div className="f-values">
-            <div className="f-value reveal">
-              <span className="f-value-number">01</span>
-              <h3>Stay Curious</h3>
-              <p>Keep asking questions, exploring possibilities, and learning beyond what I already know.</p>
-            </div>
-            <div className="f-value reveal">
-              <span className="f-value-number">02</span>
-              <h3>Build & Experiment</h3>
-              <p>Turn ideas into practical experiments, learn from feedback, and improve through experience.</p>
-            </div>
-            <div className="f-value reveal">
-              <span className="f-value-number">03</span>
-              <h3>Create With Purpose</h3>
-              <p>Look beyond the technology and understand the people and problems behind every idea.</p>
             </div>
           </div>
         </div>
@@ -366,31 +271,25 @@ export default function FounderPage() {
         <div className="f-section-inner">
           <div className="f-interest-grid">
             <div className="reveal">
-              <div className="f-section-label">
-                <span>04</span> / AREAS OF INTEREST
-              </div>
               <h2>
-                Things I'm<br/>
-                <span>interested in.</span>
+                Areas I enjoy<br/>
+                <span>exploring.</span>
               </h2>
               <p className="f-interest-intro">
-                I'm still exploring where my interests and abilities
-                can take me. These are some of the areas I enjoy
-                learning about and experimenting with.
+                These are some of the areas I’m interested in learning more about and exploring through practical work.
               </p>
             </div>
 
             <div className="f-interest-list reveal">
               {[
-                ['01', 'Digital Product Development'],
-                ['02', 'Technology & Innovation'],
-                ['03', 'Entrepreneurship'],
-                ['04', 'Education & Skill Development'],
-                ['05', 'Social Impact'],
-                ['06', 'Product Design & Strategy']
-              ].map(([number, title]) => (
-                <div className="f-interest-item" key={number}>
-                  <span>{number}</span>
+                'Digital Product Development',
+                'Technology & Innovation',
+                'Entrepreneurship',
+                'Education & Skill Development',
+                'Social Impact',
+                'Product Design & Strategy'
+              ].map((title) => (
+                <div className="f-interest-item" key={title}>
                   <strong>{title}</strong>
                   <span className="f-interest-arrow">↗</span>
                 </div>
@@ -403,15 +302,13 @@ export default function FounderPage() {
       {/* Closing */}
       <section className="f-closing">
         <div className="f-closing-inner reveal">
-          <span className="f-closing-eyebrow">THERE'S A LOT MORE TO LEARN</span>
+          <span className="f-closing-eyebrow">OFF THE HORIZON</span>
           <h2>
-            The journey is<br/>
-            <span>still unfolding.</span>
+            Let’s share ideas<br/>
+            <span>and learn together.</span>
           </h2>
           <p>
-            Always happy to connect with people who share ideas,
-            exchange knowledge, explore possibilities, and enjoy
-            building things together.
+            I’m glad to connect with people who enjoy exchanging ideas, learning from one another, and working on practical solutions.
           </p>
           <a
             href="https://www.linkedin.com/in/md-jabir-hossen/"
@@ -422,14 +319,13 @@ export default function FounderPage() {
             Let's connect <span>↗</span>
           </a>
         </div>
-        <div className="f-closing-decoration">OFF THE HORIZON</div>
       </section>
 
       {/* Footer */}
       <footer className="f-footer">
         <div className="f-footer-inner">
           <Logo height={30} linkTo="/" forceTheme="dark" />
-          <span>Building, learning, and figuring things out.</span>
+          <span>Technology, ideas, and practical projects.</span>
           <span>© {new Date().getFullYear()} Off the Horizon</span>
         </div>
       </footer>
@@ -437,14 +333,14 @@ export default function FounderPage() {
       <style>{`
 
         .founder-page {
-          --f-ink: #172338;
-          --f-muted: #697487;
-          --f-blue: #315f9e;
-          --f-blue-light: #e9f0f9;
-          --f-paper: #f8f8f5;
+          --f-ink: #173b39;
+          --f-muted: #657b77;
+          --f-blue: #147c75;
+          --f-blue-light: #e6f2ef;
+          --f-paper: #f7faf8;
           --f-white: #ffffff;
-          --f-line: #e5e7e7;
-          --f-orange: #d58b52;
+          --f-line: #dce9e4;
+          --f-orange: #78a98b;
           --f-serif: Georgia, 'Times New Roman', serif;
           background: var(--f-paper);
           color: var(--f-ink);
@@ -544,7 +440,7 @@ export default function FounderPage() {
 
         .f-hero {
           position: relative;
-          background: #f1f3f2;
+          background: #edf6f1;
           min-height: 650px;
           padding: 85px 24px 65px;
           overflow: hidden;
@@ -555,7 +451,7 @@ export default function FounderPage() {
           position: absolute;
           width: 530px;
           height: 530px;
-          border: 1px solid rgba(49,95,158,.09);
+          border: 1px solid rgba(20,124,117,.09);
           border-radius: 50%;
           right: -150px;
           top: -220px;
@@ -566,7 +462,7 @@ export default function FounderPage() {
           position: absolute;
           width: 370px;
           height: 370px;
-          border: 1px solid rgba(49,95,158,.09);
+          border: 1px solid rgba(20,124,117,.09);
           border-radius: 50%;
           right: -65px;
           top: -140px;
@@ -702,7 +598,7 @@ export default function FounderPage() {
           aspect-ratio: 4 / 5;
           overflow: hidden;
           border-radius: 3px;
-          box-shadow: 16px 18px 0 rgba(49,95,158,.12);
+          box-shadow: 16px 18px 0 rgba(20,124,117,.12);
         }
 
         .f-photo-frame img {
@@ -751,51 +647,6 @@ export default function FounderPage() {
           opacity: .8;
         }
 
-        .f-floating-note {
-          position: absolute;
-          bottom: 0;
-          left: -65px;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 16px 19px;
-          background: white;
-          box-shadow: 0 12px 35px rgba(30,48,70,.11);
-          border: 1px solid #edf0f2;
-          animation: f-float 5s ease-in-out infinite;
-        }
-
-        .f-note-symbol {
-          font-size: 27px;
-          color: var(--f-orange);
-        }
-
-        .f-floating-note div {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-
-        .f-floating-note strong {
-          font-size: 12px;
-          color: var(--f-ink);
-        }
-
-        .f-floating-note div span {
-          font-size: 10px;
-          color: var(--f-muted);
-        }
-
-        .f-visual-index {
-          position: absolute;
-          right: 0;
-          bottom: 0;
-          font-size: 9px;
-          font-weight: 800;
-          letter-spacing: 1.5px;
-          color: #8a95a2;
-        }
-
         .f-hero-bottom {
           max-width: 1120px;
           margin: 75px auto 0;
@@ -811,21 +662,6 @@ export default function FounderPage() {
         }
 
         /* Common section headings */
-
-        .f-section-label {
-          display: flex;
-          gap: 12px;
-          align-items: center;
-          color: #8b94a0;
-          font-size: 10px;
-          font-weight: 800;
-          letter-spacing: 1.7px;
-          margin-bottom: 42px;
-        }
-
-        .f-section-label span {
-          color: var(--f-blue);
-        }
 
         /* About */
 
@@ -866,26 +702,10 @@ export default function FounderPage() {
           color: var(--f-ink);
         }
 
-        .f-personal-note {
-          margin-top: 30px;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          font-size: 12px;
-          font-weight: 700;
-          color: var(--f-blue);
-        }
-
-        .f-note-line {
-          height: 2px;
-          width: 30px;
-          background: var(--f-orange);
-        }
-
         /* Projects */
 
         .f-organization {
-          background: #f1f3f2;
+          background: #edf5f1;
         }
 
         .f-org-intro {
@@ -921,14 +741,34 @@ export default function FounderPage() {
         }
 
         .f-org-header {
-          padding: 22px 0;
-          border-top: 1px solid #d9dedf;
-          border-bottom: 1px solid #d9dedf;
+          padding: 22px 0 16px;
+          border-top: 1px solid #d9e8e0;
           display: flex;
+          flex-direction: column;
           align-items: center;
-          justify-content: space-between;
-          gap: 20px;
-          margin-bottom: 24px;
+          justify-content: center;
+          gap: 8px;
+          margin-bottom: 0;
+          text-align: center;
+        }
+
+        .f-org-connector {
+          height: 42px;
+          width: 1px;
+          margin: 0 auto 0;
+          background: #9fc8b6;
+          position: relative;
+        }
+
+        .f-org-connector::after {
+          content: '';
+          position: absolute;
+          left: 50%;
+          bottom: 0;
+          width: min(78vw, 900px);
+          height: 1px;
+          background: #9fc8b6;
+          transform: translateX(-50%);
         }
 
         .f-org-name {
@@ -979,31 +819,24 @@ export default function FounderPage() {
         }
 
         .f-project-blue {
-          background: #e4edf7;
-          color: #244c7e;
+          background: #e6f2ed;
+          color: #176c63;
         }
 
         .f-project-dark {
-          background: #202d40;
+          background: #174c47;
           color: #fff;
         }
 
         .f-project-orange {
-          background: #f1e9df;
-          color: #765338;
+          background: #eaf3ed;
+          color: #356b58;
         }
 
         .f-project-top {
           display: flex;
           justify-content: space-between;
           align-items: center;
-        }
-
-        .f-project-number {
-          font-size: 11px;
-          font-weight: 800;
-          opacity: .55;
-          letter-spacing: 1px;
         }
 
         .f-project-status {
@@ -1024,19 +857,6 @@ export default function FounderPage() {
         }
 
         .f-status-active > span { background: #84bd9b; }
-
-        .f-project-icon {
-          width: 55px;
-          height: 55px;
-          margin-top: 28px;
-          margin-bottom: 25px;
-          opacity: .9;
-        }
-
-        .f-project-icon svg {
-          width: 100%;
-          height: 100%;
-        }
 
         .f-project-category {
           font-size: 8px;
@@ -1097,21 +917,6 @@ export default function FounderPage() {
           letter-spacing: .7px;
         }
 
-        .f-project-footnote {
-          margin-top: 25px;
-          display: flex;
-          align-items: flex-start;
-          gap: 10px;
-          font-size: 11px;
-          color: var(--f-muted);
-          line-height: 1.7;
-        }
-
-        .f-project-footnote span {
-          color: var(--f-orange);
-          font-size: 17px;
-        }
-
         /* Philosophy */
 
         .f-philosophy {
@@ -1121,18 +926,11 @@ export default function FounderPage() {
         .f-quote-layout {
           position: relative;
           padding: 50px 65px;
-          background: #f3f5f6;
+          background: #edf6f1;
           overflow: hidden;
           display: grid;
           grid-template-columns: 80px 1fr;
           gap: 25px;
-        }
-
-        .f-quote-mark {
-          font-family: var(--f-serif);
-          font-size: 115px;
-          line-height: .9;
-          color: #b7c7d9;
         }
 
         .f-quote-content h2 {
@@ -1152,81 +950,10 @@ export default function FounderPage() {
           font-style: italic;
         }
 
-        .f-quote-footer {
-          display: flex;
-          align-items: center;
-          gap: 13px;
-          margin-top: 35px;
-        }
-
-        .f-quote-avatar {
-          width: 38px;
-          height: 38px;
-          display: grid;
-          place-items: center;
-          background: var(--f-ink);
-          color: white;
-          border-radius: 50%;
-          font-family: var(--f-serif);
-          font-size: 19px;
-        }
-
-        .f-quote-footer > div:last-child {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-
-        .f-quote-footer strong { font-size: 11px; }
-        .f-quote-footer span { font-size: 10px; color: var(--f-muted); }
-
-        .f-quote-decoration {
-          position: absolute;
-          right: 22px;
-          bottom: 15px;
-          font-size: 9px;
-          letter-spacing: 2px;
-          line-height: 1.7;
-          font-weight: 800;
-          color: rgba(49,95,158,.17);
-          text-align: right;
-        }
-
-        .f-values {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 45px;
-          margin-top: 60px;
-        }
-
-        .f-value {
-          border-top: 1px solid var(--f-line);
-          padding-top: 20px;
-        }
-
-        .f-value-number {
-          font-size: 10px;
-          font-weight: 800;
-          letter-spacing: 1px;
-          color: var(--f-blue);
-        }
-
-        .f-value h3 {
-          font-size: 17px;
-          margin: 18px 0 9px;
-        }
-
-        .f-value p {
-          font-size: 12px;
-          line-height: 1.85;
-          color: var(--f-muted);
-          margin: 0;
-        }
-
         /* Interests */
 
         .f-interest {
-          background: #f1f3f2;
+          background: #edf5f1;
         }
 
         .f-interest-grid {
@@ -1235,7 +962,6 @@ export default function FounderPage() {
           gap: 100px;
         }
 
-        .f-interest .f-section-label { margin-bottom: 35px; }
 
         .f-interest-intro {
           font-size: 13px;
@@ -1251,7 +977,7 @@ export default function FounderPage() {
 
         .f-interest-item {
           display: grid;
-          grid-template-columns: 35px 1fr 25px;
+          grid-template-columns: 1fr 25px;
           gap: 14px;
           align-items: center;
           padding: 20px 0;
@@ -1261,12 +987,6 @@ export default function FounderPage() {
 
         .f-interest-item:hover {
           padding-left: 9px;
-        }
-
-        .f-interest-item > span:first-child {
-          font-size: 9px;
-          color: #929ba5;
-          font-weight: 700;
         }
 
         .f-interest-item strong {
@@ -1291,7 +1011,7 @@ export default function FounderPage() {
 
         .f-closing {
           position: relative;
-          background: #1c2b40;
+          background: #105b56;
           padding: 100px 24px 110px;
           color: white;
           overflow: hidden;
@@ -1331,7 +1051,7 @@ export default function FounderPage() {
           font-size: 9px;
           font-weight: 800;
           letter-spacing: 2px;
-          color: #b9c9dc;
+          color: #c1e2d3;
         }
 
         .f-closing h2 {
@@ -1342,14 +1062,14 @@ export default function FounderPage() {
         }
 
         .f-closing h2 span {
-          color: #b9c9dc;
+          color: #c1e2d3;
           font-family: var(--f-serif);
           font-weight: 400;
           font-style: italic;
         }
 
         .f-closing-inner > p {
-          color: #c0cbd6;
+          color: #d3e9df;
           font-size: 13px;
           line-height: 1.9;
           max-width: 510px;
@@ -1369,26 +1089,16 @@ export default function FounderPage() {
         }
 
         .f-closing-btn:hover {
-          background: #dce7f2;
+          background: #e1f1e8;
           transform: translateY(-3px);
         }
 
         .f-closing-btn span { margin-left: 15px; }
 
-        .f-closing-decoration {
-          position: absolute;
-          bottom: 20px;
-          right: 30px;
-          font-size: 9px;
-          letter-spacing: 3px;
-          font-weight: 800;
-          color: rgba(255,255,255,.19);
-        }
-
         /* Footer */
 
         .f-footer {
-          background: #121e30;
+          background: #103e3b;
           color: white;
           padding: 25px 24px;
         }
@@ -1450,17 +1160,13 @@ export default function FounderPage() {
           .f-hero h1 { font-size: clamp(44px, 11vw, 62px); }
           .f-hero-caption { margin-top: 35px; }
           .f-hero-visual { max-width: 390px; margin: auto; }
-          .f-floating-note { left: -8px; }
           .f-hero-bottom { margin-top: 55px; font-size: 8px; }
 
-          .f-section-label { margin-bottom: 30px; }
           .f-about-grid { grid-template-columns: 1fr; gap: 28px; }
           .f-about-heading h2 { font-size: 36px; }
 
           .f-org-intro { grid-template-columns: 1fr; gap: 20px; margin-bottom: 45px; }
           .f-org-intro h2 { font-size: 43px; }
-          .f-org-header { align-items: flex-start; }
-          .f-org-tag { font-size: 7px; text-align: right; }
 
           .f-projects { grid-template-columns: 1fr; }
           .f-project-card, .f-project-card:last-child {
@@ -1474,10 +1180,7 @@ export default function FounderPage() {
             gap: 0;
           }
 
-          .f-quote-mark { font-size: 75px; height: 60px; }
           .f-quote-content h2 { font-size: 28px; }
-          .f-quote-decoration { display: none; }
-          .f-values { grid-template-columns: 1fr; gap: 25px; margin-top: 40px; }
 
           .f-interest-grid { grid-template-columns: 1fr; gap: 35px; }
           .f-interest h2 { font-size: 45px; }
