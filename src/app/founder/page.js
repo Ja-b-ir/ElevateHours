@@ -1,12 +1,6 @@
+
 'use client'
 import Logo from '@/components/Logo'
-
-// Edit these one-liners any time. Keep them honest and short.
-const VENTURES = [
-  { name: 'ElevateHours', desc: 'A community platform where people exchange skills and time, built on time-banking principles. Early stage and growing.', status: 'Live, early stage', link: '/' },
-  { name: 'CodeScriptors Lab', desc: 'Software and IT work, where I learn by building real projects.', status: 'Building' },
-  { name: 'Ke Jabe', desc: 'Another idea I am working on under Off the Horizon.', status: 'In development' },
-]
 
 export default function FounderPage() {
   return (
@@ -42,13 +36,13 @@ export default function FounderPage() {
             fontSize: '0.8rem', fontWeight: 700, marginBottom: '1rem',
             letterSpacing: '0.08em', textTransform: 'uppercase'
           }}>
-            About the Founder
+            A Little About the Founder
           </div>
           <h1 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 900, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
-            The Story Behind ElevateHours
+            Learning, Building & Exploring Possibilities
           </h1>
           <p style={{ opacity: 0.85, marginTop: '1rem', fontSize: '1.05rem', lineHeight: 1.7 }}>
-            A student building small things, step by step, and hoping they create real impact.
+            A young graduate trying to turn knowledge, ideas, and curiosity into something meaningful.
           </p>
         </div>
       </section>
@@ -61,10 +55,10 @@ export default function FounderPage() {
           overflow: 'hidden'
         }}>
           {[
-            { label: 'Role', value: 'Founder, Off the Horizon' },
-            { label: 'Studying', value: 'Computer Science & Engineering' },
+            { label: 'Role', value: 'Founder & CEO' },
+            { label: 'Organization', value: 'Off the Horizon' },
             { label: 'Based In', value: 'Dhaka, Bangladesh' },
-            { label: 'Right Now', value: 'Building, learning, improving' },
+            { label: 'Background', value: 'Computer Science & Engineering' },
           ].map((f, i) => (
             <div key={i} style={{ padding: '1.25rem 1.5rem', borderRight: i < 3 ? '1px solid var(--border)' : 'none' }}>
               <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.3rem' }}>{f.label}</div>
@@ -93,7 +87,7 @@ export default function FounderPage() {
               }}>
                 <img
                   src="/founder.jpg"
-                  alt="Md. Jabir Hossen — Founder of Off the Horizon"
+                  alt="Md. Jabir Hossen — Founder & CEO of Off the Horizon"
                   style={{ width: '100%', height: 'auto', display: 'block' }}
                   onError={(e) => {
                     e.target.style.display = 'none'
@@ -111,7 +105,7 @@ export default function FounderPage() {
               <div style={{ background: 'var(--surface-2)', borderRadius: 16, padding: '1.5rem', border: '1px solid var(--border)' }}>
                 <h2 style={{ fontWeight: 800, fontSize: '1.25rem', marginBottom: '0.2rem', color: 'var(--text)' }}>Md. Jabir Hossen</h2>
                 <div style={{ color: 'var(--brand)', fontWeight: 700, fontSize: '0.9rem', marginBottom: '1.25rem' }}>
-                  Founder, Off the Horizon
+                  Founder & CEO, Off the Horizon
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
@@ -127,7 +121,7 @@ export default function FounderPage() {
                     background: '#1877F2', color: 'white', padding: '0.65rem 1rem',
                     borderRadius: 10, fontWeight: 600, fontSize: '0.875rem', textDecoration: 'none'
                   }}>
-                    <span style={{ fontSize: '1.1rem' }}>f</span> CodeScriptors
+                    <span style={{ fontSize: '1.1rem' }}>f</span> CodeScriptors Lab
                   </a>
                 </div>
 
@@ -141,6 +135,7 @@ export default function FounderPage() {
 
             {/* Content */}
             <div>
+              {/* About */}
               <div style={{ marginBottom: '3rem' }}>
                 <div style={{
                   display: 'inline-block', background: 'var(--brand-light)', color: 'var(--brand)',
@@ -151,45 +146,48 @@ export default function FounderPage() {
                   About
                 </div>
                 <h2 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '1.25rem', letterSpacing: '-0.02em', color: 'var(--text)' }}>
-                  Still Building, Still Learning
+                  A Graduate, A Learner, and A Builder
                 </h2>
                 <div style={{ color: 'var(--text-2)', lineHeight: 1.85, fontSize: '1rem' }}>
                   <p style={{ marginBottom: '1rem' }}>
-                    Md. Jabir Hossen is a Computer Science and Engineering student from Dhaka, Bangladesh. He founded <strong>Off the Horizon</strong>, a small group of projects he is building himself and with friends: <strong>ElevateHours</strong>, <strong>CodeScriptors Lab</strong> and <strong>Ke Jabe</strong>.
+                    Md. Jabir Hossen is a Computer Science and Engineering graduate from Dhaka, Bangladesh. Having recently completed his Bachelor's degree, he is at the beginning of his professional journey, exploring how technology, creativity, and problem-solving can come together to address everyday challenges.
                   </p>
                   <p style={{ marginBottom: '1rem' }}>
-                    ElevateHours started from something he noticed around him: many students have real skills but few ways to prove them or find a first opportunity, while small teams and community projects often need help they cannot pay for.
+                    Rather than waiting to learn everything before getting started, Jabir believes in learning by doing. He is developing his skills, experimenting with ideas, and trying to put the knowledge he has gained into practice by building digital products and platforms.
                   </p>
                   <p>
-                    ElevateHours is his attempt at that gap, a community growth platform built on time-banking principles, where people exchange skills and time and earn Sparks along the way. It is still early, and it is being improved with every bit of feedback.
+                    He is the Founder & CEO of <strong>Off the Horizon</strong>, an early-stage initiative through which he is exploring and developing different ideas. It brings together projects with distinct purposes, including ElevateHours, CodeScriptors Lab, and Ke Jabe. These projects are at different stages of development, and each represents an opportunity to learn, experiment, and improve.
                   </p>
                 </div>
               </div>
 
-              {/* Off the Horizon */}
+              {/* Projects */}
               <div style={{ marginBottom: '3rem' }}>
                 <div style={{
-                  display: 'inline-block', background: 'var(--brand-light)', color: 'var(--brand)',
+                  display: 'inline-block', background: 'var(--amber-light)', color: 'var(--amber-dark)',
                   padding: '0.3rem 0.9rem', borderRadius: 999,
                   fontSize: '0.8rem', fontWeight: 700, marginBottom: '1rem',
                   letterSpacing: '0.05em', textTransform: 'uppercase'
                 }}>
-                  Off the Horizon
+                  What I'm Working On
                 </div>
                 <h2 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '1.25rem', letterSpacing: '-0.02em', color: 'var(--text)' }}>
-                  What We're Working On
+                  Ideas Taking Shape
                 </h2>
-                <p style={{ color: 'var(--text-2)', lineHeight: 1.85, marginBottom: '1.5rem' }}>
-                  Off the Horizon is the home for these projects. They are all still being built, and the aim is simple: make something useful, learn from the people who use it, and keep improving.
-                </p>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
-                  {VENTURES.map((v, i) => (
-                    <div key={i} style={{ background: 'var(--surface-2)', borderRadius: 14, padding: '1.25rem', border: '1px solid var(--border)', borderTop: '4px solid var(--brand)' }}>
-                      <div style={{ fontWeight: 800, fontSize: '0.95rem', marginBottom: '0.3rem', color: 'var(--text)' }}>{v.name}</div>
-                      <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--amber-dark)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem' }}>{v.status}</div>
-                      <p style={{ color: 'var(--text-2)', fontSize: '0.82rem', lineHeight: 1.6 }}>{v.desc}</p>
-                    </div>
-                  ))}
+
+                <div style={{ color: 'var(--text-2)', lineHeight: 1.85, fontSize: '1rem' }}>
+                  <p style={{ marginBottom: '1rem' }}>
+                    Off the Horizon is the parent organization behind a few initiatives that Jabir is currently developing. Each project explores a different problem and a different way technology might help.
+                  </p>
+                  <p style={{ marginBottom: '1rem' }}>
+                    <strong>ElevateHours</strong> is an opportunity and skill-exchange platform designed to help students access affordable learning, practical experience, microjobs, and opportunities to collaborate. The idea is to make skills and time more useful resources for people who are still building their careers. It is currently in its early stages of development.
+                  </p>
+                  <p style={{ marginBottom: '1rem' }}>
+                    <strong>CodeScriptors Lab</strong> focuses on creating digital solutions by developing different platforms and technology-based products. The aim is to turn ideas and identified problems into useful digital experiences.
+                  </p>
+                  <p>
+                    <strong>Ke Jabe</strong> is an initiative focused on making travel easier to organize. It is being developed as a platform for finding travel companions, planning tours, organizing trips, and managing travel-related activities. It is also in its early stages.
+                  </p>
                 </div>
               </div>
 
@@ -201,10 +199,10 @@ export default function FounderPage() {
                   fontSize: '0.8rem', fontWeight: 700, marginBottom: '1rem',
                   letterSpacing: '0.05em', textTransform: 'uppercase'
                 }}>
-                  What I Hope For
+                  Personal Philosophy
                 </div>
                 <h2 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '1.25rem', letterSpacing: '-0.02em', color: 'var(--text)' }}>
-                  A Place Where Every Hour Counts
+                  Learning Through Building
                 </h2>
 
                 <div style={{
@@ -213,22 +211,22 @@ export default function FounderPage() {
                 }}>
                   <div style={{ fontSize: '2rem', marginBottom: '0.75rem', opacity: 0.7 }}>❝</div>
                   <p style={{ fontSize: '1.1rem', lineHeight: 1.8, fontStyle: 'italic', opacity: 0.95 }}>
-                    "I want to make it easy for students to access both education and real work experience on the same platform — without worrying about spending money. Your skills are your capital. Your time is your investment. And Sparks are your reward."
+                    "I don't believe I need to have everything figured out before I start building. I want to keep learning, try out my ideas, make mistakes, and improve along the way. If something I build can make even a small difference in someone's life, that makes the effort worthwhile."
                   </p>
                   <div style={{ marginTop: '1rem', opacity: 0.8, fontSize: '0.875rem', fontWeight: 600 }}>
-                    — Md. Jabir Hossen, Founder, Off the Horizon
+                    — Md. Jabir Hossen
                   </div>
                 </div>
 
                 <div style={{ color: 'var(--text-2)', lineHeight: 1.85, fontSize: '1rem' }}>
                   <p style={{ marginBottom: '1rem' }}>
-                    Jabir hopes ElevateHours can become a place where students earn real experience, receive endorsements for the work they do, and slowly build a portfolio that shows what they can do.
+                    Jabir is particularly interested in the intersection of technology, entrepreneurship, education, and social impact. He believes that technology should not only be about creating products but also about understanding people's problems and exploring practical ways to solve them.
                   </p>
                   <p style={{ marginBottom: '1rem' }}>
-                    Members earn Sparks by contributing their time and skills, for example teaching a beginner, designing a logo for a small team, or helping with a project. Those Sparks can then be used to learn or get help from others in the community.
+                    His current focus is on developing his technical, entrepreneurial, and problem-solving abilities while gaining a better understanding of how to build products that people actually need.
                   </p>
                   <p>
-                    Later on, he would like to explore partnerships with organizations so that Sparks can be useful in more places. That is a hope for the future, not something that exists today, and he is taking it one step at a time.
+                    There is still a lot to learn, and not every idea will necessarily work. But he sees every project, conversation, experiment, and challenge as part of the learning process. The goal is to keep improving, build responsibly, and gradually turn promising ideas into something useful and sustainable.
                   </p>
                 </div>
               </div>
@@ -241,20 +239,20 @@ export default function FounderPage() {
                   fontSize: '0.8rem', fontWeight: 700, marginBottom: '1rem',
                   letterSpacing: '0.05em', textTransform: 'uppercase'
                 }}>
-                  SDG Alignment
+                  Areas of Interest
                 </div>
                 <h2 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '1.25rem', letterSpacing: '-0.02em', color: 'var(--text)' }}>
-                  Goals We Build Toward
+                  Technology With a Purpose
                 </h2>
                 <p style={{ color: 'var(--text-2)', lineHeight: 1.85, marginBottom: '1.5rem' }}>
-                  ElevateHours is guided by the United Nations Sustainable Development Goals. We are early, so these are goals we are working toward, not things we have already achieved.
+                  Jabir is interested in exploring how his work can contribute to broader social and development goals. These are areas he hopes to learn more about and make a meaningful contribution to through his projects.
                 </p>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
                   {[
-                    { sdg: 'SDG 4', title: 'Quality Education', desc: 'Helping learners find educators and mentors, so knowledge is easier to reach.', color: 'var(--red)' },
-                    { sdg: 'SDG 8', title: 'Decent Work & Growth', desc: 'Helping people build experience, endorsements and portfolios that can support real work.', color: 'var(--amber)' },
-                    { sdg: 'SDG 10', title: 'Reduced Inequalities', desc: 'Reducing the money barrier between people with talent and the chance to use it.', color: 'var(--brand-mid)' },
-                    { sdg: 'SDG 17', title: 'Partnerships for Goals', desc: 'Hoping to work with organizations, NGOs and institutions as the community grows.', color: 'var(--brand)' },
+                    { sdg: 'SDG 4', title: 'Quality Education', desc: 'Exploring ways to make learning resources, knowledge, and educational opportunities more accessible.', color: 'var(--red)' },
+                    { sdg: 'SDG 8', title: 'Decent Work & Growth', desc: 'Creating pathways for skill development, practical experience, and access to work opportunities.', color: 'var(--amber)' },
+                    { sdg: 'SDG 10', title: 'Reduced Inequalities', desc: 'Exploring how digital platforms can help reduce barriers to learning and opportunities.', color: 'var(--brand-mid)' },
+                    { sdg: 'SDG 17', title: 'Partnerships for Goals', desc: 'Learning to build meaningful collaborations between individuals, organizations, and communities.', color: 'var(--brand)' },
                   ].map((item, i) => (
                     <div key={i} style={{
                       background: 'var(--surface-2)', borderRadius: 14, padding: '1.25rem',
@@ -277,18 +275,18 @@ export default function FounderPage() {
                 border: '1px solid var(--border)', textAlign: 'center'
               }}>
                 <h3 style={{ fontWeight: 800, fontSize: '1.2rem', marginBottom: '0.5rem', color: 'var(--text)' }}>
-                  Join Us Early
+                  Let's Learn and Build Together
                 </h3>
                 <p style={{ color: 'var(--text-2)', fontSize: '0.95rem', marginBottom: '1.5rem', lineHeight: 1.6 }}>
-                  ElevateHours is just getting started. If you like the idea, join, try it out and tell us how to make it better.
+                  Always open to connecting with people who enjoy sharing ideas, learning new things, collaborating, and working on meaningful projects.
                 </p>
-                <a href="/auth/signup" style={{
+                <a href="https://www.linkedin.com/in/md-jabir-hossen/" target="_blank" rel="noopener noreferrer" style={{
                   display: 'inline-block', background: 'var(--brand)', color: 'white',
                   padding: '0.85rem 2rem', borderRadius: 10, fontWeight: 700,
                   fontSize: '1rem', textDecoration: 'none',
                   boxShadow: 'var(--shadow-brand)'
                 }}>
-                  Start Earning Sparks →
+                  Connect on LinkedIn →
                 </a>
               </div>
             </div>
@@ -303,7 +301,7 @@ export default function FounderPage() {
             <Logo height={26} linkTo="/" forceTheme="dark" />
           </div>
           <div style={{ opacity: 0.5, fontSize: '0.85rem' }}>
-            A project of Off the Horizon · Built by <a href="https://www.facebook.com/codescriptors/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--amber)', fontWeight: 600 }}>CodeScriptors Lab</a>
+            An initiative of <a href="https://www.facebook.com/codescriptors/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--amber)', fontWeight: 600 }}>Off the Horizon</a>
           </div>
         </div>
       </footer>
