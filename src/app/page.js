@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
+import InstallApp from '@/components/InstallApp'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Logo from '@/components/Logo'
@@ -309,6 +310,7 @@ export default function LandingPage() {
             <a href="/auth/signup" className="eh-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--surface)', color: 'var(--text)', padding: '0.875rem 2rem', borderRadius: 'var(--radius)', fontWeight: 700, fontSize: '0.95rem', border: '1.5px solid var(--border)' }}>
               Post a Request
             </a>
+                <InstallApp variant="hero" />
           </div>
           <div style={{ marginTop: '2.5rem', display: 'flex', gap: '2rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             {['250 SPK welcome bonus', 'Free to join', 'No cash required'].map((item, i) => (
